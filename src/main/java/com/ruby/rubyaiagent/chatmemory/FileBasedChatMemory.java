@@ -1,12 +1,10 @@
 package com.ruby.rubyaiagent.chatmemory;
-
-import com.alibaba.dashscope.common.Message;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.springframework.ai.chat.memory.ChatMemory;
-
+import org.springframework.ai.chat.messages.Message;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
