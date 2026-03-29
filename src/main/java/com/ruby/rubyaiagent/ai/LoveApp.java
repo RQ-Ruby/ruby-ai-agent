@@ -2,6 +2,7 @@ package com.ruby.rubyaiagent.ai;
 
 import com.ruby.rubyaiagent.advisor.MyLoggerAdvisor;
 import com.ruby.rubyaiagent.advisor.ReReadingAdvisor;
+import com.ruby.rubyaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -92,6 +93,8 @@ public class LoveApp {
     private VectorStore loveAppVectorStore;
     @Resource
     private VectorStore pgVectorVectorStore;
+    @Resource
+    private QueryRewriter queryRewriter;
 /**
      * 与RAG知识库进行对话，返回模型的回复。
      * @param message 用户的消息。
@@ -99,9 +102,12 @@ public class LoveApp {
      * @return 模型的回复。
      */
     public String doChatWithRag(String message, String chatId) {
+        // 对用户查询进行重写
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse chatResponse = chatClient
                 .prompt()
-                .user(message)
+                // 重写后的用户查询
+                .user(rewrittenMessage)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 // 开启日志，便于观察效果
