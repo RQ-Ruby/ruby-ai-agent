@@ -4,7 +4,12 @@ import cn.hutool.core.io.FileUtil;
 import com.ruby.rubyaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-
+/**
+ * @description  文件操作工具类
+ * @return:  文件操作结果
+ * @author RQ
+ * @date: 2026/3/30 下午5:52
+ */
 public class FileOperationTool {
 
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + "/file";
