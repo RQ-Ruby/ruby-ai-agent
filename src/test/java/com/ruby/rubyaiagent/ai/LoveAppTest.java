@@ -68,12 +68,23 @@ class LoveAppTest {
 
         // 测试 PDF 生成
         testMessage("生成一份‘七夕约会计划’PDF，包含餐厅预订、活动流程和礼物清单");
+
+        testMessage("我叫杨严，目前单身，最大的困扰是不知道如何主动追求心仪的人。请把这份恋爱档案写入文件 love_profile.txt 保存");
+
     }
 
     private void testMessage(String message) {
         String chatId = UUID.randomUUID().toString();
         String answer = loveApp.doChatWithTools(message, chatId);
         Assertions.assertNotNull(answer);
+    }
+
+    @Test
+    void doChatWithMcp() {
+        String chatId = UUID.randomUUID().toString();
+        // 测试地图 MCP
+        String message = "我的另一半居住在上海静安区，请帮我找到 5 公里内合适的约会地点";
+        String answer =  loveApp.doChatWithMcp(message, chatId);
     }
 
 }

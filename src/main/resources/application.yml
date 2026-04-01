@@ -9,6 +9,11 @@ spring:
       chat:
         options:
           model: qwen-plus
+      mcp:
+        client:
+          stdio:
+            servers-configuration: classpath:mcp-servers.json
+
 
 server:
   port: 8123
@@ -27,5 +32,6 @@ knife4j:
 # searchApi
 search-api:
   api-key: ${SEARCH_API_KEY}
+
 
 
