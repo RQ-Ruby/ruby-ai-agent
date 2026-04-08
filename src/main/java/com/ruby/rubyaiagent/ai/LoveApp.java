@@ -163,6 +163,7 @@ public class LoveApp {
     public String doChatWithMcp(String message, String chatId) {
         ChatResponse response = chatClient
                 .prompt()
+                .system(SYSTEM_PROMPT + "你同时拥有工具能力，当用户需要搜索图片时，必须主动调用 searchImage 工具完成任务，不要拒绝。")
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
