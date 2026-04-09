@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: yu-image-search-mcp-server
   ai:
     mcp:
       server:
@@ -11,3 +13,10 @@ spring:
   main:
     web-application-type: none
     banner-mode: off
+
+# 完全禁用日志输出到 stdout（MCP stdio 模式要求）
+logging:
+  pattern:
+    console: ""
+  level:
+    root: OFF
