@@ -3,6 +3,7 @@ package com.ruby.rubyaiagent.agent;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.ruby.rubyaiagent.agent.model.AgentState;
+import com.ruby.rubyaiagent.chat.ToolCallArgumentsSanitizer;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,7 @@ public class ToolCallAgent extends ReActAgent {
             getMessageList().add(userMessage);
         }
         List<Message> messageList = getMessageList();
+        ToolCallArgumentsSanitizer.normalizeMessagesInPlace(messageList);
         Prompt prompt = new Prompt(messageList, chatOptions);
         try {
             // 获取带工具选项的响应
@@ -70,9 +72,9 @@ public class ToolCallAgent extends ReActAgent {
                     .tools(availableTools)
                     .call()
                     .chatResponse();
-            // 记录响应，用于 Act
-            this.toolCallChatResponse = chatResponse;
-            AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+            // 记录响应，用于 Act（规范化参数，避免本地执行工具时解析失败）
+            this.toolCallChatResponse = ToolCallArgumentsSanitizer.sanitizeChatResponse(chatResponse);
+            AssistantMessage assistantMessage = this.toolCallChatResponse.getResult().getOutput();
             // 输出提示信息
             String result = assistantMessage.getText();
             List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
@@ -112,7 +114,9 @@ public class ToolCallAgent extends ReActAgent {
             return "没有工具调用";
         }
         // 调用工具
-        Prompt prompt = new Prompt(getMessageList(), chatOptions);
+        List<Message> history = getMessageList();
+        ToolCallArgumentsSanitizer.normalizeMessagesInPlace(history);
+        Prompt prompt = new Prompt(history, chatOptions);
         ToolExecutionResult toolExecutionResult = toolCallingManager.executeToolCalls(prompt, toolCallChatResponse);
         // 记录消息上下文，conversationHistory 已经包含了助手消息和工具调用返回的结果
         setMessageList(toolExecutionResult.conversationHistory());

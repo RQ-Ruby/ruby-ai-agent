@@ -12,10 +12,16 @@ public class rubyManus extends ToolCallAgent {
     public rubyManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {
         super(allTools);  
         this.setName("rubyManus");
-        String SYSTEM_PROMPT = """  
+     /*   String SYSTEM_PROMPT = """
                 You are rubyManus, an all-capable AI assistant, aimed at solving any task presented by the user.  
                 You have various tools at your disposal that you can call upon to efficiently complete complex requests.  
-                """;  
+                """;  */
+        String SYSTEM_PROMPT = """  
+        You are rubyManus, an all-capable AI assistant, aimed at solving any task presented by the user.  
+        You have various tools at your disposal that you can call upon to efficiently complete complex requests.  
+        When calling tools, you must generate valid JSON format for the function.arguments parameter.  
+        """;
+
         this.setSystemPrompt(SYSTEM_PROMPT);  
         String NEXT_STEP_PROMPT = """  
                 Based on user needs, proactively select the most appropriate tool or combination of tools.  
