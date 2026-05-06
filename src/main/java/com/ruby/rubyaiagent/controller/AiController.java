@@ -1,5 +1,6 @@
 package com.ruby.rubyaiagent.controller;
 
+import com.ruby.rubyaiagent.agent.rubyManus;
 import com.ruby.rubyaiagent.ai.LoveApp;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
@@ -76,6 +77,19 @@ public class AiController {
                 );
         // 返回emitter
         return emitter;
+    }
+
+
+    /**
+     * 流式调用 Manus 超级智能体
+     *
+     * @param message
+     * @return
+     */
+    @GetMapping("/manus/chat")
+    public SseEmitter doChatWithManus(String message) {
+        rubyManus yuManus = new rubyManus(allTools, dashscopeChatModel);
+        return yuManus.runStream(message);
     }
 
 
