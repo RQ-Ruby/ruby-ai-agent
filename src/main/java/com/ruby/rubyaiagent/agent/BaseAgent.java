@@ -47,6 +47,9 @@ public abstract class BaseAgent {
     // 流式输出钩子：由子类在 think()/act() 中填写，用于让前端实时看到思考过程
     protected String currentThinking = "";
     protected String currentAction = "";
+
+    // 流式 token 接收器：不为 null 时，子类在 think() 期间逐 token 推送 delta。
+    protected java.util.function.Consumer<String> tokenSink;
   
     /**  
      * 运行代理  
@@ -124,10 +127,15 @@ public abstract class BaseAgent {
                 messageList.add(new UserMessage(userPrompt));
 
                 try {
-                    // 开场提示
-                    emitter.send("### 🧭 开始思考你的问题\n\n");
+                    // 将 token 汇流到 SSE：子类的 think() 会逐 token 调用这个 sink
+                    this.tokenSink = delta -> {
+                        try {
+                            emitter.send(delta);
+                        } catch (Exception ignore) {
+                            // 客户端已断开，忽略
+                        }
+                    };
 
-                    String finalAnswer = null;
                     for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
                         int stepNumber = i + 1;
                         currentStep = stepNumber;
@@ -135,43 +143,22 @@ public abstract class BaseAgent {
                         currentAction = "";
                         log.info("Executing step " + stepNumber + "/" + maxSteps);
 
-                        // 单步执行（运行期会填充 currentThinking / currentAction）
+                        // 单步执行（think() 会使用 tokenSink 逐 token 推送）
                         String stepResult = step();
 
-                        // 构造本步的 markdown 输出
-                        StringBuilder chunk = new StringBuilder();
-                        chunk.append("\n---\n\n#### 🧩 步骤 ").append(stepNumber).append("\n\n");
-                        if (currentThinking != null && !currentThinking.isBlank()) {
-                            chunk.append("**💭 思考**\n\n")
-                                    .append(currentThinking.trim()).append("\n\n");
-                        }
+                        // 如果本步调用了工具，紧接一个简洁的行内执行标记
                         if (currentAction != null && !currentAction.isBlank()) {
-                            chunk.append("**⚙️ 执行**\n\n")
-                                    .append(currentAction.trim()).append("\n\n");
-                        } else if (stepResult != null && !stepResult.isBlank()
-                                && (currentThinking == null || currentThinking.isBlank())) {
-                            chunk.append(stepResult.trim()).append("\n\n");
+                            emitter.send("\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n");
+                        } else if ((currentThinking == null || currentThinking.isBlank())
+                                && stepResult != null && !stepResult.isBlank()) {
+                            // 傅底：think 未输出且无工具，退化发送 step 文本
+                            emitter.send(stepResult);
                         }
-                        emitter.send(chunk.toString());
                     }
                     // 检查是否超出步骤限制
                     if (currentStep >= maxSteps && state != AgentState.FINISHED) {
                         state = AgentState.FINISHED;
-                        emitter.send("\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n\n");
-                    }
-                    // 提取 AI 最终的自然语言回复
-                    for (int j = messageList.size() - 1; j >= 0; j--) {
-                        Message msg = messageList.get(j);
-                        if (msg instanceof AssistantMessage assistantMessage) {
-                            String text = assistantMessage.getText();
-                            if (text != null && !text.isBlank()) {
-                                finalAnswer = text;
-                                break;
-                            }
-                        }
-                    }
-                    if (finalAnswer != null) {
-                        emitter.send("\n---\n\n### ✅ 最终回复\n\n" + finalAnswer + "\n");
+                        emitter.send("\n\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n");
                     }
                     // 正常完成
                     emitter.complete();

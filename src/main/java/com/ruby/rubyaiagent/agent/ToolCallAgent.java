@@ -19,6 +19,8 @@ import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -66,12 +68,49 @@ public class ToolCallAgent extends ReActAgent {
         ToolCallArgumentsSanitizer.normalizeMessagesInPlace(messageList);
         Prompt prompt = new Prompt(messageList, chatOptions);
         try {
-            // 获取带工具选项的响应
-            ChatResponse chatResponse = getChatClient().prompt(prompt)
-                    .system(getSystemPrompt())
-                    .tools(availableTools)
-                    .call()
-                    .chatResponse();
+            ChatResponse chatResponse;
+            Consumer<String> sink = getTokenSink();
+            if (sink != null) {
+                // 流式调用：逐 token 推送 delta。最后一帧含完整 tool calls。
+                AtomicReference<ChatResponse> lastRef = new AtomicReference<>();
+                StringBuilder textBuilder = new StringBuilder();
+                try {
+                    getChatClient().prompt(prompt)
+                            .system(getSystemPrompt())
+                            .tools(availableTools)
+                            .stream()
+                            .chatResponse()
+                            .toStream()
+                            .forEach(cr -> {
+                                lastRef.set(cr);
+                                if (cr == null || cr.getResult() == null || cr.getResult().getOutput() == null) return;
+                                String delta = cr.getResult().getOutput().getText();
+                                if (delta != null && !delta.isEmpty()) {
+                                    textBuilder.append(delta);
+                                    sink.accept(delta);
+                                }
+                            });
+                } catch (Exception streamErr) {
+                    log.warn("流式调用失败，退化到同步调用: " + streamErr.getMessage());
+                    lastRef.set(null);
+                }
+                chatResponse = lastRef.get();
+                if (chatResponse == null) {
+                    // 流式未返回任何帧，退化
+                    chatResponse = getChatClient().prompt(prompt)
+                            .system(getSystemPrompt())
+                            .tools(availableTools)
+                            .call()
+                            .chatResponse();
+                }
+            } else {
+                // 同步调用（例如 run() 路径）
+                chatResponse = getChatClient().prompt(prompt)
+                        .system(getSystemPrompt())
+                        .tools(availableTools)
+                        .call()
+                        .chatResponse();
+            }
             // 记录响应，用于 Act（规范化参数，避免本地执行工具时解析失败）
             this.toolCallChatResponse = ToolCallArgumentsSanitizer.sanitizeChatResponse(chatResponse);
             AssistantMessage assistantMessage = this.toolCallChatResponse.getResult().getOutput();
@@ -87,19 +126,8 @@ public class ToolCallAgent extends ReActAgent {
                     )
                     .collect(Collectors.joining("\n"));
             log.info(toolCallInfo);
-            // 填充流式输出钩子：思考文本 + 计划调用的工具名
-            StringBuilder thinkBuilder = new StringBuilder();
-            if (result != null && !result.isBlank()) {
-                thinkBuilder.append(result.trim());
-            }
-            if (!toolCallList.isEmpty()) {
-                String planned = toolCallList.stream()
-                        .map(tc -> "`" + tc.name() + "`")
-                        .collect(Collectors.joining("、"));
-                if (thinkBuilder.length() > 0) thinkBuilder.append("\n\n");
-                thinkBuilder.append("计划调用工具：").append(planned);
-            }
-            this.currentThinking = thinkBuilder.toString();
+            // currentThinking 仅供非流式路径使用；流式下 token 已直接推送。
+            this.currentThinking = result == null ? "" : result;
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);

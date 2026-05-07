@@ -11,6 +11,7 @@ import com.ruby.rubyaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -34,14 +35,11 @@ public class PDFGenerationTool {
             try (PdfWriter writer = new PdfWriter(filePath);
                  PdfDocument pdf = new PdfDocument(writer);
                  Document document = new Document(pdf)) {
-                // 自定义字体（需要人工下载字体文件到特定目录）
-//                String fontPath = Paths.get("src/main/resources/static/fonts/simsun.ttf")
-//                        .toAbsolutePath().toString();
-//                PdfFont font = PdfFontFactory.createFont(fontPath,
-//                        PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
-                // 使用内置中文字体
-                PdfFont font = PdfFontFactory.createFont("STSongStd-Light", "UniGB-UCS2-H");
-                document.setFont(font);
+                // 优先使用系统中文字体（不依赖 itext-font-asian），找不到时降级
+                PdfFont font = loadChineseFont();
+                if (font != null) {
+                    document.setFont(font);
+                }
                 // 创建段落
                 Paragraph paragraph = new Paragraph(content);
                 // 添加段落并关闭文档
@@ -51,5 +49,39 @@ public class PDFGenerationTool {
         } catch (IOException e) {
             return "Error generating PDF: " + e.getMessage();
         }
+    }
+
+    /**
+     * 尝试加载本机系统中文字体，避免依赖 itext-font-asian。
+     * 找到任意可用字体即返回；都找不到则返回 null。
+     */
+    private PdfFont loadChineseFont() {
+        String[] candidates = new String[] {
+                // Windows
+                "C:/Windows/Fonts/msyh.ttc,0",
+                "C:/Windows/Fonts/msyh.ttf",
+                "C:/Windows/Fonts/simsun.ttc,0",
+                "C:/Windows/Fonts/simsun.ttf",
+                "C:/Windows/Fonts/simhei.ttf",
+                // macOS
+                "/System/Library/Fonts/PingFang.ttc,0",
+                "/Library/Fonts/Songti.ttc,0",
+                // Linux 常见
+                "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc,0",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc,0"
+        };
+        for (String path : candidates) {
+            try {
+                String pure = path.contains(",") ? path.substring(0, path.indexOf(',')) : path;
+                if (new File(pure).exists()) {
+                    return PdfFontFactory.createFont(path,
+                            com.itextpdf.io.font.PdfEncodings.IDENTITY_H,
+                            PdfFontFactory.EmbeddingStrategy.PREFER_NOT_EMBEDDED);
+                }
+            } catch (Exception ignored) {
+                // 继续尝试下一个候选
+            }
+        }
+        return null;
     }
 }
