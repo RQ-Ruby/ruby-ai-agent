@@ -16,12 +16,12 @@ function buildStreamUrl(message) {
 
 <template>
   <SseChatRoom
-    title="AI 恋爱大师"
-    subtitle="适合情感交流、恋爱话题和连续聊天场景。进入页面后会自动生成独立会话 ID，用于区分不同对话。"
+    title="Java 面试陪练官"
+    subtitle="一对一模拟 Java 面试：考官出题 → 你作答 → 实时点评并追问。进入页面会自动生成独立会话 ID，每场面试互不干扰。"
     :session-label="chatId"
-    empty-title="开始今天的专属恋爱对话"
-    empty-description="输入你的问题、聊天场景或烦恼，系统会通过 SSE 流式返回回复内容。"
-    placeholder="比如：我想和喜欢的人自然开启聊天，第一句怎么说？"
+    empty-title="开始一场新的模拟面试"
+    empty-description="可以先告诉考官你想模拟的方向，例如：JVM 与并发 / Spring 源码 / MySQL 索引 / 秒杀场景设计。说「结束面试」可获取整场评价。"
+    placeholder="例如：我想模拟 Java 后端 3 年经验的面试，先从 JVM 开始"
     :build-stream-url="buildStreamUrl"
   />
 </template>

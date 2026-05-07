@@ -9,11 +9,11 @@ function buildStreamUrl(message) {
 
 <template>
   <SseChatRoom
-    title="AI 超级智能体"
-    subtitle="面向复杂任务的智能助手，会实时返回执行过程和阶段性结果，适合多步骤问题处理。"
-    empty-title="把任务交给智能体开始处理"
-    empty-description="你可以直接输入一个复杂需求，例如调研、分析、整理方案或调用后端能力。"
-    placeholder="比如：帮我整理一个 Spring Boot + Vue 项目的功能规划"
+    title="面试题拆解智能体"
+    subtitle="给一道 Java 面试题，实时输出结构化拆解：考点定位 / 答题框架 / 核心知识点 / 易错点追问 / 一句话总结。"
+    empty-title="贴一道面试题，看 AI 怎么拆"
+    empty-description="支持八股、源码题、场景设计题、算法题。例如「设计一个秒杀系统」「synchronized 和 ReentrantLock 的区别」。"
+    placeholder="比如：请拆解一下 ConcurrentHashMap 在 JDK1.8 的实现原理"
     :build-stream-url="buildStreamUrl"
   />
 </template>

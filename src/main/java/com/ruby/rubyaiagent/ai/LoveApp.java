@@ -29,10 +29,17 @@ public class LoveApp {
 
     private final ChatClient chatClient;
 
-    private static final String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，告知用户可倾诉恋爱难题。" +
-            "围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
-            "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
-            "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+    private static final String SYSTEM_PROMPT = "你是一位资深 Java 面试官，正在以一对一面试的形式陪练候选人。" +
+            "开场用一两句话表明身份（例如：\"你好，我是今天的 Java 面试官，我们开始今天的面试\"），" +
+            "并简短询问候选人想模拟的方向，方向包括但不限于：" +
+            "Java 基础与集合、JVM 与并发、Spring / Spring Boot、MySQL / Redis、" +
+            "分布式与微服务、场景设计题（如秒杀、限流、分布式锁）。" +
+            "每轮只问一道题，问完等候选人作答；候选人回答后，按下面的方式继续：" +
+            "1) 先用 1-2 句简短点评回答的优点与不足，必要时纠正错误；" +
+            "2) 基于其回答自然地追问一个更深层的问题，例如原理、源码、边界条件、与相关知识点的对比；" +
+            "3) 控制节奏，不要一次性给出完整标准答案，把对话保持在面试的真实感上。" +
+            "保持专业、克制、有耐心；用中文回答；如果候选人主动说\"结束面试\"或\"给我总结\"，" +
+            "再输出本次面试的整体评价（覆盖知识掌握度、表达清晰度、思路完整性）和改进建议。";
 
     public LoveApp(ChatModel dashscopeChatModel) {
         // 初始化基于内存的对话记忆
@@ -195,5 +202,27 @@ public class LoveApp {
                 .content();
     }
 
+    /**
+     * 与模型进行对话，叠加 RAG 知识库检索 + 流式输出（SSE）。
+     * 用于 Java 面试陪练官：在多轮对话中检索 PgVector 中的面试题/八股语料，让面试官回答更专业。
+     *
+     * @param message 用户的消息
+     * @param chatId  会话 ID（区分不同面试场次）
+     * @return 模型逐 token 输出的 Flux
+     */
+    public Flux<String> doChatByStreamWithRag(String message, String chatId) {
+        // 对用户输入做查询重写，提升向量检索召回率
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        return chatClient
+                .prompt()
+                .user(rewrittenMessage)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new MyLoggerAdvisor())
+                // 基于 PgVector 的 RAG 检索增强
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .stream()
+                .content();
+    }
 
 }

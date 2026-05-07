@@ -1,18 +1,18 @@
 <script setup>
 const apps = [
   {
-    name: 'AI 恋爱大师',
-    desc: '沉浸式聊天界面，自动生成独立会话 ID，支持实时流式回复。',
+    name: 'Java 面试陪练官',
+    desc: '一对一模拟面试：考官提问 → 你作答 → 点评 + 追问。自动生成会话 ID记录面试过程，支持多轮流式对话，还原真实面试节奏。',
     to: '/love',
     accent: 'love',
-    tag: '情感陪聊',
+    tag: '模拟面试',
   },
   {
-    name: 'AI 超级智能体',
-    desc: '面向复杂任务的智能助手，按步骤思考并实时输出执行结果。',
+    name: '面试题拆解智能体',
+    desc: '针对一道题输出结构化拆解：考点定位 / 答题框架 / 核心知识点 / 易错点追问 / 一句话总结。适合八股、场景题、架构设计。',
     to: '/manus',
     accent: 'manus',
-    tag: '任务智能体',
+    tag: '题目拆解',
   },
 ]
 </script>
@@ -22,9 +22,9 @@ const apps = [
     <section class="hero-card">
       <div class="hero-copy">
         <span class="hero-badge">Ruby AI 工作台</span>
-        <h1 class="home-title">把不同 AI 应用放进同一个优雅的入口</h1>
+        <h1 class="home-title">Java 面试一站式备战工作台</h1>
         <p class="home-sub">
-          选择适合你的 AI 能力：一个偏情感沟通，一个偏任务执行。两者都支持实时响应，适合演示和日常使用。
+          两个 AI 能力覆盖面试全流程：一个负责跟你一轮轮模拟面试、点评追问，另一个负责把题拆成可背可写的结构化答案。
         </p>
         <div class="hero-meta">
           <div class="meta-item">
@@ -45,7 +45,7 @@ const apps = [
       <div class="hero-panel">
         <div class="panel-card">
           <span class="panel-title">使用建议</span>
-          <p class="panel-text">如果你想模拟一段连续聊天，优先使用恋爱大师；如果你希望 AI 帮你拆解复杂任务，选择超级智能体。</p>
+          <p class="panel-text">想练“临场反应 + 表达”选面试陪练官；想快速吃透一道面试题的考点与答题框架，选题目拆解智能体。</p>
         </div>
       </div>
     </section>

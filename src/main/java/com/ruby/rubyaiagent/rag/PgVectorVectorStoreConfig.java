@@ -35,7 +35,12 @@ public class PgVectorVectorStoreConfig {
                 .build();
         // 加载文档
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
-        vectorStore.add(documents);
+        // DashScope embedding 单次最多 25 条，分批写入避免触发限制
+        final int batchSize = 25;
+        for (int i = 0; i < documents.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, documents.size());
+            vectorStore.add(documents.subList(i, end));
+        }
         return vectorStore;
     }
 }
