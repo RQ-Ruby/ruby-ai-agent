@@ -87,6 +87,19 @@ public class ToolCallAgent extends ReActAgent {
                     )
                     .collect(Collectors.joining("\n"));
             log.info(toolCallInfo);
+            // 填充流式输出钩子：思考文本 + 计划调用的工具名
+            StringBuilder thinkBuilder = new StringBuilder();
+            if (result != null && !result.isBlank()) {
+                thinkBuilder.append(result.trim());
+            }
+            if (!toolCallList.isEmpty()) {
+                String planned = toolCallList.stream()
+                        .map(tc -> "`" + tc.name() + "`")
+                        .collect(Collectors.joining("、"));
+                if (thinkBuilder.length() > 0) thinkBuilder.append("\n\n");
+                thinkBuilder.append("计划调用工具：").append(planned);
+            }
+            this.currentThinking = thinkBuilder.toString();
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);
@@ -122,16 +135,23 @@ public class ToolCallAgent extends ReActAgent {
         setMessageList(toolExecutionResult.conversationHistory());
         // 当前工具调用的结果
         ToolResponseMessage toolResponseMessage = (ToolResponseMessage) CollUtil.getLast(toolExecutionResult.conversationHistory());
-        String results = toolResponseMessage.getResponses().stream()
+        // 完整日志（仅用于后端调试）
+        String fullResults = toolResponseMessage.getResponses().stream()
                 .map(response -> "工具 " + response.name() + " 完成了它的任务！结果: " + response.responseData())
                 .collect(Collectors.joining("\n"));
-// 判断是否调用了终止工具
+        log.info(fullResults);
+        // 简洁摘要（用于返回给前端）
+        String results = toolResponseMessage.getResponses().stream()
+                .map(response -> "工具 " + response.name() + " 执行完成")
+                .collect(Collectors.joining("\n"));
+        // 判断是否调用了终止工具
         boolean terminateToolCalled = toolResponseMessage.getResponses().stream()
                 .anyMatch(response -> "doTerminate".equals(response.name()));
         if (terminateToolCalled) {
             setState(AgentState.FINISHED);
         }
-        log.info(results);
+        // 填充流式输出钩子：本步执行摘要
+        this.currentAction = results;
         return results;
 
 

@@ -1,0 +1,100 @@
+:root {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+
+  --text: #2f241f;
+  --muted: #7d6d63;
+  --surface: #f6f0e8;
+  --surface-elevated: rgba(255, 251, 247, 0.92);
+  --surface-soft: #efe5d9;
+  --border: rgba(112, 87, 67, 0.14);
+  --accent: #8c5a3c;
+  --accent-strong: #6e442d;
+  --accent-soft: rgba(140, 90, 60, 0.18);
+  --bubble-user: #8c5a3c;
+  --bubble-ai: rgba(255, 252, 248, 0.96);
+  --danger: #c0563d;
+  --success: #5f7a62;
+  --card-shadow: 0 16px 40px rgba(77, 53, 38, 0.08);
+  --card-shadow-hover: 0 22px 52px rgba(77, 53, 38, 0.14);
+
+  color: var(--text);
+  background-color: var(--surface);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f3e9df;
+    --muted: #c7b2a3;
+    --surface: #1f1714;
+    --surface-elevated: rgba(44, 31, 26, 0.94);
+    --surface-soft: #342720;
+    --border: rgba(255, 229, 210, 0.1);
+    --accent: #d39a72;
+    --accent-strong: #e7b48e;
+    --accent-soft: rgba(211, 154, 114, 0.2);
+    --bubble-user: #a56a48;
+    --bubble-ai: rgba(56, 40, 33, 0.94);
+    --danger: #ef8f75;
+    --success: #89a884;
+    --card-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+    --card-shadow-hover: 0 18px 42px rgba(0, 0, 0, 0.42);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(214, 171, 135, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(123, 154, 118, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(255, 252, 248, 0.2), rgba(255, 252, 248, 0));
+}
+
+#app {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(126, 98, 76, 0.34);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(126, 98, 76, 0.48);
+}
