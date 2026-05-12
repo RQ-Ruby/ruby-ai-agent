@@ -65,6 +65,15 @@ public class AiController {
         return travelApp.doChatByStream(message, chatId);
     }
 
+    /**
+     * @description Java 面试陪练官 —— 流式 + RAG 检索增强
+     * @return: reactor.core.publisher.Flux<java.lang.String>
+     */
+    @GetMapping(value = "/love_app/chat/sse/rag", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> doChatWithLoveAppSSERag(String message, String chatId) {
+        return loveApp.doChatByStreamWithRag(message, chatId);
+    }
+
 
 
 /**
