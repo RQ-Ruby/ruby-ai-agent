@@ -131,6 +131,9 @@ public class ToolCallAgent extends ReActAgent {
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);
+                // 没有工具调用 = 模型已经给出最终自然语言答复 = 任务结束。
+                // 否则 BaseAgent 主循环只在 state==FINISHED 时退出，会陷入“重复反问”死循环。
+                setState(AgentState.FINISHED);
                 return false;
             } else {
                 // 需要调用工具时，无需记录助手消息，因为调用工具时会自动记录

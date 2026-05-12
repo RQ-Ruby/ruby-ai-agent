@@ -5,10 +5,21 @@ import { fetchSse } from '../utils/sseStream'
 
 marked.setOptions({ breaks: true, gfm: true })
 
+function enhanceLinks(html) {
+  if (!html) return ''
+  return html.replace(/<a\s+href="([^"]+)"([^>]*)>(.*?)<\/a>/gi, (match, href, attrs, text) => {
+    const isPdf = href.includes('/api/files/pdf/') || href.toLowerCase().endsWith('.pdf')
+    const safeAttrs = attrs || ''
+    const targetAttr = ' target="_blank" rel="noopener noreferrer"'
+    const downloadAttr = isPdf ? ' download' : ''
+    return `<a href="${href}"${safeAttrs}${targetAttr}${downloadAttr}>${text}</a>`
+  })
+}
+
 function renderMarkdown(text) {
   if (!text) return ''
   try {
-    return marked.parse(text)
+    return enhanceLinks(marked.parse(text))
   } catch (e) {
     return text
   }

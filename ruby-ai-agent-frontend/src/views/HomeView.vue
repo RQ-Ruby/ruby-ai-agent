@@ -1,18 +1,25 @@
 <script setup>
 const apps = [
   {
-    name: 'AI 恋爱大师',
-    desc: '沉浸式聊天界面，自动生成独立会话 ID，支持实时流式回复。',
-    to: '/love',
+    name: '旅行咨询',
+    desc: '多轮对话型旅游助手，结合 RAG 攻略库，实时流式回复。适合咨询行程、签证、避坑、酒店与美食推荐。',
+    to: '/travel',
     accent: 'love',
-    tag: '情感陪聊',
+    tag: '旅行咨询',
   },
   {
-    name: 'AI 超级智能体',
-    desc: '面向复杂任务的智能助手，按步骤思考并实时输出执行结果。',
-    to: '/manus',
+    name: '规划智能体',
+    desc: '面向复杂旅行任务的 ReAct 智能体，自主搜索 / 抓取攻略 / 行程编排 / 预算核算 / 生成 PDF 行程手册。',
+    to: '/planner',
     accent: 'manus',
-    tag: '任务智能体',
+    tag: '规划智能体',
+  },
+  {
+    name: '工作流规划',
+    desc: '基于 LangGraph4j 有向图工作流：需求解析 → 天气/景点/酒店/航班信息增强 → 行程编排 → 预算核算 → 完整方案。',
+    to: '/workflow',
+    accent: 'workflow',
+    tag: '工作流',
   },
 ]
 </script>
@@ -21,14 +28,14 @@ const apps = [
   <div class="home">
     <section class="hero-card">
       <div class="hero-copy">
-        <span class="hero-badge">Ruby AI 工作台</span>
-        <h1 class="home-title">把不同 AI 应用放进同一个优雅的入口</h1>
+        <span class="hero-badge">行旅 AI · 工作台</span>
+        <h1 class="home-title">你的专属旅游 AI 助手，从咨询到规划一站搞定</h1>
         <p class="home-sub">
-          选择适合你的 AI 能力：一个偏情感沟通，一个偏任务执行。两者都支持实时响应，适合演示和日常使用。
+          基于 Spring AI 与 ReAct 智能体架构打造的旅游垂直 AI：左侧入口用于多轮旅行咨询（含 RAG 攻略库），右侧入口用于多步行程规划与 PDF 行程手册生成。
         </p>
         <div class="hero-meta">
           <div class="meta-item">
-            <strong>2</strong>
+            <strong>3</strong>
             <span>已接入应用</span>
           </div>
           <div class="meta-item">
@@ -45,7 +52,7 @@ const apps = [
       <div class="hero-panel">
         <div class="panel-card">
           <span class="panel-title">使用建议</span>
-          <p class="panel-text">如果你想模拟一段连续聊天，优先使用恋爱大师；如果你希望 AI 帮你拆解复杂任务，选择超级智能体。</p>
+          <p class="panel-text">日常旅行咨询、攻略问答 → 选「旅行咨询」；多日复杂行程定制、需要生成 PDF 手册 → 选「规划智能体」；一键生成完整规划方案 → 选「工作流规划」。</p>
         </div>
       </div>
     </section>
@@ -214,7 +221,7 @@ const apps = [
 
 @media (min-width: 740px) {
   .app-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
@@ -267,6 +274,10 @@ const apps = [
 
 .app-card[data-accent='manus']:hover {
   border-color: rgba(91, 122, 97, 0.34);
+}
+
+.app-card[data-accent='workflow']:hover {
+  border-color: rgba(64, 158, 255, 0.38);
 }
 
 .app-name {

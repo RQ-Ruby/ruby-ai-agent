@@ -20,7 +20,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 public class PgVectorVectorStoreConfig {
 
     @Resource
-    private LoveAppDocumentLoader loveAppDocumentLoader;
+    private TravelAppDocumentLoader travelAppDocumentLoader;
 
     @Bean
     public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
@@ -33,8 +33,8 @@ public class PgVectorVectorStoreConfig {
                 .vectorTableName("vector_store")     // Optional: defaults to "vector_store"
                 .maxDocumentBatchSize(10000)         // Optional: defaults to 10000
                 .build();
-        // 加载文档
-        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+        // 加载旅游攻略文档
+        List<Document> documents = travelAppDocumentLoader.loadMarkdowns();
         vectorStore.add(documents);
         return vectorStore;
     }

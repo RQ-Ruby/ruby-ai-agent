@@ -10,21 +10,22 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-/**向量数据库配置（初始化基于内存的向量数据库Bean）
- * @date: 2026/3/26 下午5:12
+/**
+ * 行旅 AI 向量库配置（基于内存的 SimpleVectorStore）
+ * 对应原 LoveAppVectorStoreConfig 的位置：作为本地调试 / 备用知识库实现。
+ * 生产 RAG 仍然走 PgVectorVectorStoreConfig 中的 pgVectorVectorStore。
  */
 @Configuration
-public class LoveAppVectorStoreConfig {
+public class TravelAppVectorStoreConfig {
 
     @Resource
-    private LoveAppDocumentLoader loveAppDocumentLoader;
-    
+    private TravelAppDocumentLoader travelAppDocumentLoader;
+
     @Bean
-    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
+    VectorStore travelAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
                 .build();
-        // 加载文档
-        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+        List<Document> documents = travelAppDocumentLoader.loadMarkdowns();
         simpleVectorStore.add(documents);
         return simpleVectorStore;
     }

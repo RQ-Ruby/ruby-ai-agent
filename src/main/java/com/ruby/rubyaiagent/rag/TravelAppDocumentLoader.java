@@ -11,27 +11,25 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
- * @description 读取文档目录下的所有 Markdown 文件并加载为文档（文档加载器）
- * @return:   List<Document>
- * @author RQ
- * @date: 2026/3/26 下午5:12
+ * 旅游攻略文档加载器：读取 classpath:document/travel/*.md
+ * 对应原 LoveAppDocumentLoader：仅切换文档目录，逻辑一致。
  */
 @Component
 @Slf4j
-class LoveAppDocumentLoader {
+public class TravelAppDocumentLoader {
 
     private final ResourcePatternResolver resourcePatternResolver;
 
-    LoveAppDocumentLoader(ResourcePatternResolver resourcePatternResolver) {
+    public TravelAppDocumentLoader(ResourcePatternResolver resourcePatternResolver) {
         this.resourcePatternResolver = resourcePatternResolver;
     }
 
     public List<Document> loadMarkdowns() {
         List<Document> allDocuments = new ArrayList<>();
         try {
-            // 这里可以修改为你要加载的多个 Markdown 文件的路径模式
-            Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.md");
+            Resource[] resources = resourcePatternResolver.getResources("classpath:document/travel/*.md");
             for (Resource resource : resources) {
                 String fileName = resource.getFilename();
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
@@ -44,7 +42,7 @@ class LoveAppDocumentLoader {
                 allDocuments.addAll(reader.get());
             }
         } catch (IOException e) {
-            log.error("Markdown 文档加载失败", e);
+            log.error("旅游攻略 Markdown 文档加载失败", e);
         }
         return allDocuments;
     }

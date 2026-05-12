@@ -13,6 +13,8 @@ import org.springframework.ai.tool.annotation.ToolParam;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @description PDF 生成工具
@@ -26,8 +28,14 @@ public class PDFGenerationTool {
     public String generatePDF(
             @ToolParam(description = "Name of the file to save the generated PDF") String fileName,
             @ToolParam(description = "Content to be included in the PDF") String content) {
+        // 简单清理文件名，避免路径穿越
+        String safeName = (fileName == null ? "output.pdf" : fileName)
+                .replace("/", "_").replace("\\", "_").replace("..", "_");
+        if (!safeName.toLowerCase().endsWith(".pdf")) {
+            safeName = safeName + ".pdf";
+        }
         String fileDir = FileConstant.FILE_SAVE_DIR + "/pdf";
-        String filePath = fileDir + "/" + fileName;
+        String filePath = fileDir + "/" + safeName;
         try {
             // 创建目录
             FileUtil.mkdir(fileDir);
@@ -45,7 +53,14 @@ public class PDFGenerationTool {
                 // 添加段落并关闭文档
                 document.add(paragraph);
             }
-            return "PDF generated successfully to: " + filePath;
+            // URL 编码（空格采用 %20 而非 +，便于浏览器直接下载中文文件名）
+            String encoded = URLEncoder.encode(safeName, StandardCharsets.UTF_8).replace("+", "%20");
+            String downloadUrl = "/api/files/pdf/" + encoded;
+            return "PDF 生成成功。\n"
+                    + "- 文件名：" + safeName + "\n"
+                    + "- 下载链接（markdown）：[点击下载 " + safeName + "](" + downloadUrl + ")\n"
+                    + "- 服务器路径：" + filePath + "\n"
+                    + "请在最终答复中把「下载链接」原样以 markdown 链接形式输出给用户，让用户点击下载。";
         } catch (IOException e) {
             return "Error generating PDF: " + e.getMessage();
         }

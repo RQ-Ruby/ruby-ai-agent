@@ -110,6 +110,12 @@ public abstract class BaseAgent {
         // 使用线程异步处理，避免阻塞主线程
         CompletableFuture.runAsync(() -> {
             try {
+                // 允许从 FINISHED / ERROR 状态重新发起一轮（保留 messageList，做多轮记忆）。
+                // 只拒绝 RUNNING（并发同一会话）这种确实不安全的情况。
+                if (this.state == AgentState.FINISHED || this.state == AgentState.ERROR) {
+                    this.state = AgentState.IDLE;
+                    this.currentStep = 0;
+                }
                 if (this.state != AgentState.IDLE) {
                     emitter.send("错误：无法从状态运行代理: " + this.state);
                     emitter.complete();

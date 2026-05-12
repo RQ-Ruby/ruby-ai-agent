@@ -133,13 +133,6 @@
             <groupId>com.itextpdf</groupId>
             <artifactId>font-asian</artifactId>
             <version>9.1.0</version>
-            <scope>test</scope>
-        </dependency>
-        <!--mcp 客户端-->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-mcp-client-spring-boot-starter</artifactId>
-            <version>1.0.0-M6</version>
         </dependency>
 
         <!--jsoup 文档解析器-->
@@ -148,6 +141,16 @@
             <artifactId>jsoup</artifactId>
             <version>1.19.1</version>
         </dependency>
+
+        <!--
+            LangGraph4j 工作流引擎（当前采用手动实现 StateGraph 模式，可随时切换到正式库）
+            启用时取消注释并确认版本号：https://mvnrepository.com/artifact/org.bsc.langgraph4j
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-core-jdk8</artifactId>
+            <version>1.0-20250328</version>
+        </dependency>
+        -->
 
         <!--手动配置向量数据库依赖-->
         <dependency>
