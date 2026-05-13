@@ -39,11 +39,24 @@ const props = defineProps({
   assistantLabel: { type: String, default: 'AI' },
 })
 
+const emit = defineEmits(['new-chat'])
+
 const input = ref('')
 const messages = ref([])
 const streaming = ref(false)
 const errorText = ref('')
 let abortController = null
+
+/** 外部调用：加载历史消息 */
+function loadHistory(historyMessages) {
+  if (!historyMessages || historyMessages.length === 0) return
+  messages.value = historyMessages.map(m => ({
+    role: m.role === 'user' ? 'user' : 'assistant',
+    content: m.content || ''
+  }))
+}
+
+defineExpose({ loadHistory })
 
 const listEl = ref(null)
 
@@ -56,6 +69,7 @@ watch(
 function resetMessages() {
   messages.value = []
   errorText.value = ''
+  emit('new-chat')
 }
 
 function scrollToBottom() {

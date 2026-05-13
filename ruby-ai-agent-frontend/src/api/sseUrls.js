@@ -16,6 +16,11 @@ export function buildTravelManusStreamUrl(message, chatId) {
   })
 }
 
+/** 获取对话历史：GET /ai/travel_app/chat/history */
+export function fetchChatHistory(chatId) {
+  return http.get('/ai/travel_app/chat/history', { params: { chatId } })
+}
+
 /** 行旅 AI 工作流规划 SSE：GET /ai/workflow/plan */
 export function buildWorkflowPlanUrl(message) {
   return http.getUri({

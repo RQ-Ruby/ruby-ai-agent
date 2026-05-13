@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import com.ruby.rubyaiagent.chatmemory.TwoLevelChatMemory;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
@@ -47,9 +47,11 @@ public class TravelApp {
             7. 始终使用与用户相同的语言作答。
             """;
 
-    public TravelApp(ChatModel dashscopeChatModel) {
-        // 初始化基于内存的对话记忆
-        ChatMemory chatMemory = new InMemoryChatMemory();
+    public TravelApp(ChatModel dashscopeChatModel, TwoLevelChatMemory twoLevelChatMemory) {
+        // 二级缓存对话记忆：Redis（一级）+ MySQL（二级兜底）
+        // - get：先查 Redis；未命中查 DB 并回写 Redis
+        // - add：双写 Redis 与 DB
+        ChatMemory chatMemory = twoLevelChatMemory;
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(

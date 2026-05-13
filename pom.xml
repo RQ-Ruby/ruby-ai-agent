@@ -168,8 +168,18 @@
             <version>1.0.0-M6</version>
         </dependency>
 
+        <!-- MySQL 业务数据库（保存对话历史 chat_message 表） -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-
+        <!-- Redis：ChatMemory 一级缓存 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
 
     </dependencies>
 

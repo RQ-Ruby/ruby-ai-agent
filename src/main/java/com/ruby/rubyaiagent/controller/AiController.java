@@ -2,9 +2,11 @@ package com.ruby.rubyaiagent.controller;
 
 import com.ruby.rubyaiagent.agent.TravelManus;
 import com.ruby.rubyaiagent.ai.TravelApp;
+import com.ruby.rubyaiagent.chatmemory.TwoLevelChatMemory;
 import com.ruby.rubyaiagent.workflow.TravelPlanningState;
 import com.ruby.rubyaiagent.workflow.TravelPlanningWorkflow;
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -38,6 +41,9 @@ public class AiController {
 
     @Resource
     private TravelPlanningWorkflow travelPlanningWorkflow;
+
+    @Resource
+    private TwoLevelChatMemory twoLevelChatMemory;
 
     /**
      * 按 chatId 缓存 TravelManus 实例，复用其 messageList 形成多轮记忆。
@@ -65,14 +71,7 @@ public class AiController {
         return travelApp.doChatByStream(message, chatId);
     }
 
-    /**
-     * @description Java 面试陪练官 —— 流式 + RAG 检索增强
-     * @return: reactor.core.publisher.Flux<java.lang.String>
-     */
-    @GetMapping(value = "/love_app/chat/sse/rag", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> doChatWithLoveAppSSERag(String message, String chatId) {
-        return loveApp.doChatByStreamWithRag(message, chatId);
-    }
+
 
 
 
@@ -124,6 +123,21 @@ public class AiController {
                 k -> new TravelManus(allTools, toolCallbackProvider, dashscopeChatModel)
         );
         return travelManus.runStream(message);
+    }
+
+    /**
+     * 获取对话历史（前端进入页面时拉取，用于恢复聊天记录）
+     */
+    @GetMapping("/travel_app/chat/history")
+    public List<Map<String, String>> getChatHistory(String chatId) {
+        if (chatId == null || chatId.isBlank()) {
+            return List.of();
+        }
+        List<Message> messages = twoLevelChatMemory.get(chatId, 50);
+        return messages.stream().map(m -> Map.of(
+                "role", m.getMessageType().name().toLowerCase(),
+                "content", m.getText() != null ? m.getText() : ""
+        )).toList();
     }
 
     /**
