@@ -3,7 +3,6 @@ package com.ruby.rubyaiagent.controller;
 import com.ruby.rubyaiagent.agent.TravelManus;
 import com.ruby.rubyaiagent.ai.TravelApp;
 import com.ruby.rubyaiagent.chatmemory.TwoLevelChatMemory;
-import com.ruby.rubyaiagent.workflow.TravelPlanningState;
 import com.ruby.rubyaiagent.workflow.TravelPlanningWorkflow;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.messages.Message;
@@ -141,50 +140,53 @@ public class AiController {
     }
 
     /**
-     * LangGraph4j 风格的工作流接口 —— 一次性完成完整旅游规划
-     * 工作流：需求解析 → 信息增强(天气/景点/酒店/航班) → 行程编排 → 预算核算 → 整合输出 → (可选)PDF
+     * Spring AI Alibaba Graph 工作流接口 —— 完整旅游规划。
+     * 工作流节点：意图识别 → 参数抽取 → 参数校验
+     *     ├─ 缺参数 → 反问 → END（等待用户下一轮补全）
+     *     └─ 齐全  → RAG 检索 → 行程生成 → 记忆保存 → END
      * 通过 SSE 流式推送各节点进度和最终结果。
      */
     @GetMapping("/workflow/plan")
-    public SseEmitter doTravelPlanWorkflow(String message) {
-        SseEmitter emitter = new SseEmitter(300000L); // 5分钟超时
+    public SseEmitter doTravelPlanWorkflow(String message, String chatId) {
+        SseEmitter emitter = new SseEmitter(300000L);
+        String conversationId = (chatId == null || chatId.isBlank()) ? "default" : chatId;
 
         Executors.newSingleThreadExecutor().submit(() -> {
             try {
-                // 推送开始事件
                 emitter.send(SseEmitter.event()
                         .name("status")
-                        .data("🚀 开始规划，正在解析您的需求..."));
+                        .data("🚀 工作流启动，正在识别意图..."));
 
-                TravelPlanningState state = travelPlanningWorkflow.execute(message);
+                TravelPlanningWorkflow.Result result = travelPlanningWorkflow.execute(message, conversationId);
 
-                if (state.getErrorMessage() != null) {
+                if (!result.ok()) {
                     emitter.send(SseEmitter.event()
                             .name("error")
-                            .data("规划过程中出现问题: " + state.getErrorMessage()));
+                            .data("规划过程中出现问题: " + result.error()));
+                    emitter.complete();
+                    return;
                 }
 
-                // 推送节点完成进度
-                for (String node : state.getCompletedNodes()) {
-                    String nodeLabel = switch (node) {
-                        case "analyze" -> "✅ 需求解析完成";
-                        case "enrich" -> "✅ 信息增强完成（天气/景点/酒店/航班）";
-                        case "plan" -> "✅ 行程编排完成";
-                        case "budget" -> "✅ 预算核算完成";
-                        case "compose" -> "✅ 方案整合完成";
-                        case "pdf" -> "✅ PDF 生成完成";
+                for (String node : result.completedNodes()) {
+                    String label = switch (node) {
+                        case "intent_classify" -> "🧭 意图识别完成";
+                        case "chitchat" -> "💬 闲聊回复生成";
+                        case "param_extract" -> "📝 出行参数抽取完成";
+                        case "param_validate" -> "✅ 参数完整性校验完成";
+                        case "clarify" -> "❓ 关键信息缺失，生成反问";
+                        case "rag_retrieve" -> "📚 RAG 旅行知识库检索完成";
+                        case "itinerary_generate" -> "🗺️ 行程方案已生成";
+                        case "finalize" -> "💾 已保存到会话记忆";
                         default -> "✅ " + node;
                     };
-                    emitter.send(SseEmitter.event().name("progress").data(nodeLabel));
+                    emitter.send(SseEmitter.event().name("progress").data(label));
                 }
 
-                // 推送最终结果
-                if (state.getFinalResponse() != null) {
+                if (result.finalResponse() != null && !result.finalResponse().isBlank()) {
                     emitter.send(SseEmitter.event()
                             .name("result")
-                            .data(state.getFinalResponse()));
+                            .data(result.finalResponse()));
                 }
-
                 emitter.complete();
             } catch (Exception e) {
                 try {

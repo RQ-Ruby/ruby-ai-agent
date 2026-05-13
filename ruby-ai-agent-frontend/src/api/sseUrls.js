@@ -22,9 +22,9 @@ export function fetchChatHistory(chatId) {
 }
 
 /** 行旅 AI 工作流规划 SSE：GET /ai/workflow/plan */
-export function buildWorkflowPlanUrl(message) {
+export function buildWorkflowPlanUrl(message, chatId) {
   return http.getUri({
     url: '/ai/workflow/plan',
-    params: { message },
+    params: { message, chatId },
   })
 }

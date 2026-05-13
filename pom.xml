@@ -143,14 +143,60 @@
         </dependency>
 
         <!--
-            LangGraph4j 工作流引擎（当前采用手动实现 StateGraph 模式，可随时切换到正式库）
-            启用时取消注释并确认版本号：https://mvnrepository.com/artifact/org.bsc.langgraph4j
-        <dependency>
-            <groupId>org.bsc.langgraph4j</groupId>
-            <artifactId>langgraph4j-core-jdk8</artifactId>
-            <version>1.0-20250328</version>
-        </dependency>
+            Spring AI Alibaba Graph 工作流引擎（StateGraph + NodeAction + EdgeAction）。
+            说明：当前主体仍是 spring-ai 1.0.0-M6 体系，graph-core 1.0.0.2 通过 exclusions
+            排除其 GA 版传递依赖，仅复用图执行内核（OverAllState/StateGraph/CompiledGraph/
+            EdgeAction），避免与 M6.1 的 spring-ai-commons / spring-ai-alibaba-core 冲突。
         -->
+        <dependency>
+            <groupId>com.alibaba.cloud.ai</groupId>
+            <artifactId>spring-ai-alibaba-graph-core</artifactId>
+            <version>1.0.0.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.ai</groupId>
+                    <artifactId>spring-ai-commons</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.ai</groupId>
+                    <artifactId>spring-ai-retry</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.ai</groupId>
+                    <artifactId>spring-ai-autoconfigure-retry</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba.cloud.ai</groupId>
+                    <artifactId>spring-ai-alibaba-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba.cloud.ai</groupId>
+                    <artifactId>spring-ai-alibaba-starter-document-parser-tika</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba.cloud.ai</groupId>
+                    <artifactId>spring-ai-alibaba-starter-document-parser-markdown</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba.cloud.ai</groupId>
+                    <artifactId>spring-ai-alibaba-starter-document-parser-bshtml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba.cloud.ai</groupId>
+                    <artifactId>spring-ai-alibaba-starter-document-parser-yaml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>fastjson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Graph 内部使用 fastjson，单独显式声明一个新版避免 CVE -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.83</version>
+        </dependency>
 
         <!--手动配置向量数据库依赖-->
         <dependency>
