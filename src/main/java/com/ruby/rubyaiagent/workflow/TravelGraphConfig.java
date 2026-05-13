@@ -16,10 +16,12 @@ import com.ruby.rubyaiagent.workflow.nodes.IntentClassifyNode;
 import com.ruby.rubyaiagent.workflow.nodes.ItineraryGenerateNode;
 import com.ruby.rubyaiagent.workflow.nodes.ParamExtractNode;
 import com.ruby.rubyaiagent.workflow.nodes.ParamValidateNode;
+import com.ruby.rubyaiagent.workflow.nodes.McpEnrichNode;
 import com.ruby.rubyaiagent.workflow.nodes.RagRetrievalNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -97,6 +99,7 @@ public class TravelGraphConfig {
             s.registerKeyAndStrategy(TravelGraphKeys.CLARIFY_QUESTION, new ReplaceStrategy());
 
             s.registerKeyAndStrategy(TravelGraphKeys.RAG_CONTEXT, new ReplaceStrategy());
+            s.registerKeyAndStrategy(TravelGraphKeys.MCP_CONTEXT, new ReplaceStrategy());
             s.registerKeyAndStrategy(TravelGraphKeys.ITINERARY, new ReplaceStrategy());
             s.registerKeyAndStrategy(TravelGraphKeys.FINAL_RESPONSE, new ReplaceStrategy());
 
@@ -109,17 +112,19 @@ public class TravelGraphConfig {
     public StateGraph travelStateGraph(ChatModel dashscopeChatModel,
                                        OverAllStateFactory travelStateFactory,
                                        TwoLevelChatMemory twoLevelChatMemory,
-                                       @Qualifier("pgVectorVectorStore") VectorStore pgVectorVectorStore) throws Exception {
+                                       @Qualifier("pgVectorVectorStore") VectorStore pgVectorVectorStore,
+                                       ToolCallbackProvider mcpToolCallbackProvider) throws Exception {
 
         ChatClient chatClient = ChatClient.builder(dashscopeChatModel).build();
 
         // —— 节点 ——
         IntentClassifyNode intentClassify = new IntentClassifyNode(chatClient);
-        ChitchatNode chitchat = new ChitchatNode(chatClient);
+        ChitchatNode chitchat = new ChitchatNode(chatClient, mcpToolCallbackProvider);
         ParamExtractNode paramExtract = new ParamExtractNode(chatClient, twoLevelChatMemory);
         ParamValidateNode paramValidate = new ParamValidateNode();
         ClarifyNode clarify = new ClarifyNode(twoLevelChatMemory);
         RagRetrievalNode ragRetrieve = new RagRetrievalNode(pgVectorVectorStore);
+        McpEnrichNode mcpEnrich = new McpEnrichNode(chatClient, mcpToolCallbackProvider);
         ItineraryGenerateNode itineraryGenerate = new ItineraryGenerateNode(chatClient);
         FinalizeNode finalize = new FinalizeNode(twoLevelChatMemory);
 
@@ -139,6 +144,7 @@ public class TravelGraphConfig {
                 .addNode("param_validate", node_async(paramValidate))
                 .addNode("clarify", node_async(clarify))
                 .addNode("rag_retrieve", node_async(ragRetrieve))
+                .addNode("mcp_enrich", node_async(mcpEnrich))
                 .addNode("itinerary_generate", node_async(itineraryGenerate))
                 .addNode("finalize", node_async(finalize))
 
@@ -163,7 +169,8 @@ public class TravelGraphConfig {
                 .addEdge("clarify", END)
 
                 // 完整参数主线
-                .addEdge("rag_retrieve", "itinerary_generate")
+                .addEdge("rag_retrieve", "mcp_enrich")
+                .addEdge("mcp_enrich", "itinerary_generate")
                 .addEdge("itinerary_generate", "finalize")
                 .addEdge("finalize", END);
 

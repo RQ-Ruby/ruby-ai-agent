@@ -13,7 +13,8 @@ const stageList = [
   { key: 'validate', title: '参数校验', desc: '检查目的地、天数等必填项' },
   { key: 'clarify', title: '缺参反问', desc: '缺少关键信息时主动追问补全' },
   { key: 'rag', title: 'RAG 检索', desc: '查询本地景点、美食、住宿和攻略' },
-  { key: 'generate', title: '行程生成', desc: '结合知识库内容生成结构化方案' },
+  { key: 'mcp', title: 'MCP 增强', desc: '调用高德 MCP 获取天气和真实 POI' },
+  { key: 'generate', title: '行程生成', desc: '结合知识库 + MCP 信息生成方案' },
   { key: 'memory', title: '记忆保存', desc: '保存会话上下文，支持后续修改' },
 ]
 
@@ -214,6 +215,7 @@ function resolveStageKey(progress = []) {
   if (latest.includes('校验')) return 'validate'
   if (latest.includes('反问') || latest.includes('缺失')) return 'clarify'
   if (latest.includes('RAG') || latest.includes('知识库')) return 'rag'
+  if (latest.includes('MCP') || latest.includes('天气') || latest.includes('POI')) return 'mcp'
   if (latest.includes('行程方案') || latest.includes('行程') || latest.includes('生成')) return 'generate'
   if (latest.includes('记忆') || latest.includes('保存')) return 'memory'
   return 'intent'
@@ -369,7 +371,7 @@ onBeforeUnmount(() => {
         <section class="sidebar-card">
           <div class="sidebar-card-head">
             <h2>标准节点</h2>
-            <span class="sidebar-chip">7 Steps</span>
+            <span class="sidebar-chip">8 Steps</span>
           </div>
           <ol class="stage-list">
             <li

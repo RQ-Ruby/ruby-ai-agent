@@ -175,6 +175,7 @@ public class AiController {
                         case "param_validate" -> "✅ 参数完整性校验完成";
                         case "clarify" -> "❓ 关键信息缺失，生成反问";
                         case "rag_retrieve" -> "📚 RAG 旅行知识库检索完成";
+                        case "mcp_enrich" -> "🌤️ MCP 信息增强完成（天气 & POI）";
                         case "itinerary_generate" -> "🗺️ 行程方案已生成";
                         case "finalize" -> "💾 已保存到会话记忆";
                         default -> "✅ " + node;

@@ -34,6 +34,8 @@ public final class TravelGraphKeys {
 
     // —— RAG / 行程 ——
     public static final String RAG_CONTEXT = "ragContext";
+    /** MCP 增强信息（天气、真实 POI 等） */
+    public static final String MCP_CONTEXT = "mcpContext";
     public static final String ITINERARY = "itinerary";
 
     // —— 输出 ——

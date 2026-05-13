@@ -32,13 +32,17 @@ public class ItineraryGenerateNode implements NodeAction {
             ## 旅行知识库相关片段（RAG 检索）
             %s
             
+            ## 实时信息增强（MCP 天气 & POI）
+            %s
+            
             请按以下结构输出：
             1. **行程总览**：核心节奏一句话概括
             2. **每日安排**（Day 1 / Day 2 …）：
                - 上午 / 下午 / 晚上 分时段写
-               - 每天给出 1-2 个住宿 / 餐厅建议
+               - 每天给出 1-2 个住宿 / 餐厅建议（优先使用 MCP 返回的真实 POI）
             3. **预算建议**：交通 / 住宿 / 餐饮 / 门票 / 其它 占比与小计
-            4. **避坑 & 贴士**：3-5 条
+            4. **天气提醒**：根据实时天气给出穿衣与出行建议
+            5. **避坑 & 贴士**：3-5 条
             
             如果某些字段用户没填写，请采用合理默认值（如人数默认 2、预算未限定时按人均 600 元/天估算），
             并在「行程总览」一段中简要标注"已采用的默认值"。
@@ -60,6 +64,7 @@ public class ItineraryGenerateNode implements NodeAction {
         String preferences = state.value(TravelGraphKeys.PREFERENCES, String.class).orElse("");
         String travelTime = state.value(TravelGraphKeys.TRAVEL_TIME, String.class).orElse("");
         String ragContext = state.value(TravelGraphKeys.RAG_CONTEXT, String.class).orElse("（无）");
+        String mcpContext = state.value(TravelGraphKeys.MCP_CONTEXT, String.class).orElse("（无）");
 
         String prompt = String.format(
                 PROMPT_TEMPLATE,
@@ -70,7 +75,8 @@ public class ItineraryGenerateNode implements NodeAction {
                 travelMode.isBlank() ? "未指定" : travelMode,
                 preferences.isBlank() ? "均衡" : preferences,
                 travelTime.isBlank() ? "未指定" : travelTime,
-                ragContext
+                ragContext,
+                mcpContext
         );
 
         String itinerary;
