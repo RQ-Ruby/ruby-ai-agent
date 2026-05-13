@@ -227,6 +227,21 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- MyBatis-Plus：用户模块持久层（Spring Boot 3） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.7</version>
+        </dependency>
+
+        <!-- AOP：用于 @AuthCheck 权限拦截 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Session：使用 Servlet HttpSession 即可，web starter 已自带 -->
+
     </dependencies>
 
     <build>

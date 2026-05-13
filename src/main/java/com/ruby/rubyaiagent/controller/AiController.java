@@ -3,8 +3,15 @@ package com.ruby.rubyaiagent.controller;
 import com.ruby.rubyaiagent.agent.TravelManus;
 import com.ruby.rubyaiagent.ai.TravelApp;
 import com.ruby.rubyaiagent.chatmemory.TwoLevelChatMemory;
+import com.ruby.rubyaiagent.model.entity.User;
+import com.ruby.rubyaiagent.service.UserService;
+import com.ruby.rubyaiagent.common.BaseResponse;
+import com.ruby.rubyaiagent.common.ResultUtils;
+import com.ruby.rubyaiagent.exception.ErrorCode;
+import com.ruby.rubyaiagent.exception.ThrowUtils;
 import com.ruby.rubyaiagent.workflow.TravelPlanningWorkflow;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
@@ -44,6 +51,19 @@ public class AiController {
     @Resource
     private TwoLevelChatMemory twoLevelChatMemory;
 
+    @Resource
+    private UserService userService;
+
+    /**
+     * 强制要求登录，并把客户端传入的 chatId 用 userId 命名空间，
+     * 防止不同用户用同一个 chatId 访问到彼此的历史记录。
+     */
+    private String resolveConversationId(HttpServletRequest request, String chatId) {
+        User loginUser = userService.getLoginUser(request);
+        String rawChatId = (chatId == null || chatId.isBlank()) ? "default" : chatId;
+        return loginUser.getId() + ":" + rawChatId;
+    }
+
     /**
      * 按 chatId 缓存 TravelManus 实例，复用其 messageList 形成多轮记忆。
      * 简化处理：进程内 Map，重启即清空；后续可替换成基于 Redis 的会话仓储。
@@ -56,8 +76,10 @@ public class AiController {
      * @date: 2026/5/6 上午11:41
      */
     @GetMapping("/travel_app/chat/sync")
-    public String doChatWithTravelAppSync(String message, String chatId) {
-        return travelApp.doChat(message, chatId);
+    public BaseResponse<String> doChatWithTravelAppSync(String message, String chatId, HttpServletRequest request) {
+        ThrowUtils.throwIf(message == null || message.isBlank(), ErrorCode.PARAMS_ERROR, "message 不能为空");
+        String conversationId = resolveConversationId(request, chatId);
+        return ResultUtils.success(travelApp.doChat(message, conversationId));
     }
     /**
      * @description 与模型进行对话，实战流式输出。返回 Flux 数据流。
@@ -66,8 +88,9 @@ public class AiController {
      * @date: 2026/5/6 上午11:41
      */
     @GetMapping(value = "/travel_app/chat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> doChatWithTravelAppSSE(String message, String chatId) {
-        return travelApp.doChatByStream(message, chatId);
+    public Flux<String> doChatWithTravelAppSSE(String message, String chatId, HttpServletRequest request) {
+        String conversationId = resolveConversationId(request, chatId);
+        return travelApp.doChatByStream(message, conversationId);
     }
 
 
@@ -81,11 +104,12 @@ public class AiController {
  * @date: 2026/5/6 上午11:42
  */
     @GetMapping("/travel_app/chat/sse/emitter")
-    public SseEmitter doChatWithTravelAppSseEmitter(String message, String chatId) {
+    public SseEmitter doChatWithTravelAppSseEmitter(String message, String chatId, HttpServletRequest request) {
+        String conversationId = resolveConversationId(request, chatId);
         // 创建一个超时时间较长的 SseEmitter
         SseEmitter emitter = new SseEmitter(180000L); // 3分钟超时
         // 获取 Flux 数据流并直接订阅
-        travelApp.doChatByStream(message, chatId)
+        travelApp.doChatByStream(message, conversationId)
                 .subscribe(
                         // 处理每条消息
                         chunk -> {
@@ -115,8 +139,8 @@ public class AiController {
      * @return SSE 流
      */
     @GetMapping("/travel_manus/chat")
-    public SseEmitter doChatWithTravelManus(String message, String chatId) {
-        String sessionKey = (chatId == null || chatId.isBlank()) ? "default" : chatId;
+    public SseEmitter doChatWithTravelManus(String message, String chatId, HttpServletRequest request) {
+        String sessionKey = resolveConversationId(request, chatId);
         TravelManus travelManus = travelManusSessions.computeIfAbsent(
                 sessionKey,
                 k -> new TravelManus(allTools, toolCallbackProvider, dashscopeChatModel)
@@ -128,15 +152,17 @@ public class AiController {
      * 获取对话历史（前端进入页面时拉取，用于恢复聊天记录）
      */
     @GetMapping("/travel_app/chat/history")
-    public List<Map<String, String>> getChatHistory(String chatId) {
+    public BaseResponse<List<Map<String, String>>> getChatHistory(String chatId, HttpServletRequest request) {
         if (chatId == null || chatId.isBlank()) {
-            return List.of();
+            return ResultUtils.success(List.of());
         }
-        List<Message> messages = twoLevelChatMemory.get(chatId, 50);
-        return messages.stream().map(m -> Map.of(
+        String conversationId = resolveConversationId(request, chatId);
+        List<Message> messages = twoLevelChatMemory.get(conversationId, 50);
+        List<Map<String, String>> data = messages.stream().map(m -> Map.of(
                 "role", m.getMessageType().name().toLowerCase(),
                 "content", m.getText() != null ? m.getText() : ""
         )).toList();
+        return ResultUtils.success(data);
     }
 
     /**
@@ -147,9 +173,10 @@ public class AiController {
      * 通过 SSE 流式推送各节点进度和最终结果。
      */
     @GetMapping("/workflow/plan")
-    public SseEmitter doTravelPlanWorkflow(String message, String chatId) {
+    public SseEmitter doTravelPlanWorkflow(String message, String chatId, HttpServletRequest request) {
+        // 触发登录校验（未登录会抛 NOT_LOGIN_ERROR）并拼出按用户隔离的 conversationId
+        String conversationId = resolveConversationId(request, chatId);
         SseEmitter emitter = new SseEmitter(300000L);
-        String conversationId = (chatId == null || chatId.isBlank()) ? "default" : chatId;
 
         Executors.newSingleThreadExecutor().submit(() -> {
             try {

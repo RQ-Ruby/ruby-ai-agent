@@ -2,10 +2,17 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { marked } from 'marked'
 import { buildWorkflowPlanUrl, fetchChatHistory } from '../api/sseUrls.js'
+import { useAuthStore } from '../stores/auth.js'
 
 marked.setOptions({ breaks: true, gfm: true })
 
-const STORAGE_KEY = 'workflow_chat_id'
+const auth = useAuthStore()
+
+// 用登录用户 id 给 storage key 命名空间，避免不同账号在同一浏览器串档
+const storageKey = computed(() => {
+  const userId = auth.state.loginUser?.id || 'anonymous'
+  return `workflow_chat_id:${userId}`
+})
 
 const stageList = [
   { key: 'intent', title: '意图识别', desc: '判断是旅行规划还是普通闲聊' },
@@ -48,11 +55,12 @@ function createTurn(payload = {}) {
   }
 }
 
-function ensureChatId() {
-  let stored = localStorage.getItem(STORAGE_KEY)
+async function ensureChatId() {
+  await auth.ensureAuthLoaded()
+  let stored = localStorage.getItem(storageKey.value)
   if (!stored) {
     stored = globalThis.crypto?.randomUUID?.() || `workflow-${Date.now()}`
-    localStorage.setItem(STORAGE_KEY, stored)
+    localStorage.setItem(storageKey.value, stored)
   }
   chatId.value = stored
 }
@@ -66,7 +74,7 @@ function abortCurrent() {
 function startNewSession() {
   abortCurrent()
   const nextId = globalThis.crypto?.randomUUID?.() || `workflow-${Date.now()}`
-  localStorage.setItem(STORAGE_KEY, nextId)
+  localStorage.setItem(storageKey.value, nextId)
   chatId.value = nextId
   turns.value = []
   pageError.value = ''
@@ -337,7 +345,7 @@ function onKeydown(event) {
 }
 
 onMounted(async () => {
-  ensureChatId()
+  await ensureChatId()
   await loadHistory()
 })
 

@@ -1,23 +1,30 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import SseChatRoom from '../components/SseChatRoom.vue'
 import { buildTravelChatStreamUrl, fetchChatHistory } from '../api/sseUrls.js'
+import { useAuthStore } from '../stores/auth.js'
 
-const STORAGE_KEY = 'travel_chat_id'
+const auth = useAuthStore()
+
+// 用登录用户 id 给 storage key 命名空间，避免不同账号在同一浏览器串档
+const storageKey = computed(() => {
+  const userId = auth.state.loginUser?.id || 'anonymous'
+  return `travel_chat_id:${userId}`
+})
 
 const chatId = ref('')
 const chatRoomRef = ref(null)
 
 onMounted(async () => {
-  // 从 localStorage 读取或生成 chatId
-  let storedId = localStorage.getItem(STORAGE_KEY)
+  await auth.ensureAuthLoaded()
+
+  let storedId = localStorage.getItem(storageKey.value)
   if (!storedId) {
     storedId = globalThis.crypto?.randomUUID?.() || `travel-${Date.now()}`
-    localStorage.setItem(STORAGE_KEY, storedId)
+    localStorage.setItem(storageKey.value, storedId)
   }
   chatId.value = storedId
 
-  // 拉取历史消息并渲染
   try {
     const { data } = await fetchChatHistory(chatId.value)
     if (data && data.length > 0) {
@@ -34,7 +41,7 @@ function buildStreamUrl(message) {
 
 function handleNewChat() {
   const newId = globalThis.crypto?.randomUUID?.() || `travel-${Date.now()}`
-  localStorage.setItem(STORAGE_KEY, newId)
+  localStorage.setItem(storageKey.value, newId)
   chatId.value = newId
 }
 </script>

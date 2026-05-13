@@ -16,9 +16,16 @@ export function buildTravelManusStreamUrl(message, chatId) {
   })
 }
 
-/** 获取对话历史：GET /ai/travel_app/chat/history */
-export function fetchChatHistory(chatId) {
-  return http.get('/ai/travel_app/chat/history', { params: { chatId } })
+/**
+ * 获取对话历史：GET /ai/travel_app/chat/history
+ * 后端返回 BaseResponse<List<{role,content}>>，统一解包后返回 { data: [...] } 兼容老调用方。
+ */
+export async function fetchChatHistory(chatId) {
+  const resp = await http.get('/ai/travel_app/chat/history', { params: { chatId } })
+  const body = resp?.data
+  // 兼容两种结构：{ code, data, message } 或直接数组
+  const list = Array.isArray(body) ? body : (body?.data ?? [])
+  return { data: list }
 }
 
 /** 行旅 AI 工作流规划 SSE：GET /ai/workflow/plan */

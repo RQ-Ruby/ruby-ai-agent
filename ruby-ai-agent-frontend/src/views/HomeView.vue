@@ -28,7 +28,13 @@ const apps = [
   <div class="home">
     <section class="hero-card">
       <div class="hero-copy">
-        <span class="hero-badge">行旅 AI · 工作台</span>
+        <div class="hero-topbar">
+          <span class="hero-badge">行旅 AI · 工作台</span>
+          <div class="hero-auth-actions">
+            <router-link to="/login" class="hero-auth-link hero-auth-link-ghost">登录</router-link>
+            <router-link to="/register" class="hero-auth-link hero-auth-link-solid">注册</router-link>
+          </div>
+        </div>
         <h1 class="home-title">你的专属旅游 AI 助手，从咨询到规划一站搞定</h1>
         <p class="home-sub">
           基于 Spring AI 与 ReAct 智能体架构打造的旅游垂直 AI：左侧入口用于多轮旅行咨询（含 RAG 攻略库），右侧入口用于多步行程规划与 PDF 行程手册生成。
@@ -108,6 +114,14 @@ const apps = [
   min-width: 0;
 }
 
+.hero-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .hero-badge {
   display: inline-flex;
   align-items: center;
@@ -119,6 +133,41 @@ const apps = [
   font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.hero-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-auth-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.hero-auth-link:hover {
+  transform: translateY(-1px);
+}
+
+.hero-auth-link-ghost {
+  color: var(--accent-strong);
+  border: 1px solid rgba(112, 87, 67, 0.16);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.hero-auth-link-solid {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 14px 24px rgba(110, 68, 45, 0.16);
 }
 
 .home-title {
