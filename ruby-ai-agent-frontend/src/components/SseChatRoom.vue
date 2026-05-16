@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { marked } from 'marked'
 import { fetchSse } from '../utils/sseStream'
 
@@ -45,7 +45,9 @@ const input = ref('')
 const messages = ref([])
 const streaming = ref(false)
 const errorText = ref('')
+const rootRef = ref(null)
 let abortController = null
+let revealObserver = null
 
 /** 外部调用：加载历史消息 */
 function loadHistory(historyMessages) {
@@ -87,6 +89,35 @@ function abortStream() {
 
 onBeforeUnmount(() => {
   abortStream()
+  revealObserver?.disconnect()
+  revealObserver = null
+})
+
+onMounted(() => {
+  const nodes = rootRef.value?.querySelectorAll('.ink-reveal') || []
+  if (!nodes.length) return
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    nodes.forEach((node) => node.classList.add('is-visible'))
+    return
+  }
+
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          revealObserver?.unobserve(entry.target)
+        }
+      })
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -36px 0px' },
+  )
+
+  nodes.forEach((node, index) => {
+    node.style.transitionDelay = `${Math.min(index * 70, 240)}ms`
+    revealObserver.observe(node)
+  })
 })
 
 async function send() {
@@ -133,10 +164,10 @@ function onKeydown(e) {
 </script>
 
 <template>
-  <div class="chat-root">
-    <header class="chat-header">
+  <div ref="rootRef" class="chat-root">
+    <header class="chat-header ink-reveal">
       <div class="chat-header-inner">
-        <div class="chat-kicker">实时对话界面</div>
+        <div class="chat-kicker">国风行旅对话</div>
         <h1 class="chat-title">{{ title }}</h1>
         <p v-if="subtitle" class="chat-subtitle">{{ subtitle }}</p>
         <div class="chat-meta-row">
@@ -150,10 +181,10 @@ function onKeydown(e) {
       </div>
     </header>
 
-    <div ref="listEl" class="chat-messages">
+    <div ref="listEl" class="chat-messages ink-reveal">
       <div v-if="messages.length === 0" class="chat-empty">
-        <div class="chat-empty-card">
-          <span class="chat-empty-badge">READY</span>
+        <div class="chat-empty-card ink-reveal">
+          <span class="chat-empty-badge">就绪</span>
           <h2 class="chat-empty-title">{{ emptyTitle }}</h2>
           <p class="chat-empty-desc">{{ emptyDescription }}</p>
         </div>
@@ -178,7 +209,7 @@ function onKeydown(e) {
 
     <p v-if="errorText" class="chat-error">{{ errorText }}</p>
 
-    <footer class="chat-input-bar">
+    <footer class="chat-input-bar ink-reveal">
       <textarea
         v-model="input"
         class="chat-textarea"
@@ -220,32 +251,65 @@ function onKeydown(e) {
 }
 
 .chat-header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 24px 26px;
+  padding: 28px 28px 24px;
   border: 1px solid var(--border);
-  border-radius: 28px 28px 0 0;
-  background: linear-gradient(180deg, rgba(255, 252, 248, 0.92), rgba(249, 242, 234, 0.85));
+  border-radius: 32px 32px 0 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.08)),
+    linear-gradient(180deg, rgba(248, 248, 244, 0.94), rgba(238, 240, 234, 0.88));
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.chat-header::before,
+.chat-header::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.chat-header::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 22%, rgba(51, 90, 87, 0.12), transparent 22%),
+    radial-gradient(circle at 86% 18%, rgba(140, 83, 63, 0.05), transparent 20%),
+    linear-gradient(112deg, transparent 0 28%, rgba(51, 90, 87, 0.05) 28% 28.2%, transparent 28.2% 100%);
+}
+
+.chat-header::after {
+  inset: 16px;
+  border: 1px solid rgba(127, 82, 59, 0.08);
+  border-radius: 24px;
 }
 
 .chat-header-inner {
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .chat-kicker {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(248, 248, 244, 0.64);
+  border: 1px solid rgba(45, 72, 69, 0.12);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
   color: var(--accent-strong);
   font-weight: 700;
 }
 
 .chat-title {
   margin: 10px 0 0;
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   font-weight: 800;
   color: var(--text);
 }
@@ -253,7 +317,7 @@ function onKeydown(e) {
 .chat-subtitle {
   margin: 10px 0 0;
   font-size: 0.96rem;
-  line-height: 1.7;
+  line-height: 1.82;
   color: var(--muted);
 }
 
@@ -272,8 +336,8 @@ function onKeydown(e) {
   word-break: break-all;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.52);
-  border: 1px solid rgba(112, 87, 67, 0.08);
+  background: rgba(248, 248, 244, 0.6);
+  border: 1px solid rgba(45, 72, 69, 0.08);
 }
 
 .chat-status {
@@ -288,11 +352,13 @@ function onKeydown(e) {
 }
 
 .chat-status[data-streaming="true"] {
-  color: var(--accent-strong);
-  background: rgba(140, 90, 60, 0.14);
+  color: var(--highlight-strong);
+  background: rgba(140, 83, 63, 0.14);
 }
 
 .chat-header-actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -301,12 +367,13 @@ function onKeydown(e) {
 
 .ghost-btn {
   height: 40px;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(248, 248, 244, 0.7);
   color: var(--text);
+  box-shadow: 0 8px 20px rgba(79, 62, 48, 0.06);
 }
 
 .ghost-btn:disabled {
@@ -319,26 +386,30 @@ function onKeydown(e) {
   align-items: center;
   justify-content: center;
   height: 40px;
-  padding: 0 14px;
-  border-radius: 12px;
+  padding: 0 16px;
+  border-radius: 14px;
   font-size: 0.9rem;
   color: var(--accent-strong);
   text-decoration: none;
   background: var(--accent-soft);
+  box-shadow: 0 8px 20px rgba(36, 73, 71, 0.08);
 }
 
 .back-link:hover {
-  filter: brightness(0.98);
+  transform: translateY(-1px);
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 26px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  background: rgba(255, 251, 247, 0.64);
+  gap: 16px;
+  background:
+    radial-gradient(circle at 12% 14%, rgba(51, 90, 87, 0.06), transparent 20%),
+    radial-gradient(circle at 88% 18%, rgba(140, 83, 63, 0.035), transparent 18%),
+    rgba(246, 246, 242, 0.62);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
 }
@@ -349,11 +420,23 @@ function onKeydown(e) {
 }
 
 .chat-empty-card {
+  position: relative;
   padding: 28px;
-  border-radius: 24px;
+  border-radius: 26px;
   text-align: center;
-  border: 1px dashed rgba(112, 87, 67, 0.18);
-  background: rgba(255, 255, 255, 0.58);
+  border: 1px dashed rgba(45, 72, 69, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(241, 242, 237, 0.74));
+  overflow: hidden;
+}
+
+.chat-empty-card::before {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(127, 82, 59, 0.08);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .chat-empty-badge {
@@ -366,7 +449,7 @@ function onKeydown(e) {
   color: var(--accent-strong);
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
 }
 
 .chat-empty-title {
@@ -395,25 +478,32 @@ function onKeydown(e) {
 }
 
 .bubble {
+  position: relative;
   max-width: min(640px, 88%);
-  padding: 14px 16px;
-  border-radius: 18px;
-  line-height: 1.55;
+  padding: 16px 18px;
+  border-radius: 22px;
+  line-height: 1.62;
   font-size: 0.95rem;
-  box-shadow: 0 8px 24px rgba(77, 53, 38, 0.06);
+  box-shadow: 0 14px 28px rgba(77, 53, 38, 0.08);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
 }
 
 .msg-row[data-role='user'] .bubble {
   background: var(--bubble-user);
   color: #fff;
-  border-bottom-right-radius: 6px;
+  border-bottom-right-radius: 8px;
 }
 
 .msg-row[data-role='assistant'] .bubble {
   background: var(--bubble-ai);
   color: var(--text);
   border: 1px solid var(--border);
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: 8px;
+}
+
+.msg-row .bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(77, 53, 38, 0.12);
 }
 
 .bubble-label {
@@ -482,11 +572,11 @@ function onKeydown(e) {
 
 .markdown-body :deep(blockquote) {
   margin: 8px 0;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-left: 3px solid var(--accent);
-  background: rgba(192, 86, 61, 0.06);
+  background: rgba(140, 83, 63, 0.08);
   color: var(--muted);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 10px 10px 0;
 }
 
 .markdown-body :deep(ul),
@@ -517,32 +607,45 @@ function onKeydown(e) {
   padding: 12px 18px;
   font-size: 0.88rem;
   color: var(--danger);
-  background: rgba(192, 86, 61, 0.08);
+  background: rgba(170, 93, 70, 0.08);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
 }
 
 .chat-input-bar {
+  position: relative;
   display: flex;
   gap: 12px;
   align-items: flex-end;
-  padding: 16px 18px 18px;
+  padding: 18px 20px 20px;
   border: 1px solid var(--border);
   border-top: none;
-  border-radius: 0 0 28px 28px;
-  background: rgba(255, 250, 245, 0.92);
+  border-radius: 0 0 32px 32px;
+  background:
+    linear-gradient(180deg, rgba(248, 248, 244, 0.94), rgba(239, 240, 235, 0.94));
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.chat-input-bar::before {
+  content: '';
+  position: absolute;
+  inset: 10px 12px 12px;
+  border: 1px solid rgba(127, 82, 59, 0.08);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .chat-textarea {
   flex: 1;
   min-height: 88px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   font: inherit;
   background: rgba(255, 255, 255, 0.78);
   color: var(--text);
+  resize: none;
 }
 
 .chat-textarea:focus {
@@ -565,11 +668,12 @@ function onKeydown(e) {
   height: 48px;
   padding: 0 18px;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   font-weight: 700;
   cursor: pointer;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--highlight), var(--highlight-strong));
   color: #fff;
+  box-shadow: 0 16px 30px rgba(116, 65, 49, 0.2);
 }
 
 .send-btn:disabled {
@@ -581,9 +685,9 @@ function onKeydown(e) {
   min-width: 120px;
   height: 42px;
   padding: 0 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(248, 248, 244, 0.74);
   color: var(--text);
   cursor: pointer;
 }
@@ -595,7 +699,7 @@ function onKeydown(e) {
 
   .chat-header {
     flex-direction: column;
-    border-radius: 22px 22px 0 0;
+    border-radius: 24px 24px 0 0;
     padding: 20px;
   }
 
@@ -607,7 +711,7 @@ function onKeydown(e) {
   .chat-input-bar {
     flex-direction: column;
     align-items: stretch;
-    border-radius: 0 0 22px 22px;
+    border-radius: 0 0 24px 24px;
   }
 
   .chat-actions {

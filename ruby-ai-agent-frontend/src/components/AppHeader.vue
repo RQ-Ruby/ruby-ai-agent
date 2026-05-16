@@ -86,31 +86,63 @@ async function handleLogout() {
 }
 
 .app-header-inner {
+  position: relative;
   max-width: 1180px;
   margin: 0 auto;
-  min-height: 68px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 18px;
-  border-radius: 24px;
+  padding: 14px 20px;
+  border-radius: 28px;
   border: 1px solid var(--border);
-  background: rgba(255, 251, 247, 0.78);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.08)),
+    rgba(246, 246, 242, 0.8);
   box-shadow: var(--card-shadow);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.app-header-inner::before,
+.app-header-inner::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.app-header-inner::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(51, 90, 87, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 20%, rgba(140, 83, 63, 0.05), transparent 20%);
+}
+
+.app-header-inner::after {
+  inset: 12px;
+  border: 1px solid rgba(127, 82, 59, 0.08);
+  border-radius: 20px;
 }
 
 .brand-link {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   text-decoration: none;
   color: var(--accent-strong);
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.18em;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(248, 248, 244, 0.6);
+  border: 1px solid rgba(45, 72, 69, 0.1);
 }
 
 .header-nav {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,19 +153,31 @@ async function handleLogout() {
 .header-nav-link {
   text-decoration: none;
   color: var(--muted);
-  padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: 999px;
   font-size: 0.9rem;
-  transition: background 0.16s ease, color 0.16s ease;
+  border: 1px solid transparent;
+  transition: background 0.24s ease, color 0.24s ease, border-color 0.24s ease,
+    transform 0.24s ease;
+}
+
+.header-nav-link:hover {
+  color: var(--accent-strong);
+  border-color: rgba(45, 72, 69, 0.12);
+  background: rgba(248, 248, 244, 0.5);
+  transform: translateY(-1px);
 }
 
 .header-nav-link.router-link-active {
   background: var(--accent-soft);
   color: var(--accent-strong);
+  border-color: rgba(45, 72, 69, 0.12);
   font-weight: 700;
 }
 
 .header-user-area {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -157,15 +201,15 @@ async function handleLogout() {
 
 .header-auth-link-ghost,
 .header-logout-btn {
-  border: 1px solid rgba(112, 87, 67, 0.16);
-  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(45, 72, 69, 0.14);
+  background: rgba(248, 248, 244, 0.6);
   color: var(--accent-strong);
 }
 
 .header-auth-link-solid {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(135deg, var(--highlight), var(--highlight-strong));
   color: #fff;
-  box-shadow: 0 14px 24px rgba(110, 68, 45, 0.16);
+  box-shadow: 0 14px 24px rgba(116, 65, 49, 0.22);
 }
 
 .header-logout-btn {
@@ -179,7 +223,7 @@ async function handleLogout() {
   padding-right: 14px;
   color: var(--text);
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.56);
+  background: rgba(248, 248, 244, 0.6);
 }
 
 .user-avatar {
@@ -222,7 +266,7 @@ async function handleLogout() {
 
   .app-header-inner {
     padding: 14px;
-    border-radius: 20px;
+    border-radius: 22px;
   }
 
   .header-nav {
