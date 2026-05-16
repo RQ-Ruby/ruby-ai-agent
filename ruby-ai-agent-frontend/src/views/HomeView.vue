@@ -16,12 +16,6 @@ const navItems = [
   { label: '用户管理', to: '/admin/users' },
 ]
 
-const heroStats = [
-  { value: '3', label: '核心 AI 模块' },
-  { value: '国内', label: '文旅场景服务' },
-  { value: 'SSE', label: '流式输出体验' },
-]
-
 const featureCards = [
   {
     key: 'chat',
@@ -172,13 +166,6 @@ onBeforeUnmount(() => {
                 <div class="visual-mountain mountain-two"></div>
               </article>
             </div>
-
-            <div class="hero-stats">
-              <div v-for="item in heroStats" :key="item.label" class="hero-stat-item">
-                <strong>{{ item.value }}</strong>
-                <span>{{ item.label }}</span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -298,7 +285,6 @@ onBeforeUnmount(() => {
 .home-nav,
 .hero-copy-card,
 .hero-visual,
-.hero-stat-item,
 .feature-card {
   position: relative;
   overflow: hidden;
@@ -314,7 +300,6 @@ onBeforeUnmount(() => {
 .home-nav::before,
 .hero-copy-card::before,
 .hero-visual::before,
-.hero-stat-item::before,
 .feature-card::before {
   content: '';
   position: absolute;
@@ -365,7 +350,6 @@ onBeforeUnmount(() => {
 .home-nav-link,
 .hero-subtitle,
 .section-heading p,
-.hero-stat-item span,
 .feature-body p,
 .feature-tag,
 .feature-link,
@@ -505,7 +489,6 @@ onBeforeUnmount(() => {
 }
 
 .hero-card-grid,
-.hero-stats,
 .feature-grid {
   position: relative;
   z-index: 1;
@@ -563,40 +546,6 @@ onBeforeUnmount(() => {
 .hero-cta {
   min-height: 50px;
   padding: 0 24px;
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 28px;
-}
-
-.hero-stat-item {
-  padding: 20px 18px 18px;
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.04)),
-    rgba(248, 245, 238, 0.98);
-}
-
-.hero-stat-item::before {
-  inset: 8px;
-  border-radius: 18px;
-}
-
-.hero-stat-item strong {
-  display: block;
-  font-size: 1.32rem;
-  font-weight: 800;
-  color: var(--home-primary);
-}
-
-.hero-stat-item span {
-  display: block;
-  margin-top: 8px;
-  color: var(--home-muted);
-  line-height: 1.7;
 }
 
 .hero-visual {
@@ -950,10 +899,6 @@ onBeforeUnmount(() => {
     width: 100%;
     justify-content: center;
   }
-
-  .hero-stats {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
@@ -965,7 +910,6 @@ onBeforeUnmount(() => {
   .home-nav,
   .hero-copy-card,
   .hero-visual,
-  .hero-stat-item,
   .feature-card {
     border-radius: 24px;
   }
@@ -973,7 +917,6 @@ onBeforeUnmount(() => {
   .home-nav::before,
   .hero-copy-card::before,
   .hero-visual::before,
-  .hero-stat-item::before,
   .feature-card::before {
     inset: 8px;
     border-radius: 18px;

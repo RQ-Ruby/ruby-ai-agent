@@ -1,6 +1,7 @@
 package com.ruby.rubyaiagent.rag;
 
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
@@ -16,6 +17,7 @@ import java.util.List;
  * 生产 RAG 仍然走 PgVectorVectorStoreConfig 中的 pgVectorVectorStore。
  */
 @Configuration
+@Slf4j
 public class TravelAppVectorStoreConfig {
 
     @Resource
@@ -26,6 +28,10 @@ public class TravelAppVectorStoreConfig {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
                 .build();
         List<Document> documents = travelAppDocumentLoader.loadMarkdowns();
+        if (documents.isEmpty()) {
+            log.warn("旅游知识库未加载到可向量化文档，跳过 SimpleVectorStore 初始化数据导入");
+            return simpleVectorStore;
+        }
         simpleVectorStore.add(documents);
         return simpleVectorStore;
     }
