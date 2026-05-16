@@ -199,8 +199,8 @@ onMounted(async () => {
 .auth-background {
   position: absolute;
   border-radius: 999px;
-  filter: blur(20px);
-  opacity: 0.6;
+  filter: blur(24px);
+  opacity: 0.68;
   pointer-events: none;
 }
 
@@ -209,7 +209,7 @@ onMounted(async () => {
   left: -100px;
   width: 320px;
   height: 320px;
-  background: rgba(140, 90, 60, 0.16);
+  background: rgba(var(--gold-rgb), 0.16);
 }
 
 .auth-background-right {
@@ -217,7 +217,7 @@ onMounted(async () => {
   bottom: -120px;
   width: 360px;
   height: 360px;
-  background: rgba(95, 122, 98, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
 }
 
 .auth-shell {
@@ -241,10 +241,18 @@ onMounted(async () => {
 
 .brand-mark {
   width: fit-content;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 999px;
   text-decoration: none;
-  color: var(--accent-strong);
+  color: var(--surface);
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.18em;
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
+  background: rgba(248, 245, 238, 0.08);
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .brand-badge {
@@ -255,8 +263,9 @@ onMounted(async () => {
   padding: 0 14px;
   height: 34px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.9);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
+  color: var(--highlight);
   font-size: 0.84rem;
   font-weight: 700;
 }
@@ -265,30 +274,45 @@ onMounted(async () => {
   margin: 18px 0 0;
   font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: 0.04em;
+  color: var(--surface);
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .brand-desc {
   margin: 16px 0 0;
   max-width: 560px;
-  color: var(--muted);
+  color: rgba(248, 245, 238, 0.8);
   font-size: 1rem;
   line-height: 1.8;
 }
 
 .brand-card {
+  position: relative;
   margin-top: 28px;
   max-width: 520px;
   padding: 22px;
   border-radius: 26px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 251, 246, 0.72), rgba(250, 241, 231, 0.54));
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface-elevated);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.brand-card::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .brand-card-title {
   display: inline-flex;
-  color: var(--accent-strong);
+  color: var(--highlight);
   font-size: 0.92rem;
   font-weight: 700;
 }
@@ -297,6 +321,8 @@ onMounted(async () => {
   margin: 16px 0 0;
   padding-left: 18px;
   color: var(--muted);
+  position: relative;
+  z-index: 1;
 }
 
 .brand-list li + li {
@@ -310,22 +336,42 @@ onMounted(async () => {
 }
 
 .auth-card {
+  position: relative;
   width: 100%;
   padding: 28px;
   border-radius: 28px;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface-elevated);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 22px;
+  pointer-events: none;
 }
 
 .auth-card-head {
   margin-bottom: 22px;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-mini {
   display: inline-flex;
-  color: var(--accent-strong);
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--highlight);
+  background: rgba(248, 245, 238, 0.92);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -334,6 +380,7 @@ onMounted(async () => {
   margin: 10px 0 0;
   font-size: 1.7rem;
   line-height: 1.2;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .auth-subheading {
@@ -347,6 +394,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 .field {
@@ -363,8 +412,8 @@ onMounted(async () => {
 .field-input {
   height: 48px;
   border-radius: 16px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--text);
   padding: 0 14px;
   font-size: 0.96rem;
@@ -373,8 +422,8 @@ onMounted(async () => {
 }
 
 .field-input:focus {
-  border-color: rgba(140, 90, 60, 0.42);
-  box-shadow: 0 0 0 4px rgba(140, 90, 60, 0.12);
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.16);
 }
 
 .message {
@@ -386,28 +435,28 @@ onMounted(async () => {
 
 .message-error {
   color: var(--danger);
-  background: rgba(192, 86, 61, 0.09);
-  border: 1px solid rgba(192, 86, 61, 0.16);
+  background: rgba(var(--highlight-rgb), 0.1);
+  border: 1px solid rgba(var(--highlight-rgb), 0.18);
 }
 
 .message-success {
   color: var(--success);
-  background: rgba(95, 122, 98, 0.1);
-  border: 1px solid rgba(95, 122, 98, 0.16);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
 }
 
 .submit-btn {
   margin-top: 4px;
   height: 50px;
-  border: none;
+  border: 1px solid var(--border-strong);
   border-radius: 16px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #fff;
+  color: var(--surface);
   font-size: 0.98rem;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
-  box-shadow: 0 18px 30px rgba(110, 68, 45, 0.18);
+  box-shadow: 0 18px 30px rgba(7, 14, 22, 0.2);
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -426,6 +475,8 @@ onMounted(async () => {
   gap: 8px;
   color: var(--muted);
   font-size: 0.92rem;
+  position: relative;
+  z-index: 1;
 }
 
 .switch-link,
@@ -439,6 +490,8 @@ onMounted(async () => {
   display: inline-flex;
   margin-top: 18px;
   font-size: 0.92rem;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 980px) {

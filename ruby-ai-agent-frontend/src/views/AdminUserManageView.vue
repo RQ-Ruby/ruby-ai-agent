@@ -500,15 +500,28 @@ onMounted(async () => {
 }
 
 .admin-hero {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
   padding: 28px;
   border-radius: 28px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 251, 246, 0.92), rgba(250, 241, 231, 0.78));
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.admin-hero::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .admin-badge {
@@ -517,8 +530,9 @@ onMounted(async () => {
   height: 34px;
   padding: 0 14px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.94);
+  color: var(--highlight);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
   font-size: 0.84rem;
   font-weight: 700;
 }
@@ -527,6 +541,7 @@ onMounted(async () => {
   margin: 16px 0 0;
   font-size: clamp(2rem, 3.8vw, 3rem);
   line-height: 1.12;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .admin-sub {
@@ -545,8 +560,8 @@ onMounted(async () => {
 .meta-card {
   padding: 16px 18px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(112, 87, 67, 0.1);
+  background: rgba(248, 245, 238, 0.94);
+  border: 1px solid rgba(var(--gold-rgb), 0.32);
 }
 
 .meta-card strong {
@@ -570,14 +585,14 @@ onMounted(async () => {
 
 .feedback-error {
   color: var(--danger);
-  background: rgba(192, 86, 61, 0.09);
-  border: 1px solid rgba(192, 86, 61, 0.16);
+  background: rgba(var(--highlight-rgb), 0.1);
+  border: 1px solid rgba(var(--highlight-rgb), 0.18);
 }
 
 .feedback-success {
   color: var(--success);
-  background: rgba(95, 122, 98, 0.1);
-  border: 1px solid rgba(95, 122, 98, 0.16);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
 }
 
 .admin-grid {
@@ -588,11 +603,24 @@ onMounted(async () => {
 }
 
 .panel-card {
+  position: relative;
   padding: 24px;
   border-radius: 24px;
-  border: 1px solid var(--border);
-  background: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface-elevated);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.panel-card::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 18px;
+  pointer-events: none;
 }
 
 .panel-head {
@@ -609,6 +637,7 @@ onMounted(async () => {
 .panel-head h2 {
   margin: 0;
   font-size: 1.12rem;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .panel-head p,
@@ -650,8 +679,8 @@ onMounted(async () => {
   width: 100%;
   min-height: 46px;
   border-radius: 16px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--text);
   padding: 0 14px;
   font-size: 0.94rem;
@@ -660,8 +689,8 @@ onMounted(async () => {
 }
 
 .field-input:focus {
-  border-color: rgba(140, 90, 60, 0.42);
-  box-shadow: 0 0 0 4px rgba(140, 90, 60, 0.12);
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.16);
 }
 
 .field-select {
@@ -706,15 +735,16 @@ onMounted(async () => {
 }
 
 .action-btn-primary {
-  color: #fff;
+  color: var(--surface);
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: 0 16px 26px rgba(110, 68, 45, 0.16);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 16px 26px rgba(7, 14, 22, 0.18);
 }
 
 .action-btn-secondary {
-  color: var(--accent-strong);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(112, 87, 67, 0.16);
+  color: var(--text);
+  background: rgba(248, 245, 238, 0.92);
+  border: 1px solid var(--border-strong);
 }
 
 .table-wrap {
@@ -730,7 +760,7 @@ onMounted(async () => {
 .user-table th,
 .user-table td {
   padding: 14px 12px;
-  border-bottom: 1px solid rgba(112, 87, 67, 0.08);
+  border-bottom: 1px solid rgba(var(--gold-rgb), 0.22);
   text-align: left;
   vertical-align: top;
   font-size: 0.92rem;
@@ -754,8 +784,8 @@ onMounted(async () => {
   height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(112, 87, 67, 0.12);
+  background: rgba(248, 245, 238, 0.92);
+  border: 1px solid rgba(var(--gold-rgb), 0.32);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -780,9 +810,9 @@ onMounted(async () => {
   height: 34px;
   padding: 0 12px;
   border-radius: 12px;
-  border: 1px solid rgba(112, 87, 67, 0.16);
-  background: rgba(255, 255, 255, 0.56);
-  color: var(--accent-strong);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.92);
+  color: var(--text);
   font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
@@ -797,7 +827,8 @@ onMounted(async () => {
   border-radius: 18px;
   text-align: center;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(248, 245, 238, 0.9);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
 }
 
 .pagination-row {
@@ -821,19 +852,32 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(31, 23, 20, 0.38);
+  background: rgba(7, 14, 22, 0.38);
   backdrop-filter: blur(8px);
 }
 
 .admin-dialog {
+  position: relative;
   width: min(100%, 560px);
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   padding: 24px;
   border-radius: 26px;
-  border: 1px solid var(--border);
-  background: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface-elevated);
   box-shadow: var(--card-shadow-hover);
+  overflow-x: hidden;
+}
+
+.admin-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .dialog-head {
@@ -847,6 +891,7 @@ onMounted(async () => {
 .dialog-head h2 {
   margin: 0;
   font-size: 1.16rem;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .dialog-head p {
@@ -859,10 +904,10 @@ onMounted(async () => {
 .dialog-close {
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(112, 87, 67, 0.16);
+  border: 1px solid var(--border-strong);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.56);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.92);
+  color: var(--text);
   font-size: 1.2rem;
   cursor: pointer;
 }

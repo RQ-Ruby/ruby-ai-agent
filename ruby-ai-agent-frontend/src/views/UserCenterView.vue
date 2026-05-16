@@ -81,14 +81,27 @@ onMounted(async () => {
 }
 
 .user-center-hero {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 22px;
   padding: 28px;
   border-radius: 28px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 251, 246, 0.92), rgba(250, 241, 231, 0.78));
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.user-center-hero::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .user-avatar-large {
@@ -99,10 +112,11 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #fff;
+  color: var(--surface);
   font-size: 2rem;
   font-weight: 800;
-  box-shadow: 0 18px 30px rgba(110, 68, 45, 0.18);
+  border: 1px solid rgba(var(--gold-rgb), 0.36);
+  box-shadow: 0 18px 30px rgba(7, 14, 22, 0.2);
 }
 
 .user-badge {
@@ -111,8 +125,9 @@ onMounted(async () => {
   height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.94);
+  color: var(--highlight);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -120,6 +135,7 @@ onMounted(async () => {
 .user-hero-copy h1 {
   margin: 14px 0 0;
   font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .user-hero-copy p {
@@ -135,16 +151,30 @@ onMounted(async () => {
 }
 
 .info-card {
+  position: relative;
   padding: 24px;
   border-radius: 24px;
-  border: 1px solid var(--border);
-  background: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface-elevated);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.info-card::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  border-radius: 18px;
+  pointer-events: none;
 }
 
 .info-card h2 {
   margin: 0 0 18px;
   font-size: 1.14rem;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .info-list {

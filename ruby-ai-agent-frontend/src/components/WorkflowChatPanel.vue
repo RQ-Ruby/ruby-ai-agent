@@ -533,11 +533,11 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 18px;
   padding: 28px 30px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 32px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.08)),
-    linear-gradient(180deg, rgba(248, 248, 244, 0.94), rgba(238, 240, 234, 0.88));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+    var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -550,17 +550,28 @@ onBeforeUnmount(() => {
 }
 
 .workflow-hero::before {
-  inset: 0;
+  inset: 12px;
   background:
-    radial-gradient(circle at 14% 18%, rgba(51, 90, 87, 0.12), transparent 22%),
-    radial-gradient(circle at 84% 16%, rgba(140, 83, 63, 0.05), transparent 18%),
-    linear-gradient(116deg, transparent 0 24%, rgba(51, 90, 87, 0.05) 24% 24.2%, transparent 24.2% 100%);
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  border: 1px solid rgba(var(--gold-rgb), 0.28);
+  border-radius: 24px;
+  opacity: 0.88;
 }
 
 .workflow-hero::after {
-  inset: 16px;
-  border: 1px solid rgba(127, 82, 59, 0.08);
-  border-radius: 24px;
+  inset: 0;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(var(--gold-rgb), 0.08), transparent 22%),
+    radial-gradient(circle at 84% 16%, rgba(var(--accent-rgb), 0.06), transparent 18%),
+    linear-gradient(116deg, transparent 0 24%, rgba(var(--gold-rgb), 0.05) 24% 24.2%, transparent 24.2% 100%);
+  opacity: 0.46;
 }
 
 .workflow-hero-copy {
@@ -575,11 +586,11 @@ onBeforeUnmount(() => {
   min-height: 32px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(45, 72, 69, 0.12);
-  background: rgba(248, 248, 244, 0.64);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
+  background: rgba(248, 245, 238, 0.94);
   font-size: 0.76rem;
   letter-spacing: 0.12em;
-  color: var(--accent-strong);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -588,6 +599,7 @@ onBeforeUnmount(() => {
   font-size: 2rem;
   font-weight: 800;
   color: var(--text);
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .workflow-subtitle {
@@ -614,21 +626,22 @@ onBeforeUnmount(() => {
 }
 
 .workflow-session {
-  background: rgba(248, 248, 244, 0.6);
-  border: 1px solid rgba(45, 72, 69, 0.08);
+  background: rgba(248, 245, 238, 0.94);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
   color: var(--muted);
   word-break: break-all;
 }
 
 .workflow-status {
   color: var(--success);
-  background: rgba(95, 122, 98, 0.12);
+  background: rgba(248, 245, 238, 0.94);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
   font-weight: 700;
 }
 
 .workflow-status[data-loading='true'] {
-  color: var(--highlight-strong);
-  background: rgba(140, 83, 63, 0.14);
+  color: var(--highlight);
+  background: rgba(var(--highlight-rgb), 0.12);
 }
 
 .workflow-hero-actions {
@@ -653,17 +666,18 @@ onBeforeUnmount(() => {
 }
 
 .ghost-link {
-  color: var(--accent-strong);
-  background: var(--accent-soft);
-  box-shadow: 0 8px 20px rgba(36, 73, 71, 0.08);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.94);
+  box-shadow: 0 10px 20px rgba(7, 14, 22, 0.08);
 }
 
 .ghost-btn {
-  border: 1px solid var(--border);
-  background: rgba(248, 248, 244, 0.7);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.94);
   color: var(--text);
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(79, 62, 48, 0.06);
+  box-shadow: 0 10px 20px rgba(7, 14, 22, 0.08);
 }
 
 .ghost-btn:disabled {
@@ -687,10 +701,10 @@ onBeforeUnmount(() => {
 .sidebar-card,
 .workflow-chat-card {
   position: relative;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 28px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.1)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
     var(--surface-elevated);
   box-shadow: var(--card-shadow);
   overflow: hidden;
@@ -701,7 +715,7 @@ onBeforeUnmount(() => {
   content: '';
   position: absolute;
   inset: 14px;
-  border: 1px solid rgba(127, 82, 59, 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
   border-radius: 22px;
   pointer-events: none;
 }
@@ -729,9 +743,9 @@ onBeforeUnmount(() => {
   height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(248, 248, 244, 0.68);
-  border: 1px solid rgba(45, 72, 69, 0.08);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.94);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
+  color: var(--text);
   font-size: 0.74rem;
   font-weight: 700;
 }
@@ -751,26 +765,26 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 14px;
   border-radius: 20px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
+  background: rgba(248, 245, 238, 0.92);
   transition: border-color 0.24s ease, transform 0.24s ease, background 0.24s ease,
     box-shadow 0.24s ease;
 }
 
 .stage-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 26px rgba(79, 62, 48, 0.08);
+  box-shadow: 0 14px 26px rgba(7, 14, 22, 0.12);
 }
 
 .stage-item[data-state='active'] {
-  border-color: rgba(127, 82, 59, 0.22);
-  background: rgba(140, 83, 63, 0.08);
+  border-color: rgba(var(--gold-rgb), 0.46);
+  background: rgba(var(--highlight-rgb), 0.08);
   transform: translateY(-2px);
 }
 
 .stage-item[data-state='done'] {
-  border-color: rgba(95, 122, 98, 0.16);
-  background: rgba(95, 122, 98, 0.08);
+  border-color: rgba(var(--gold-rgb), 0.34);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .stage-index {
@@ -780,7 +794,7 @@ onBeforeUnmount(() => {
   width: 34px;
   height: 34px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(var(--gold-rgb), 0.18);
   color: var(--accent-strong);
   font-size: 0.8rem;
   font-weight: 800;
@@ -806,8 +820,8 @@ onBeforeUnmount(() => {
 }
 
 .prompt-chip {
-  border: 1px solid var(--border);
-  background: rgba(248, 248, 244, 0.7);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.92);
   color: var(--text);
   border-radius: 999px;
   padding: 10px 12px;
@@ -817,8 +831,8 @@ onBeforeUnmount(() => {
 }
 
 .prompt-chip:hover:not(:disabled) {
-  border-color: rgba(127, 82, 59, 0.22);
-  background: rgba(140, 83, 63, 0.08);
+  border-color: rgba(var(--gold-rgb), 0.46);
+  background: rgba(var(--highlight-rgb), 0.08);
   transform: translateY(-1px);
 }
 
@@ -839,9 +853,9 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   padding: 26px;
   background:
-    radial-gradient(circle at 12% 14%, rgba(51, 90, 87, 0.06), transparent 20%),
-    radial-gradient(circle at 88% 18%, rgba(140, 83, 63, 0.035), transparent 18%),
-    rgba(246, 246, 242, 0.62);
+    radial-gradient(circle at 12% 14%, rgba(var(--gold-rgb), 0.08), transparent 20%),
+    radial-gradient(circle at 88% 18%, rgba(var(--accent-rgb), 0.05), transparent 18%),
+    rgba(248, 245, 238, 0.88);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -857,9 +871,10 @@ onBeforeUnmount(() => {
   padding: 30px;
   border-radius: 28px;
   text-align: center;
-  border: 1px dashed rgba(45, 72, 69, 0.18);
+  border: 1px solid rgba(var(--gold-rgb), 0.44);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(241, 242, 237, 0.74));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)),
+    rgba(248, 245, 238, 0.96);
   overflow: hidden;
 }
 
@@ -867,7 +882,7 @@ onBeforeUnmount(() => {
   content: '';
   position: absolute;
   inset: 14px;
-  border: 1px solid rgba(127, 82, 59, 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
   border-radius: 22px;
   pointer-events: none;
 }
@@ -878,8 +893,9 @@ onBeforeUnmount(() => {
   height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: rgba(248, 245, 238, 0.94);
+  border: 1px solid rgba(var(--gold-rgb), 0.42);
+  color: var(--highlight);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -888,6 +904,7 @@ onBeforeUnmount(() => {
 .workflow-empty-card h2 {
   margin: 14px 0 0;
   font-size: 1.26rem;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .workflow-empty-card p {
@@ -920,26 +937,27 @@ onBeforeUnmount(() => {
   max-width: min(760px, 92%);
   padding: 16px 18px;
   border-radius: 22px;
-  box-shadow: 0 14px 28px rgba(77, 53, 38, 0.08);
+  box-shadow: 0 14px 28px rgba(7, 14, 22, 0.1);
   transition: transform 0.28s ease, box-shadow 0.28s ease;
 }
 
 .user-bubble {
   background: var(--bubble-user);
-  color: #fff;
+  color: var(--surface);
+  border: 1px solid rgba(var(--gold-rgb), 0.34);
   border-bottom-right-radius: 8px;
 }
 
 .assistant-bubble {
   background: var(--bubble-ai);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-bottom-left-radius: 8px;
 }
 
 .message-bubble:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgba(77, 53, 38, 0.12);
+  box-shadow: 0 0 18px rgba(var(--gold-rgb), 0.12), 0 18px 34px rgba(7, 14, 22, 0.12);
 }
 
 .message-role {
@@ -980,13 +998,13 @@ onBeforeUnmount(() => {
 }
 
 .turn-badge[data-tone='active'] {
-  color: var(--highlight-strong);
-  background: rgba(140, 83, 63, 0.12);
+  color: var(--highlight);
+  background: rgba(var(--highlight-rgb), 0.12);
 }
 
 .turn-badge[data-tone='done'] {
   color: var(--success);
-  background: rgba(95, 122, 98, 0.12);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .turn-badge[data-tone='pending'] {
@@ -1001,14 +1019,14 @@ onBeforeUnmount(() => {
 
 .turn-badge[data-tone='restored'] {
   color: var(--muted);
-  background: rgba(125, 109, 99, 0.12);
+  background: rgba(var(--gold-rgb), 0.18);
 }
 
 .turn-progress {
   margin-bottom: 12px;
   border-radius: 16px;
-  border: 1px solid rgba(95, 122, 98, 0.14);
-  background: rgba(95, 122, 98, 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.34);
+  background: rgba(var(--accent-rgb), 0.06);
   overflow: hidden;
 }
 
@@ -1017,7 +1035,7 @@ onBeforeUnmount(() => {
   list-style: none;
   padding: 12px 14px;
   font-size: 0.84rem;
-  color: var(--success);
+  color: var(--accent-strong);
   font-weight: 700;
 }
 
@@ -1042,7 +1060,7 @@ onBeforeUnmount(() => {
   padding: 12px 14px;
   border-radius: 14px;
   color: var(--danger);
-  background: rgba(170, 93, 70, 0.08);
+  background: rgba(var(--highlight-rgb), 0.1);
 }
 
 .turn-error {
@@ -1067,6 +1085,7 @@ onBeforeUnmount(() => {
   margin: 14px 0 8px;
   color: var(--accent-strong);
   font-weight: 800;
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
 .markdown-body :deep(p) {
@@ -1082,29 +1101,29 @@ onBeforeUnmount(() => {
 .markdown-body :deep(blockquote) {
   margin: 10px 0;
   padding: 8px 12px;
-  border-left: 3px solid var(--accent);
-  background: rgba(140, 83, 63, 0.08);
+  border-left: 3px solid var(--highlight);
+  background: rgba(var(--highlight-rgb), 0.08);
   border-radius: 0 10px 10px 0;
   color: var(--muted);
 }
 
 .markdown-body :deep(hr) {
   border: none;
-  border-top: 1px dashed rgba(112, 87, 67, 0.25);
+  border-top: 1px dashed rgba(var(--gold-rgb), 0.45);
   margin: 16px 0;
 }
 
 .markdown-body :deep(code) {
   padding: 2px 6px;
   border-radius: 6px;
-  background: rgba(112, 87, 67, 0.1);
+  background: rgba(var(--gold-rgb), 0.18);
 }
 
 .markdown-body :deep(pre) {
   overflow-x: auto;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(60, 42, 30, 0.06);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .workflow-composer {
@@ -1113,9 +1132,10 @@ onBeforeUnmount(() => {
   gap: 12px;
   align-items: flex-end;
   padding: 18px 20px 20px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-strong);
   background:
-    linear-gradient(180deg, rgba(248, 248, 244, 0.94), rgba(239, 240, 235, 0.94));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
+    var(--surface);
   overflow: hidden;
 }
 
@@ -1123,7 +1143,7 @@ onBeforeUnmount(() => {
   content: '';
   position: absolute;
   inset: 10px 12px 12px;
-  border: 1px solid rgba(127, 82, 59, 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.24);
   border-radius: 20px;
   pointer-events: none;
 }
@@ -1133,15 +1153,15 @@ onBeforeUnmount(() => {
   min-height: 92px;
   padding: 14px 16px;
   border-radius: 20px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--text);
   resize: none;
 }
 
 .workflow-input:focus {
-  outline: 2px solid var(--accent-soft);
-  border-color: var(--accent);
+  outline: 2px solid rgba(var(--gold-rgb), 0.22);
+  border-color: var(--highlight);
 }
 
 .workflow-input:disabled {
@@ -1165,10 +1185,10 @@ onBeforeUnmount(() => {
 }
 
 .send-btn {
-  border: none;
-  background: linear-gradient(135deg, var(--highlight), var(--highlight-strong));
-  color: #fff;
-  box-shadow: 0 16px 30px rgba(116, 65, 49, 0.2);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--surface);
+  box-shadow: 0 16px 30px rgba(7, 14, 22, 0.2);
 }
 
 .send-btn:disabled {
@@ -1177,8 +1197,8 @@ onBeforeUnmount(() => {
 }
 
 .stop-btn {
-  border: 1px solid var(--border);
-  background: rgba(248, 248, 244, 0.74);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.94);
   color: var(--text);
 }
 

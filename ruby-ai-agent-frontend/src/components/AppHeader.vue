@@ -44,7 +44,10 @@ async function handleLogout() {
 <template>
   <header class="app-header">
     <div class="app-header-inner">
-      <router-link to="/" class="brand-link">行旅 AI</router-link>
+      <router-link to="/" class="brand-link">
+        <span class="brand-main">行旅 AI</span>
+        <span class="brand-sub">TOUR WITH INTELLIGENCE</span>
+      </router-link>
 
       <nav class="header-nav">
         <router-link
@@ -96,10 +99,10 @@ async function handleLogout() {
   gap: 16px;
   padding: 14px 20px;
   border-radius: 28px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.08)),
-    rgba(246, 246, 242, 0.8);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+    var(--surface-strong);
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(14px);
   overflow: hidden;
@@ -113,31 +116,60 @@ async function handleLogout() {
 }
 
 .app-header-inner::before {
-  inset: 0;
+  inset: 10px;
   background:
-    radial-gradient(circle at 12% 18%, rgba(51, 90, 87, 0.12), transparent 22%),
-    radial-gradient(circle at 88% 20%, rgba(140, 83, 63, 0.05), transparent 20%);
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  border: 1px solid rgba(var(--gold-rgb), 0.28);
+  border-radius: 20px;
+  opacity: 0.86;
 }
 
 .app-header-inner::after {
-  inset: 12px;
-  border: 1px solid rgba(127, 82, 59, 0.08);
-  border-radius: 20px;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(var(--accent-rgb), 0.08), transparent 22%),
+    radial-gradient(circle at 88% 20%, rgba(var(--gold-rgb), 0.08), transparent 20%);
+  opacity: 0.5;
 }
 
 .brand-link {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
   text-decoration: none;
-  color: var(--accent-strong);
+  color: var(--text);
+}
+
+.brand-main {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(248, 245, 238, 0.96);
+  border: 1px solid var(--border-strong);
+  font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
   font-size: 1.02rem;
   font-weight: 800;
   letter-spacing: 0.18em;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(248, 248, 244, 0.6);
-  border: 1px solid rgba(45, 72, 69, 0.1);
+}
+
+.brand-sub {
+  padding-left: 8px;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  color: var(--muted);
 }
 
 .header-nav {
@@ -152,8 +184,8 @@ async function handleLogout() {
 
 .header-nav-link {
   text-decoration: none;
-  color: var(--muted);
-  padding: 9px 14px;
+  color: var(--text);
+  padding: 9px 16px;
   border-radius: 999px;
   font-size: 0.9rem;
   border: 1px solid transparent;
@@ -162,16 +194,16 @@ async function handleLogout() {
 }
 
 .header-nav-link:hover {
-  color: var(--accent-strong);
-  border-color: rgba(45, 72, 69, 0.12);
-  background: rgba(248, 248, 244, 0.5);
+  color: var(--text);
+  border-color: rgba(var(--gold-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.06);
   transform: translateY(-1px);
 }
 
 .header-nav-link.router-link-active {
   background: var(--accent-soft);
-  color: var(--accent-strong);
-  border-color: rgba(45, 72, 69, 0.12);
+  color: var(--text);
+  border-color: rgba(var(--gold-rgb), 0.42);
   font-weight: 700;
 }
 
@@ -197,23 +229,33 @@ async function handleLogout() {
   font-size: 0.88rem;
   font-weight: 700;
   text-decoration: none;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease,
+    background 0.24s ease;
 }
 
 .header-auth-link-ghost,
 .header-logout-btn {
-  border: 1px solid rgba(45, 72, 69, 0.14);
-  background: rgba(248, 248, 244, 0.6);
-  color: var(--accent-strong);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.92);
+  color: var(--highlight);
 }
 
 .header-auth-link-solid {
-  background: linear-gradient(135deg, var(--highlight), var(--highlight-strong));
-  color: #fff;
-  box-shadow: 0 14px 24px rgba(116, 65, 49, 0.22);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--surface);
+  box-shadow: 0 14px 24px rgba(7, 14, 22, 0.2);
 }
 
 .header-logout-btn {
   cursor: pointer;
+}
+
+.header-auth-link:hover,
+.header-logout-btn:hover,
+.user-brief:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(var(--gold-rgb), 0.12), 0 12px 24px rgba(7, 14, 22, 0.16);
 }
 
 .user-brief {
@@ -222,8 +264,8 @@ async function handleLogout() {
   padding-left: 10px;
   padding-right: 14px;
   color: var(--text);
-  border: 1px solid var(--border);
-  background: rgba(248, 248, 244, 0.6);
+  border: 1px solid var(--border-strong);
+  background: rgba(248, 245, 238, 0.94);
 }
 
 .user-avatar {
@@ -233,7 +275,7 @@ async function handleLogout() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-soft);
+  background: rgba(var(--gold-rgb), 0.22);
   color: var(--accent-strong);
   font-size: 0.84rem;
   font-weight: 800;
@@ -276,6 +318,10 @@ async function handleLogout() {
   .header-nav-link {
     padding: 7px 10px;
     font-size: 0.84rem;
+  }
+
+  .brand-sub {
+    display: none;
   }
 }
 </style>
