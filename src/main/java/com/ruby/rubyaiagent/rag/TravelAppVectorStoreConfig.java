@@ -11,28 +11,32 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+
 /**
- * 行旅 AI 向量库配置（基于内存的 SimpleVectorStore）
- * 对应原 LoveAppVectorStoreConfig 的位置：作为本地调试 / 备用知识库实现。
- * 生产 RAG 仍然走 PgVectorVectorStoreConfig 中的 pgVectorVectorStore。
+ * 向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
 @Configuration
-@Slf4j
 public class TravelAppVectorStoreConfig {
 
     @Resource
-    private TravelAppDocumentLoader travelAppDocumentLoader;
+    private TravelAppDocumentLoader loveAppDocumentLoader;
+
+    @Resource
+    private MyTokenTextSplitter myTokenTextSplitter;
+
+    @Resource
+    private MyKeywordEnricher myKeywordEnricher;
 
     @Bean
-    VectorStore travelAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
-        SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
-                .build();
-        List<Document> documents = travelAppDocumentLoader.loadMarkdowns();
-        if (documents.isEmpty()) {
-            log.warn("旅游知识库未加载到可向量化文档，跳过 SimpleVectorStore 初始化数据导入");
-            return simpleVectorStore;
-        }
-        simpleVectorStore.add(documents);
+    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
+        SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
+        // 加载文档
+        List<Document> documentList = loveAppDocumentLoader.loadMarkdowns();
+        // 自主切分文档
+//        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documentList);
+        // 自动补充关键词元信息
+        List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documentList);
+        simpleVectorStore.add(enrichedDocuments);
         return simpleVectorStore;
     }
 }

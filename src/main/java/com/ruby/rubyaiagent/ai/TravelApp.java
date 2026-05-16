@@ -232,8 +232,18 @@ public class TravelApp {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new MyLoggerAdvisor())
-                // 应用 RAG 检索增强（基于 PgVector 向量存储的旅游攻略库）
+               // 应用 RAG 检索增强（基于 PgVector 向量存储的旅游攻略库）
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+   /*              // 应用 RAG 检索增强服务（基于云知识库服务）
+             //   .advisors(loveAppRagCloudAdvisor)
+                // 应用 RAG 检索增强服务（基于 Pg Vector 向量存储）
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
+                .advisors(
+                        TravelAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+                                travelAppVectorStore, "美食"
+                        )
+                )*/
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
