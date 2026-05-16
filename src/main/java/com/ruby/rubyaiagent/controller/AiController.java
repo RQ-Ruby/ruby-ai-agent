@@ -110,6 +110,7 @@ public class AiController {
         SseEmitter emitter = new SseEmitter(180000L); // 3分钟超时
         // 获取 Flux 数据流并直接订阅
         travelApp.doChatByStream(message, conversationId)
+                //Flux.subscribe(...) 本身就是异步非阻塞的，不需要手动处理线程
                 .subscribe(
                         // 处理每条消息
                         chunk -> {
