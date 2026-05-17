@@ -19,7 +19,7 @@ import java.util.List;
 public class TravelAppVectorStoreConfig {
 
     @Resource
-    private TravelAppDocumentLoader loveAppDocumentLoader;
+    private TravelAppDocumentLoader travelAppDocumentLoader;
 
     @Resource
     private MyTokenTextSplitter myTokenTextSplitter;
@@ -28,10 +28,10 @@ public class TravelAppVectorStoreConfig {
     private MyKeywordEnricher myKeywordEnricher;
 
     @Bean
-    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
+    VectorStore travelAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
         // 加载文档
-        List<Document> documentList = loveAppDocumentLoader.loadMarkdowns();
+        List<Document> documentList = travelAppDocumentLoader.loadMarkdowns();
         // 自主切分文档
 //        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documentList);
         // 自动补充关键词元信息

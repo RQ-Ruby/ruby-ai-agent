@@ -1,5 +1,4 @@
 package com.ruby.rubyaiagent.rag;
-
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.rag.Query;

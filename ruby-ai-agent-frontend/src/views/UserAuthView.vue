@@ -111,7 +111,6 @@ onMounted(async () => {
     <section class="auth-shell">
       <aside class="auth-brand-panel">
         <router-link to="/" class="brand-mark">行旅 AI</router-link>
-        <span class="brand-badge">用户系统</span>
         <h1 class="brand-title">{{ pageTitle }}</h1>
         <p class="brand-desc">{{ pageDesc }}</p>
 
@@ -126,7 +125,6 @@ onMounted(async () => {
       <main class="auth-form-panel">
         <div class="auth-card">
           <div class="auth-card-head">
-            <span class="auth-mini">{{ isLogin ? '账户登录' : '账户注册' }}</span>
             <h2 class="auth-heading">{{ isLogin ? '登录账号' : '创建账号' }}</h2>
             <p class="auth-subheading">{{ isLogin ? '输入账号和密码即可进入工作台。' : '使用账号和密码快速完成注册。' }}</p>
           </div>
@@ -255,21 +253,6 @@ onMounted(async () => {
   font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
-.brand-badge {
-  margin-top: 22px;
-  display: inline-flex;
-  width: fit-content;
-  align-items: center;
-  padding: 0 14px;
-  height: 34px;
-  border-radius: 999px;
-  background: rgba(248, 245, 238, 0.9);
-  border: 1px solid rgba(var(--gold-rgb), 0.42);
-  color: var(--highlight);
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
 .brand-title {
   margin: 18px 0 0;
   font-size: clamp(2rem, 4vw, 3.5rem);
@@ -364,20 +347,8 @@ onMounted(async () => {
   z-index: 1;
 }
 
-.auth-mini {
-  display: inline-flex;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  color: var(--highlight);
-  background: rgba(248, 245, 238, 0.92);
-  border: 1px solid rgba(var(--gold-rgb), 0.42);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
 .auth-heading {
-  margin: 10px 0 0;
+  margin: 0;
   font-size: 1.7rem;
   line-height: 1.2;
   font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;

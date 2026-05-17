@@ -822,7 +822,7 @@ onBeforeUnmount(() => {
 }
 
 .feature-body {
-  padding: 0 26px 26px;
+  padding: 0 30px 32px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -862,9 +862,23 @@ onBeforeUnmount(() => {
 .feature-link {
   align-self: flex-start;
   margin-top: auto;
+  margin-bottom: 6px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
   color: var(--home-accent);
-  border: 1px solid rgba(var(--home-gold-rgb), 0.46);
-  background: rgba(var(--home-primary-rgb), 0.04);
+  border: 1px solid rgba(var(--home-gold-rgb), 0.52);
+  background: rgba(248, 245, 238, 0.98);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+    0 12px 24px rgba(7, 14, 22, 0.08);
+}
+
+.feature-link:hover {
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.22),
+    0 0 18px rgba(var(--home-gold-rgb), 0.12),
+    0 18px 30px rgba(7, 14, 22, 0.18);
 }
 
 .ink-reveal {
