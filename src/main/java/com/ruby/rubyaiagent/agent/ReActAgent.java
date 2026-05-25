@@ -22,7 +22,7 @@ public abstract class ReActAgent extends BaseAgent {
      * 执行决定的行动  
      *  
      * @return 行动执行结果  
-     */  
+     */ 
     public abstract String act();  
   
     /**  

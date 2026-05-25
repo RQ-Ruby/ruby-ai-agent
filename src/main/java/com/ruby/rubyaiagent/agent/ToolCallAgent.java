@@ -64,6 +64,11 @@ public class ToolCallAgent extends ReActAgent {
             UserMessage userMessage = new UserMessage(getNextStepPrompt());
             getMessageList().add(userMessage);
         }
+        String loopInterventionPrompt = consumeLoopInterventionPrompt();
+        if (loopInterventionPrompt != null && !loopInterventionPrompt.isBlank()) {
+            getMessageList().add(new UserMessage(loopInterventionPrompt));
+            log.warn("{}检测到重复响应，已注入循环干预提示", getName());
+        }
         List<Message> messageList = getMessageList();
         ToolCallArgumentsSanitizer.normalizeMessagesInPlace(messageList);
         Prompt prompt = new Prompt(messageList, chatOptions);
@@ -128,6 +133,12 @@ public class ToolCallAgent extends ReActAgent {
             log.info(toolCallInfo);
             // currentThinking 仅供非流式路径使用；流式下 token 已直接推送。
             this.currentThinking = result == null ? "" : result;
+            String responseSignature = buildResponseSignature(result, toolCallList);
+            if (detectAndRecordRepeatedResponse(responseSignature)) {
+                log.warn("{}可能陷入重复响应或重复工具调用，signature={}", getName(), responseSignature);
+                currentAction = "检测到重复工具调用，已切换策略并跳过本轮重复执行";
+                return false;
+            }
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);
@@ -145,6 +156,15 @@ public class ToolCallAgent extends ReActAgent {
                     new AssistantMessage("处理时遇到错误: " + e.getMessage()));
             return false;
         }
+    }
+
+    private String buildResponseSignature(String result, List<AssistantMessage.ToolCall> toolCallList) {
+        if (toolCallList != null && !toolCallList.isEmpty()) {
+            return toolCallList.stream()
+                    .map(toolCall -> toolCall.name() + ":" + toolCall.arguments())
+                    .collect(Collectors.joining("|"));
+        }
+        return result == null ? "" : result;
     }
 
     /**

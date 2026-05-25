@@ -12,7 +12,9 @@ import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,6 +41,10 @@ public abstract class BaseAgent {
     // 执行控制  
     private int maxSteps = 10;  
     private int currentStep = 0;  
+    private int duplicateResponseThreshold = 2;
+    private int recentResponseWindow = 3;
+    private final Deque<String> recentResponses = new ArrayDeque<>();
+    private String loopInterventionPrompt;
   
     // LLM  
     private ChatClient chatClient;
@@ -52,6 +58,31 @@ public abstract class BaseAgent {
 
     // 流式 token 接收器：不为 null 时，子类在 think() 期间逐 token 推送 delta。
     protected java.util.function.Consumer<String> tokenSink;
+
+    protected boolean detectAndRecordRepeatedResponse(String responseSignature) {
+        if (responseSignature == null || responseSignature.isBlank()) {
+            return false;
+        }
+        String normalized = responseSignature.replaceAll("\\s+", " ").trim();
+        long duplicateCount = recentResponses.stream()
+                .filter(normalized::equals)
+                .count();
+        recentResponses.addLast(normalized);
+        while (recentResponses.size() > recentResponseWindow) {
+            recentResponses.removeFirst();
+        }
+        if (duplicateCount + 1 >= duplicateResponseThreshold) {
+            loopInterventionPrompt = "观察到你正在重复相同的响应或工具调用。请不要重复已尝试过的无效路径，改用新的策略推进任务；如果已有足够信息，请直接给出最终答案；如果无法继续，请调用终止工具结束。";
+            return true;
+        }
+        return false;
+    }
+
+    protected String consumeLoopInterventionPrompt() {
+        String prompt = loopInterventionPrompt;
+        loopInterventionPrompt = null;
+        return prompt;
+    }
   
     /**  
      * 运行代理  
