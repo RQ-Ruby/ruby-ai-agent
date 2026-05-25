@@ -39,7 +39,7 @@ const props = defineProps({
   assistantLabel: { type: String, default: 'AI' },
 })
 
-const emit = defineEmits(['new-chat'])
+const emit = defineEmits(['new-chat', 'stream-complete'])
 
 const input = ref('')
 const messages = ref([])
@@ -51,14 +51,22 @@ let revealObserver = null
 
 /** 外部调用：加载历史消息 */
 function loadHistory(historyMessages) {
-  if (!historyMessages || historyMessages.length === 0) return
+  if (!historyMessages || historyMessages.length === 0) {
+    messages.value = []
+    return
+  }
   messages.value = historyMessages.map(m => ({
     role: m.role === 'user' ? 'user' : 'assistant',
     content: m.content || ''
   }))
 }
 
-defineExpose({ loadHistory })
+function clearMessages() {
+  messages.value = []
+  errorText.value = ''
+}
+
+defineExpose({ loadHistory, clearMessages })
 
 const listEl = ref(null)
 
@@ -69,8 +77,7 @@ watch(
 )
 
 function resetMessages() {
-  messages.value = []
-  errorText.value = ''
+  clearMessages()
   emit('new-chat')
 }
 
@@ -152,6 +159,12 @@ async function send() {
   } finally {
     streaming.value = false
     abortController = null
+    const assistantText = messages.value[assistantIndex]?.content || ''
+    emit('stream-complete', {
+      userMessage: text,
+      assistantMessage: assistantText,
+      messages: messages.value,
+    })
   }
 }
 

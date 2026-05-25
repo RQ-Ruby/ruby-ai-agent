@@ -42,6 +42,13 @@ public class ChatMemoryConfig {
     }
 
     @Bean
+    public JdbcChatSessionStore jdbcChatSessionStore(@Qualifier("mysqlJdbcTemplate") JdbcTemplate mysqlJdbcTemplate) {
+        JdbcChatSessionStore store = new JdbcChatSessionStore(mysqlJdbcTemplate);
+        store.initSchema();
+        return store;
+    }
+
+    @Bean
     public TwoLevelChatMemory twoLevelChatMemory(RedisChatMemoryStore redisChatMemoryStore,
                                                  JdbcChatMemoryStore jdbcChatMemoryStore) {
         return new TwoLevelChatMemory(redisChatMemoryStore, jdbcChatMemoryStore);

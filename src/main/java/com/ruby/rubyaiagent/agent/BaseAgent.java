@@ -142,6 +142,7 @@ public abstract class BaseAgent {
 
         // 使用线程异步处理，避免阻塞主线程
         CompletableFuture.runAsync(() -> {
+            StringBuilder visibleOutput = new StringBuilder();
             try {
                 // 允许从 FINISHED / ERROR 状态重新发起一轮（保留 messageList，做多轮记忆）。
                 // 只拒绝 RUNNING（并发同一会话）这种确实不安全的情况。
@@ -169,6 +170,7 @@ public abstract class BaseAgent {
                     // 将 token 汇流到 SSE：子类的 think() 会逐 token 调用这个 sink
                     this.tokenSink = delta -> {
                         try {
+                            visibleOutput.append(delta);
                             emitter.send(delta);
                         } catch (Exception ignore) {
                             // 客户端已断开，忽略
@@ -187,25 +189,34 @@ public abstract class BaseAgent {
 
                         // 如果本步调用了工具，紧接一个简洁的行内执行标记
                         if (currentAction != null && !currentAction.isBlank()) {
-                            emitter.send("\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n");
+                            String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
+                            visibleOutput.append(actionChunk);
+                            emitter.send(actionChunk);
                         } else if ((currentThinking == null || currentThinking.isBlank())
                                 && stepResult != null && !stepResult.isBlank()) {
                             // 傅底：think 未输出且无工具，退化发送 step 文本
+                            visibleOutput.append(stepResult);
                             emitter.send(stepResult);
                         }
                     }
                     // 检查是否超出步骤限制
                     if (currentStep >= maxSteps && state != AgentState.FINISHED) {
                         state = AgentState.FINISHED;
-                        emitter.send("\n\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n");
+                        String warningChunk = "\n\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n";
+                        visibleOutput.append(warningChunk);
+                        emitter.send(warningChunk);
                     }
+                    afterStreamingRun(userPrompt, visibleOutput.toString(), state == AgentState.FINISHED);
                     // 正常完成
                     emitter.complete();
                 } catch (Exception e) {
                     state = AgentState.ERROR;
                     log.error("执行智能体失败", e);
                     try {
-                        emitter.send("执行错误: " + e.getMessage());
+                        String errorChunk = "执行错误: " + e.getMessage();
+                        visibleOutput.append(errorChunk);
+                        afterStreamingRun(userPrompt, visibleOutput.toString(), false);
+                        emitter.send(errorChunk);
                         emitter.complete();
                     } catch (Exception ex) {
                         emitter.completeWithError(ex);
@@ -251,4 +262,7 @@ public abstract class BaseAgent {
     protected void cleanup() {  
         // 子类可以重写此方法来清理资源  
     }  
+
+    protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
+    }
 }

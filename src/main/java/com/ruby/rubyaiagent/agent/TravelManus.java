@@ -1,7 +1,13 @@
 package com.ruby.rubyaiagent.agent;
 
 import com.ruby.rubyaiagent.advisor.MyLoggerAdvisor;
+import com.ruby.rubyaiagent.chatmemory.JdbcChatSessionStore;
+import com.ruby.rubyaiagent.chatmemory.TwoLevelChatMemory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -19,23 +25,47 @@ import java.util.List;
  * 这里仍保留 ReAct 单循环作为「轻量场景」入口。
  */
 @Component
+@Slf4j
 public class TravelManus extends ToolCallAgent {
 
-    public TravelManus(ToolCallback[] allTools, ToolCallbackProvider mcpToolCallbackProvider, ChatModel dashscopeChatModel) {
+    private final TwoLevelChatMemory twoLevelChatMemory;
+
+    private final JdbcChatSessionStore jdbcChatSessionStore;
+
+    private String conversationId;
+
+    private Long userId;
+
+    private String chatId;
+
+    public TravelManus(ToolCallback[] allTools,
+                       ToolCallbackProvider mcpToolCallbackProvider,
+                       ChatModel dashscopeChatModel,
+                       TwoLevelChatMemory twoLevelChatMemory,
+                       JdbcChatSessionStore jdbcChatSessionStore) {
         super(mergeTools(allTools, mcpToolCallbackProvider));
+        this.twoLevelChatMemory = twoLevelChatMemory;
+        this.jdbcChatSessionStore = jdbcChatSessionStore;
         this.setName("TravelManus");
 
         String SYSTEM_PROMPT = """
                 你是【行旅 AI · 国内旅游规划智能体】（TravelManus），擅长为中国境内出游用户提供贴心、可靠、有人情味的行程规划与出行建议。
-                你的任务是在一次运行内，结合现有工具能力，自主完成国内旅游规划、信息补充、预算估算与落地建议输出。
+                你的任务是在用户明确表达旅行需求后，结合现有工具能力，完成国内旅游规划、信息补充、预算估算与落地建议输出。
                 
                 请严格遵守以下原则：
+                0. 先判断是否真的需要规划：
+                   - 用户只是打招呼（如「你好」「在吗」「我是 XXX」）、自我介绍、闲聊或仅询问你的能力时：
+                     - 直接用 1~3 句自然中文回应，简单介绍你能帮做什么（例如规划国内行程、推荐景点美食、估算预算等）。
+                     - 主动反问对方：想去哪里、出行时间、人数、偏好或预算，引导对方补充信息。
+                     - 不要调用任何工具，不要生成任何具体目的地、行程、预算方案。
+                     - 回应完成后立即调用 doTerminate 结束本轮，不要继续推进。
+                   - 只有当用户明确表达「我想去 X 地 / 帮我规划 / 推荐行程 / 预算多少 / 几天怎么玩」等真实旅行意图时，才进入下面的完整规划流程。
                 1. 聚焦国内旅游：
                    - 默认场景为中国境内旅游、周边游、城市漫游、亲子游、情侣游、家庭游、朋友结伴游。
                    - 不要主动展开签证、护照、海外交通、汇率、国际漫游、出入境政策等内容。
                    - 如果用户明确提到出境场景，也只做简短提醒：当前以国内旅游规划为主，再把重心放回用户真正关心的行程安排、预算、交通与体验上。
-                2. 一次性推进任务：
-                   - 本智能体一次运行完成任务，不与用户多轮追问。
+                2. 进入规划后再一次性推进：
+                   - 一旦确认用户有真实旅行意图，本智能体一次运行内完成任务，不再和用户多轮追问。
                    - 关键信息缺失时，优先采用合理默认值继续推进，并在最终答复中用「假设条件」说明。
                    - 默认值参考：
                      - 人数：2 人
@@ -75,22 +105,29 @@ public class TravelManus extends ToolCallAgent {
         this.setSystemPrompt(SYSTEM_PROMPT);
 
         String NEXT_STEP_PROMPT = """
-                请基于用户真实意图，像一个靠谱的国内旅行规划师一样直接推进，不要空泛寒暄，也不要为了补信息反复追问。
+                请基于用户真实意图判断当前应该如何回应，不要空泛寒暄，也不要在用户没有提出旅行需求时硬生生造规划。
                 
                 执行策略：
-                1. 先判断用户要的是哪一类结果：
+                1. 先判断本轮用户输入是否包含明确的旅行意图：
+                   - 仅打招呼 / 自我介绍 / 闲聊 / 询问你能力时：
+                     - 用 1~3 句中文自然回应，简单说明你能帮做什么国内旅行相关的事。
+                     - 主动反问目的地、时间、天数、人数、预算或偏好中的关键缺项，引导用户补充。
+                     - 不要调用任何工具，不要给目的地建议、不要列行程、不要估预算。
+                     - 回应完后立即调用 doTerminate 结束。
+                   - 包含明确旅行意图（指明目的地 / 天数 / 预算 / 行程 / 推荐请求等）时，继续下面的步骤。
+                2. 判断用户要的是哪一类结果：
                    - 完整行程规划
                    - 某城市 / 某景点怎么玩
                    - 交通、住宿、美食推荐
                    - 预算估算
                    - 天气、周边、路线等实时信息
                    - 图片参考
-                2. 若信息不完整，优先自行补齐：
+                3. 若信息不完整，优先自行补齐：
                    - 缺人数 → 默认 2 人
                    - 缺预算 → 按国内常见水平估算
-                   - 缺偏好 → 默认“经典景点 + 本地美食 + 轻松节奏”
+                   - 缺偏好 → 默认"经典景点 + 本地美食 + 轻松节奏"
                    - 缺住宿倾向 → 默认住在地铁方便、景点或商圈通达的位置
-                   - 连目的地都没给时，结合用户描述、季节和天数，先给出 2~3 个国内目的地建议，再选一个最合适的方向展开主方案
+                   - 仅在用户已经表达旅行意图但没指定目的地时，才结合季节和天数给出 2~3 个国内目的地建议，再选一个展开主方案；如果用户根本没说要规划，绝对不要主动给目的地建议。
                 3. 需要真实或最新信息时，主动调用对应工具：
                    - 搜最新信息 → searchWeb / scrapeWebPage
                    - 查天气 → maps_weather
@@ -113,6 +150,83 @@ public class TravelManus extends ToolCallAgent {
                 .defaultAdvisors(new MyLoggerAdvisor())
                 .build();
         this.setChatClient(chatClient);
+    }
+
+    public TravelManus bindSession(Long userId, String chatId, String conversationId) {
+        this.userId = userId;
+        this.chatId = chatId;
+        this.conversationId = conversationId;
+        restorePersistedHistory();
+        return this;
+    }
+
+    @Override
+    protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
+        if (!success || conversationId == null || conversationId.isBlank()) {
+            return;
+        }
+        String visibleAnswer = normalizeAssistantOutput(assistantOutput);
+        if (visibleAnswer.isBlank()) {
+            return;
+        }
+        try {
+            twoLevelChatMemory.add(conversationId, List.of(
+                    new UserMessage(userPrompt),
+                    new AssistantMessage(visibleAnswer)
+            ));
+            jdbcChatSessionStore.touchSession(
+                    userId,
+                    "travel_manus",
+                    chatId,
+                    conversationId,
+                    buildSessionTitle(userPrompt),
+                    visibleAnswer
+            );
+        } catch (Exception e) {
+            log.warn("[TravelManus] 持久化会话失败: {}", e.getMessage());
+        }
+    }
+
+    private void restorePersistedHistory() {
+        if (conversationId == null || conversationId.isBlank()) {
+            return;
+        }
+        try {
+            List<Message> persistedMessages = twoLevelChatMemory.get(conversationId, 100);
+            if (persistedMessages == null || persistedMessages.isEmpty()) {
+                return;
+            }
+            List<Message> currentMessages = getMessageList();
+            if (currentMessages != null && !currentMessages.isEmpty()) {
+                return;
+            }
+            getMessageList().addAll(persistedMessages);
+        } catch (Exception e) {
+            log.warn("[TravelManus] 恢复历史会话失败: {}", e.getMessage());
+        }
+    }
+
+    private String normalizeAssistantOutput(String assistantOutput) {
+        if (assistantOutput == null) {
+            return "";
+        }
+        String normalized = assistantOutput
+                .replaceAll("(?m)^> 🔧.*$", "")
+                .replaceAll("(?m)^> ⚠️.*$", "")
+                .replaceAll("\n{3,}", "\n\n")
+                .trim();
+        return normalized;
+    }
+
+    private String buildSessionTitle(String userPrompt) {
+        String title = userPrompt == null ? "新会话" : userPrompt.trim().replaceAll("\\s+", " ");
+        if (title.isBlank()) {
+            return "新会话";
+        }
+        if (title.length() <= 24) {
+            return title;
+        }
+        return title.substring(0, 24);
     }
 
     /**
