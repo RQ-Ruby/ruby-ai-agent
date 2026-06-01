@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: travel-agent-user
+  # session
+  session:
+    # 分布式存储 session
+    store-type: redis
+    # session 命名空间隔离
+    redis:
+      namespace: travel-agent:session
+    # 30 days expire
+    timeout: 2592000
+  profiles:
+    active: local
+server:
+  port: 8102
+  servlet:
+    context-path: /api
+    # 30 days expire
+    session:
+      cookie:
+        max-age: 2592000
+# springdoc-openapi
+springdoc:
+  group-configs:
+    - group: 'default'
+      packages-to-scan: com.ruby.user.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# MyBatis-Plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0

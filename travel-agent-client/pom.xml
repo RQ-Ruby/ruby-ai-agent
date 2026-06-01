@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ruby</groupId>
+        <artifactId>travel-agent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>travel-agent-client</artifactId>
+    <description>服务接口模块：Dubbo 服务接口定义（Inner 系列），供消费方依赖</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ruby</groupId>
+            <artifactId>travel-agent-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ruby</groupId>
+            <artifactId>travel-agent-common</artifactId>
+        </dependency>
+
+        <!-- Jakarta Servlet API -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
