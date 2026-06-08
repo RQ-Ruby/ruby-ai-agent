@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { getLoginUser, userLogin, userRegister } from '../api/user.js'
-import { useAuthStore } from '../stores/auth.js'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {getLoginUser, userLogin, userRegister} from '../api/user.js'
+import {useAuthStore} from '../stores/auth.js'
 
 const props = defineProps({
   mode: {
@@ -27,9 +27,9 @@ const form = reactive({
 const isLogin = computed(() => props.mode === 'login')
 const pageTitle = computed(() => (isLogin.value ? '欢迎回来' : '创建你的行旅账号'))
 const pageDesc = computed(() =>
-  isLogin.value
-    ? '登录后即可使用多轮咨询、工作流规划与后续用户中心能力。'
-    : '注册一个账号，保存你的会话、规划记录与个性化偏好。',
+    isLogin.value
+        ? '登录后即可使用多轮咨询、工作流规划与后续用户中心能力。'
+        : '注册一个账号，保存你的会话、规划记录与个性化偏好。',
 )
 const submitText = computed(() => (loading.value ? '提交中...' : isLogin.value ? '登录' : '注册'))
 const switchText = computed(() => (isLogin.value ? '还没有账号？' : '已经有账号了？'))
@@ -110,7 +110,7 @@ onMounted(async () => {
 
     <section class="auth-shell">
       <aside class="auth-brand-panel">
-        <router-link to="/" class="brand-mark">行旅 AI</router-link>
+        <router-link class="brand-mark" to="/">行旅 AI</router-link>
         <h1 class="brand-title">{{ pageTitle }}</h1>
         <p class="brand-desc">{{ pageDesc }}</p>
 
@@ -126,50 +126,52 @@ onMounted(async () => {
         <div class="auth-card">
           <div class="auth-card-head">
             <h2 class="auth-heading">{{ isLogin ? '登录账号' : '创建账号' }}</h2>
-            <p class="auth-subheading">{{ isLogin ? '输入账号和密码即可进入工作台。' : '使用账号和密码快速完成注册。' }}</p>
+            <p class="auth-subheading">{{
+                isLogin ? '输入账号和密码即可进入工作台。' : '使用账号和密码快速完成注册。'
+              }}</p>
           </div>
 
           <form class="auth-form" @submit.prevent="submit">
             <label class="field">
               <span class="field-label">账号</span>
               <input
-                v-model="form.userAccount"
-                class="field-input"
-                type="text"
-                maxlength="64"
-                placeholder="请输入账号"
-                autocomplete="username"
+                  v-model="form.userAccount"
+                  autocomplete="username"
+                  class="field-input"
+                  maxlength="64"
+                  placeholder="请输入账号"
+                  type="text"
               />
             </label>
 
             <label class="field">
               <span class="field-label">密码</span>
               <input
-                v-model="form.userPassword"
-                class="field-input"
-                type="password"
-                maxlength="64"
-                placeholder="请输入密码（至少 8 位）"
-                autocomplete="current-password"
+                  v-model="form.userPassword"
+                  autocomplete="current-password"
+                  class="field-input"
+                  maxlength="64"
+                  placeholder="请输入密码（至少 8 位）"
+                  type="password"
               />
             </label>
 
             <label v-if="!isLogin" class="field">
               <span class="field-label">确认密码</span>
               <input
-                v-model="form.checkPassword"
-                class="field-input"
-                type="password"
-                maxlength="64"
-                placeholder="请再次输入密码"
-                autocomplete="new-password"
+                  v-model="form.checkPassword"
+                  autocomplete="new-password"
+                  class="field-input"
+                  maxlength="64"
+                  placeholder="请再次输入密码"
+                  type="password"
               />
             </label>
 
             <p v-if="errorMessage" class="message message-error">{{ errorMessage }}</p>
             <p v-if="successMessage" class="message message-success">{{ successMessage }}</p>
 
-            <button class="submit-btn" type="submit" :disabled="loading">
+            <button :disabled="loading" class="submit-btn" type="submit">
               {{ submitText }}
             </button>
           </form>
@@ -179,7 +181,7 @@ onMounted(async () => {
             <router-link :to="switchTo" class="switch-link">{{ switchLinkText }}</router-link>
           </div>
 
-          <router-link to="/" class="back-link">返回首页</router-link>
+          <router-link class="back-link" to="/">返回首页</router-link>
         </div>
       </main>
     </section>
@@ -277,9 +279,8 @@ onMounted(async () => {
   padding: 22px;
   border-radius: 26px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -323,9 +324,8 @@ onMounted(async () => {
   width: 100%;
   padding: 28px;
   border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   border: 1px solid var(--border-strong);
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(12px);

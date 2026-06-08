@@ -6,9 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 权限校验注解：标注在 controller 方法上，指定该接口要求的最低角色。
+ * 权限校验注解,被 AOP 拦截后校验登录态
+ * 方法注解，指定该接口要求调用方的最低角色
  *
  * @author RQ
+ * @Target ElementType.METHOD 指定为方法注解
+ * @Retention RetentionPolicy.RUNTIME 指定为运行时注解
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

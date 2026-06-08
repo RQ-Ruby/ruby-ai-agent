@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import SseChatRoom from '../components/SseChatRoom.vue'
-import { buildTravelChatStreamUrl, fetchChatHistory, fetchChatSessions } from '../api/sseUrls.js'
-import { useAuthStore } from '../stores/auth.js'
+import {buildTravelChatStreamUrl, fetchChatHistory, fetchChatSessions} from '../api/sseUrls.js'
+import {useAuthStore} from '../stores/auth.js'
 
 const auth = useAuthStore()
 
@@ -25,7 +25,7 @@ const displaySessions = computed(() => {
   if (list.some(item => item.chatId === chatId.value)) {
     return list
   }
-  return [{ chatId: chatId.value, title: '新会话', lastMessagePreview: '', updatedAt: null }, ...list]
+  return [{chatId: chatId.value, title: '新会话', lastMessagePreview: '', updatedAt: null}, ...list]
 })
 
 onMounted(async () => {
@@ -53,7 +53,7 @@ function createChatId() {
 async function refreshSessions() {
   loadingSessions.value = true
   try {
-    const { data } = await fetchChatSessions('travel_app')
+    const {data} = await fetchChatSessions('travel_app')
     sessions.value = Array.isArray(data) ? data : []
   } catch (e) {
     console.warn('加载会话列表失败', e)
@@ -64,7 +64,7 @@ async function refreshSessions() {
 
 async function loadHistory(targetChatId) {
   try {
-    const { data } = await fetchChatHistory(targetChatId)
+    const {data} = await fetchChatHistory(targetChatId)
     chatRoomRef.value?.loadHistory(data || [])
   } catch (e) {
     console.warn('加载历史消息失败', e)
@@ -105,17 +105,17 @@ function formatUpdatedAt(value) {
           <div class="session-kicker">旅行咨询会话</div>
           <h2 class="session-title">多聊天室</h2>
         </div>
-        <button type="button" class="session-create-btn" @click="handleNewChat">新建</button>
+        <button class="session-create-btn" type="button" @click="handleNewChat">新建</button>
       </div>
 
-      <div class="session-list" :data-loading="loadingSessions">
+      <div :data-loading="loadingSessions" class="session-list">
         <button
-          v-for="item in displaySessions"
-          :key="item.chatId"
-          type="button"
-          class="session-item"
-          :data-active="item.chatId === chatId"
-          @click="selectSession(item.chatId)"
+            v-for="item in displaySessions"
+            :key="item.chatId"
+            :data-active="item.chatId === chatId"
+            class="session-item"
+            type="button"
+            @click="selectSession(item.chatId)"
         >
           <span class="session-item-title">{{ item.title || '新会话' }}</span>
           <span class="session-item-preview">{{ item.lastMessagePreview || '暂未开始对话' }}</span>
@@ -126,16 +126,16 @@ function formatUpdatedAt(value) {
 
     <main class="chat-panel">
       <SseChatRoom
-        ref="chatRoomRef"
-        title="行旅 AI · 旅行咨询"
-        subtitle="面向国内文旅目的地的多轮旅行咨询助手。可咨询行程、景点、美食、住宿、交通、预算与避坑建议，并基于独立会话保留上下文。"
-        :session-label="chatId"
-        empty-title="开始你的旅行咨询"
-        empty-description="输入目的地、出行时间、人数与预算，行旅 AI 会结合多轮记忆与流式输出给你更连贯的建议。"
-        placeholder="比如：5 月想带父母去成都玩 4 天，预算 6000 元，请帮我推荐行程"
-        :build-stream-url="buildStreamUrl"
-        @new-chat="handleNewChat"
-        @stream-complete="handleStreamComplete"
+          ref="chatRoomRef"
+          :build-stream-url="buildStreamUrl"
+          :session-label="chatId"
+          empty-description="输入目的地、出行时间、人数与预算，行旅 AI 会结合多轮记忆与流式输出给你更连贯的建议。"
+          empty-title="开始你的旅行咨询"
+          placeholder="比如：5 月想带父母去成都玩 4 天，预算 6000 元，请帮我推荐行程"
+          subtitle="面向国内文旅目的地的多轮旅行咨询助手。可咨询行程、景点、美食、住宿、交通、预算与避坑建议，并基于独立会话保留上下文。"
+          title="行旅 AI · 旅行咨询"
+          @new-chat="handleNewChat"
+          @stream-complete="handleStreamComplete"
       />
     </main>
   </div>

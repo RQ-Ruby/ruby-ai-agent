@@ -1,4 +1,4 @@
-package com.ruby.ai.rag;
+package com.ruby.ai.rag.documentIndex;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 旅游攻略文档加载器：读取 classpath:document/travel/*.md
- * 对应原 LoveAppDocumentLoader：仅切换文档目录，逻辑一致。
+ * 旅游攻略文档加载器,读取 classpath:document/travel/*.md
  */
 @Component
 @Slf4j

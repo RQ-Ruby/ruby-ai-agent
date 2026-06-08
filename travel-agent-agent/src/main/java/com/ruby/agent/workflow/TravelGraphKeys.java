@@ -5,19 +5,14 @@ package com.ruby.agent.workflow;
  * 集中管理状态键名，避免散落字符串字面量。
  */
 public final class TravelGraphKeys {
-
-    private TravelGraphKeys() {}
-
-    // —— 输入 ——
+    // 输入
     public static final String USER_MESSAGE = "userMessage";
     public static final String CONVERSATION_ID = "conversationId";
-
-    // —— 意图识别 ——
-    /** "travel" / "chitchat" */
+    // "travel" / "chitchat"
     public static final String INTENT = "intent";
+    // 意图识别
     public static final String CHITCHAT_REPLY = "chitchatReply";
-
-    // —— 出行参数 ——
+    // 出行参数
     public static final String DESTINATION = "destination";
     public static final String DAYS = "days";
     public static final String PEOPLE = "people";
@@ -25,23 +20,20 @@ public final class TravelGraphKeys {
     public static final String TRAVEL_MODE = "travelMode";
     public static final String PREFERENCES = "preferences";
     public static final String TRAVEL_TIME = "travelTime";
-
-    // —— 校验 ——
-    /** 缺失字段列表（逗号分隔） */
+    // 缺失字段列表（逗号分隔）
     public static final String MISSING_FIELDS = "missingFields";
-    /** 反问话术 */
+    // 反问话术
     public static final String CLARIFY_QUESTION = "clarifyQuestion";
-
-    // —— RAG / 行程 ——
+    // RAG
     public static final String RAG_CONTEXT = "ragContext";
-    /** MCP 增强信息（天气、真实 POI 等） */
+    // MCP 增强信息（天气、真实 POI 等）
     public static final String MCP_CONTEXT = "mcpContext";
     public static final String ITINERARY = "itinerary";
-
-    // —— 输出 ——
+    // 输出
     public static final String FINAL_RESPONSE = "finalResponse";
-
-    // —— 流转 ——
-    /** 已经执行完成的节点名（append） */
+    // 已经执行完成的节点名（append）
     public static final String COMPLETED_NODES = "completedNodes";
+    // 流转
+    private TravelGraphKeys() {
+    }
 }

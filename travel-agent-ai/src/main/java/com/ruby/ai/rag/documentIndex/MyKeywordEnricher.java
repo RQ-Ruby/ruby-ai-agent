@@ -1,4 +1,4 @@
-package com.ruby.ai.rag;
+package com.ruby.ai.rag.documentIndex;
 
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
@@ -19,6 +19,6 @@ public class MyKeywordEnricher {
 
     public List<Document> enrichDocuments(List<Document> documents) {
         KeywordMetadataEnricher keywordMetadataEnricher = new KeywordMetadataEnricher(dashscopeChatModel, 5);
-        return  keywordMetadataEnricher.apply(documents);
+        return keywordMetadataEnricher.apply(documents);
     }
 }

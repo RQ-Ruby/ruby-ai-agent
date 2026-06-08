@@ -6,10 +6,11 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
 import java.io.IOException;
+
 /**
- * @description  网络爬虫工具类
- * @return:  网页内容
  * @author RQ
+ * @description 网络爬虫工具类
+ * @return: 网页内容
  * @date: 2026/3/30 下午5:52
  */
 public class WebScrapingTool {

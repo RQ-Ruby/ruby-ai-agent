@@ -1,4 +1,4 @@
-package com.ruby.ai.rag;
+package com.ruby.ai.rag.documentIndex;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
@@ -10,7 +10,7 @@ import java.util.List;
  * 自定义基于 Token 的切词器
  */
 @Component
-class MyTokenTextSplitter {
+public class MyTokenTextSplitter {
     public List<Document> splitDocuments(List<Document> documents) {
         TokenTextSplitter splitter = new TokenTextSplitter();
         return splitter.apply(documents);

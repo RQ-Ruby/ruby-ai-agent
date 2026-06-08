@@ -30,8 +30,6 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    // region 登录注册
-
     /**
      * 用户注册
      */
@@ -149,6 +147,4 @@ public class UserController {
         voPage.setRecords(userService.getUserVOList(userPage.getRecords()));
         return ResultUtils.success(voPage);
     }
-
-    // endregion
 }

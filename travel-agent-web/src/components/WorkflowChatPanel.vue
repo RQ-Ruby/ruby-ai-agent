@@ -1,10 +1,10 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { marked } from 'marked'
-import { buildWorkflowPlanUrl, fetchChatHistory } from '../api/sseUrls.js'
-import { useAuthStore } from '../stores/auth.js'
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import {marked} from 'marked'
+import {buildWorkflowPlanUrl, fetchChatHistory} from '../api/sseUrls.js'
+import {useAuthStore} from '../stores/auth.js'
 
-marked.setOptions({ breaks: true, gfm: true })
+marked.setOptions({breaks: true, gfm: true})
 
 const auth = useAuthStore()
 
@@ -15,14 +15,14 @@ const storageKey = computed(() => {
 })
 
 const stageList = [
-  { key: 'intent', title: '意图识别', desc: '判断是旅行规划还是普通闲聊' },
-  { key: 'extract', title: '参数抽取', desc: '提取目的地、天数、预算、偏好等' },
-  { key: 'validate', title: '参数校验', desc: '检查目的地、天数等必填项' },
-  { key: 'clarify', title: '缺参反问', desc: '缺少关键信息时主动追问补全' },
-  { key: 'rag', title: 'RAG 检索', desc: '查询本地景点、美食、住宿和攻略' },
-  { key: 'mcp', title: 'MCP 增强', desc: '调用高德 MCP 获取天气和真实 POI' },
-  { key: 'generate', title: '行程生成', desc: '结合知识库 + MCP 信息生成方案' },
-  { key: 'memory', title: '记忆保存', desc: '保存会话上下文，支持后续修改' },
+  {key: 'intent', title: '意图识别', desc: '判断是旅行规划还是普通闲聊'},
+  {key: 'extract', title: '参数抽取', desc: '提取目的地、天数、预算、偏好等'},
+  {key: 'validate', title: '参数校验', desc: '检查目的地、天数等必填项'},
+  {key: 'clarify', title: '缺参反问', desc: '缺少关键信息时主动追问补全'},
+  {key: 'rag', title: 'RAG 检索', desc: '查询本地景点、美食、住宿和攻略'},
+  {key: 'mcp', title: 'MCP 增强', desc: '调用高德 MCP 获取天气和真实 POI'},
+  {key: 'generate', title: '行程生成', desc: '结合知识库 + MCP 信息生成方案'},
+  {key: 'memory', title: '记忆保存', desc: '保存会话上下文，支持后续修改'},
 ]
 
 const examplePrompts = [
@@ -110,7 +110,7 @@ function scrollToBottom() {
   })
 }
 
-watch(turns, scrollToBottom, { deep: true })
+watch(turns, scrollToBottom, {deep: true})
 
 function normalizeHistory(history) {
   const normalized = []
@@ -123,12 +123,12 @@ function normalizeHistory(history) {
 
     if (role === 'user') {
       if (pending) normalized.push(pending)
-      pending = createTurn({ user: content, restored: true, status: 'done' })
+      pending = createTurn({user: content, restored: true, status: 'done'})
       continue
     }
 
     if (!pending) {
-      normalized.push(createTurn({ assistant: content, restored: true, status: 'done' }))
+      normalized.push(createTurn({assistant: content, restored: true, status: 'done'}))
       continue
     }
 
@@ -143,7 +143,7 @@ function normalizeHistory(history) {
 
 async function loadHistory() {
   try {
-    const { data } = await fetchChatHistory(chatId.value)
+    const {data} = await fetchChatHistory(chatId.value)
     turns.value = normalizeHistory(data)
   } catch (error) {
     console.warn('加载工作流历史失败', error)
@@ -167,13 +167,13 @@ function parseSseBlock(block) {
     }
   }
 
-  return { event, data }
+  return {event, data}
 }
 
-async function consumeWorkflowSse(url, { signal, onEvent }) {
+async function consumeWorkflowSse(url, {signal, onEvent}) {
   const res = await fetch(url, {
     signal,
-    headers: { Accept: 'text/event-stream' },
+    headers: {Accept: 'text/event-stream'},
   })
 
   if (!res.ok) {
@@ -191,8 +191,8 @@ async function consumeWorkflowSse(url, { signal, onEvent }) {
 
   try {
     while (true) {
-      const { done, value } = await reader.read()
-      if (value) buffer += decoder.decode(value, { stream: true })
+      const {done, value} = await reader.read()
+      if (value) buffer += decoder.decode(value, {stream: true})
 
       let splitIndex = buffer.indexOf('\n\n')
       while (splitIndex !== -1) {
@@ -263,13 +263,13 @@ function usePrompt(prompt) {
 }
 
 function turnBadge(turn) {
-  if (turn.error) return { text: '执行失败', tone: 'error' }
-  if (turn.status === 'streaming') return { text: '执行中', tone: 'active' }
+  if (turn.error) return {text: '执行失败', tone: 'error'}
+  if (turn.status === 'streaming') return {text: '执行中', tone: 'active'}
   if (turn.assistant.includes('再确认几个信息') || turn.assistant.includes('大概玩几天')) {
-    return { text: '等待补充参数', tone: 'pending' }
+    return {text: '等待补充参数', tone: 'pending'}
   }
-  if (turn.restored) return { text: '历史记录', tone: 'restored' }
-  return { text: '已完成', tone: 'done' }
+  if (turn.restored) return {text: '历史记录', tone: 'restored'}
+  return {text: '已完成', tone: 'done'}
 }
 
 async function sendMessage() {
@@ -279,7 +279,7 @@ async function sendMessage() {
   pageError.value = ''
   loading.value = true
 
-  const turn = createTurn({ user: text, status: 'streaming' })
+  const turn = createTurn({user: text, status: 'streaming'})
   turns.value.push(turn)
   input.value = ''
 
@@ -290,7 +290,7 @@ async function sendMessage() {
   try {
     await consumeWorkflowSse(url, {
       signal: controller.signal,
-      onEvent: ({ event, data }) => {
+      onEvent: ({event, data}) => {
         if (!data) return
 
         if (event === 'status' || event === 'progress') {
@@ -359,15 +359,15 @@ onMounted(async () => {
   }
 
   revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          revealObserver?.unobserve(entry.target)
-        }
-      })
-    },
-    { threshold: 0.12, rootMargin: '0px 0px -36px 0px' },
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            revealObserver?.unobserve(entry.target)
+          }
+        })
+      },
+      {threshold: 0.12, rootMargin: '0px 0px -36px 0px'},
   )
 
   nodes.forEach((node, index) => {
@@ -394,12 +394,12 @@ onBeforeUnmount(() => {
         </p>
         <div class="workflow-meta">
           <span class="workflow-session">会话 ID：{{ chatId }}</span>
-          <span class="workflow-status" :data-loading="loading">{{ loading ? '工作流执行中' : '已就绪' }}</span>
+          <span :data-loading="loading" class="workflow-status">{{ loading ? '工作流执行中' : '已就绪' }}</span>
         </div>
       </div>
       <div class="workflow-hero-actions">
-        <router-link to="/" class="ghost-link">返回首页</router-link>
-        <button type="button" class="ghost-btn" :disabled="loading" @click="startNewSession">新建会话</button>
+        <router-link class="ghost-link" to="/">返回首页</router-link>
+        <button :disabled="loading" class="ghost-btn" type="button" @click="startNewSession">新建会话</button>
       </div>
     </header>
 
@@ -412,10 +412,10 @@ onBeforeUnmount(() => {
           </div>
           <ol class="stage-list">
             <li
-              v-for="(stage, index) in stageList"
-              :key="stage.key"
-              class="stage-item"
-              :data-state="stageState(stage.key, index)"
+                v-for="(stage, index) in stageList"
+                :key="stage.key"
+                :data-state="stageState(stage.key, index)"
+                class="stage-item"
             >
               <span class="stage-index">{{ String(index + 1).padStart(2, '0') }}</span>
               <div class="stage-copy">
@@ -433,12 +433,12 @@ onBeforeUnmount(() => {
           </div>
           <div class="prompt-grid">
             <button
-              v-for="prompt in examplePrompts"
-              :key="prompt"
-              type="button"
-              class="prompt-chip"
-              :disabled="loading"
-              @click="usePrompt(prompt)"
+                v-for="prompt in examplePrompts"
+                :key="prompt"
+                :disabled="loading"
+                class="prompt-chip"
+                type="button"
+                @click="usePrompt(prompt)"
             >
               {{ prompt }}
             </button>
@@ -470,10 +470,10 @@ onBeforeUnmount(() => {
               <div class="message-bubble assistant-bubble">
                 <div class="assistant-head">
                   <span class="message-role">工作流助手</span>
-                  <span class="turn-badge" :data-tone="turnBadge(turn).tone">{{ turnBadge(turn).text }}</span>
+                  <span :data-tone="turnBadge(turn).tone" class="turn-badge">{{ turnBadge(turn).text }}</span>
                 </div>
 
-                <details v-if="turn.progress.length > 0" class="turn-progress" :open="turn.status === 'streaming'">
+                <details v-if="turn.progress.length > 0" :open="turn.status === 'streaming'" class="turn-progress">
                   <summary>查看本轮节点进度（{{ turn.progress.length }}）</summary>
                   <ul>
                     <li v-for="(item, index) in turn.progress" :key="`${turn.id}_${index}`">{{ item }}</li>
@@ -483,9 +483,9 @@ onBeforeUnmount(() => {
                 <div v-if="turn.error" class="turn-error">{{ turn.error }}</div>
 
                 <div
-                  v-if="turn.assistant"
-                  class="message-text markdown-body"
-                  v-html="renderMarkdown(turn.assistant)"
+                    v-if="turn.assistant"
+                    class="message-text markdown-body"
+                    v-html="renderMarkdown(turn.assistant)"
                 />
 
                 <div v-else-if="turn.status === 'streaming'" class="assistant-thinking">
@@ -500,16 +500,16 @@ onBeforeUnmount(() => {
 
         <footer class="workflow-composer">
           <textarea
-            v-model="input"
-            class="workflow-input"
-            rows="3"
-            :disabled="loading"
-            placeholder="继续对话，例如：我想去青岛玩 / 改成两天 / 预算调到 2000 / 多加点海边景点"
-            @keydown="onKeydown"
+              v-model="input"
+              :disabled="loading"
+              class="workflow-input"
+              placeholder="继续对话，例如：我想去青岛玩 / 改成两天 / 预算调到 2000 / 多加点海边景点"
+              rows="3"
+              @keydown="onKeydown"
           />
           <div class="workflow-composer-actions">
-            <button v-if="loading" type="button" class="stop-btn" @click="abortCurrent">停止执行</button>
-            <button type="button" class="send-btn" :disabled="loading || !input.trim()" @click="sendMessage">
+            <button v-if="loading" class="stop-btn" type="button" @click="abortCurrent">停止执行</button>
+            <button :disabled="loading || !input.trim()" class="send-btn" type="button" @click="sendMessage">
               {{ loading ? '执行中…' : '发送' }}
             </button>
           </div>
@@ -535,9 +535,8 @@ onBeforeUnmount(() => {
   padding: 28px 30px;
   border: 1px solid var(--border-strong);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -551,15 +550,14 @@ onBeforeUnmount(() => {
 
 .workflow-hero::before {
   inset: 12px;
-  background:
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  background: linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
   border: 1px solid rgba(var(--gold-rgb), 0.28);
   border-radius: 24px;
   opacity: 0.88;
@@ -567,10 +565,9 @@ onBeforeUnmount(() => {
 
 .workflow-hero::after {
   inset: 0;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(var(--gold-rgb), 0.08), transparent 22%),
-    radial-gradient(circle at 84% 16%, rgba(var(--accent-rgb), 0.06), transparent 18%),
-    linear-gradient(116deg, transparent 0 24%, rgba(var(--gold-rgb), 0.05) 24% 24.2%, transparent 24.2% 100%);
+  background: radial-gradient(circle at 14% 18%, rgba(var(--gold-rgb), 0.08), transparent 22%),
+  radial-gradient(circle at 84% 16%, rgba(var(--accent-rgb), 0.06), transparent 18%),
+  linear-gradient(116deg, transparent 0 24%, rgba(var(--gold-rgb), 0.05) 24% 24.2%, transparent 24.2% 100%);
   opacity: 0.46;
 }
 
@@ -703,9 +700,8 @@ onBeforeUnmount(() => {
   position: relative;
   border: 1px solid var(--border-strong);
   border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -768,7 +764,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(var(--gold-rgb), 0.24);
   background: rgba(248, 245, 238, 0.92);
   transition: border-color 0.24s ease, transform 0.24s ease, background 0.24s ease,
-    box-shadow 0.24s ease;
+  box-shadow 0.24s ease;
 }
 
 .stage-item:hover {
@@ -852,10 +848,9 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow-y: auto;
   padding: 26px;
-  background:
-    radial-gradient(circle at 12% 14%, rgba(var(--gold-rgb), 0.08), transparent 20%),
-    radial-gradient(circle at 88% 18%, rgba(var(--accent-rgb), 0.05), transparent 18%),
-    rgba(248, 245, 238, 0.88);
+  background: radial-gradient(circle at 12% 14%, rgba(var(--gold-rgb), 0.08), transparent 20%),
+  radial-gradient(circle at 88% 18%, rgba(var(--accent-rgb), 0.05), transparent 18%),
+  rgba(248, 245, 238, 0.88);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -872,9 +867,8 @@ onBeforeUnmount(() => {
   border-radius: 28px;
   text-align: center;
   border: 1px solid rgba(var(--gold-rgb), 0.44);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)),
-    rgba(248, 245, 238, 0.96);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)),
+  rgba(248, 245, 238, 0.96);
   overflow: hidden;
 }
 
@@ -1133,9 +1127,8 @@ onBeforeUnmount(() => {
   align-items: flex-end;
   padding: 18px 20px 20px;
   border-top: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   overflow: hidden;
 }
 

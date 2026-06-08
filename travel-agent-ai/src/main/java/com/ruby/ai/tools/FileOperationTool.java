@@ -4,10 +4,11 @@ import cn.hutool.core.io.FileUtil;
 import com.ruby.common.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+
 /**
- * @description  文件操作工具类
- * @return:  文件操作结果
  * @author RQ
+ * @description 文件操作工具类
+ * @return: 文件操作结果
  * @date: 2026/3/30 下午5:52
  */
 public class FileOperationTool {
@@ -26,8 +27,8 @@ public class FileOperationTool {
 
     @Tool(description = "Write content to a file")
     public String writeFile(
-        @ToolParam(description = "Name of the file to write") String fileName,
-        @ToolParam(description = "Content to write to the file") String content) {
+            @ToolParam(description = "Name of the file to write") String fileName,
+            @ToolParam(description = "Content to write to the file") String content) {
         String filePath = FILE_DIR + "/" + fileName;
         try {
             // 创建目录

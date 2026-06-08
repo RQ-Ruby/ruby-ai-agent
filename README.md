@@ -14,7 +14,7 @@
 │  后端  Spring Boot 3.4 + Spring AI             │
 │                                                │
 │  ┌─────────────┐  ┌──────────────────────────┐ │
-│  │ TravelApp   │  │ TravelManus (ReAct Agent)│ │
+│  │ TravelApp   │  │ TravelAgent (ReAct Agent)│ │
 │  │ 旅游问答    │  │ 自主规划 · 工具调用       │ │
 │  └──────┬──────┘  └──────────┬───────────────┘ │
 │         │                    │                 │
@@ -34,45 +34,49 @@
 
 ## 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| 前端 | Vue 3 + Vite + Element Plus + Axios |
-| 后端 | Spring Boot 3.4 + Spring AI 1.0.0-M6 |
-| 大模型 | 阿里通义千问 (DashScope) |
-| 向量库 | PgVector (PostgreSQL) / SimpleVectorStore |
-| 工具调用 | Spring AI `@Tool` 注解 + MCP 协议 |
-| 序列化 | Kryo 5 |
-| PDF 生成 | iText 9 |
-| 文档解析 | Jsoup + Spring AI Markdown Reader |
+| 层级     | 技术                                        |
+|--------|-------------------------------------------|
+| 前端     | Vue 3 + Vite + Element Plus + Axios       |
+| 后端     | Spring Boot 3.4 + Spring AI 1.0.0-M6      |
+| 大模型    | 阿里通义千问 (DashScope)                        |
+| 向量库    | PgVector (PostgreSQL) / SimpleVectorStore |
+| 工具调用   | Spring AI `@Tool` 注解 + MCP 协议             |
+| 序列化    | Kryo 5                                    |
+| PDF 生成 | iText 9                                   |
+| 文档解析   | Jsoup + Spring AI Markdown Reader         |
 
 ## 核心功能
 
 ### 1. TravelApp — 旅游问答
+
 - 基于 ChatClient + RAG 的旅游知识问答
 - 多轮对话记忆 (InMemoryChatMemory)
 - 工具调用 + MCP 集成
 - SSE 流式输出
 
-### 2. TravelManus — 规划智能体
+### 2. TravelAgent — 规划智能体
+
 - ReAct (Reasoning + Acting) 自主循环
 - 自主决策，缺失信息使用合理默认值
 - 工具链：搜索 → 行程生成 → 预算计算 → PDF 输出
 - 按 chatId 缓存实例，支持多轮会话
 
 ### 3. 旅游工具链
-| 工具 | 说明 |
-|------|------|
-| `WebSearchTool` | 互联网搜索旅游信息 |
-| `WebScrapingTool` | 抓取网页内容 |
-| `TravelPlanTool` | 生成结构化旅游行程 |
-| `BudgetCalculatorTool` | 旅行预算核算 |
-| `PDFGenerationTool` | 行程手册 PDF 生成 + 下载 |
-| `WeatherQueryTool` | 目的地天气查询 |
-| `AttractionRecommendTool` | 景点推荐 |
-| `HotelSearchTool` | 酒店模拟查询 |
-| `FlightSearchTool` | 航班模拟查询 |
+
+| 工具                        | 说明               |
+|---------------------------|------------------|
+| `WebSearchTool`           | 互联网搜索旅游信息        |
+| `WebScrapingTool`         | 抓取网页内容           |
+| `TravelPlanTool`          | 生成结构化旅游行程        |
+| `BudgetCalculatorTool`    | 旅行预算核算           |
+| `PDFGenerationTool`       | 行程手册 PDF 生成 + 下载 |
+| `WeatherQueryTool`        | 目的地天气查询          |
+| `AttractionRecommendTool` | 景点推荐             |
+| `HotelSearchTool`         | 酒店模拟查询           |
+| `FlightSearchTool`        | 航班模拟查询           |
 
 ### 4. RAG 知识库
+
 - 旅游攻略 Markdown 文档自动加载
 - 向量化存储 + 语义检索
 - 查询重写优化检索效果
@@ -80,6 +84,7 @@
 ## 快速启动
 
 ### 后端
+
 ```bash
 # 1. 配置 application-local.yml（DashScope API Key、PostgreSQL、SearchAPI Key）
 # 2. 启动
@@ -87,6 +92,7 @@ mvn spring-boot:run
 ```
 
 ### 前端
+
 ```bash
 cd ruby-ai-agent-frontend
 npm install
@@ -105,7 +111,7 @@ src/main/java/com/ruby/rubyaiagent/
 │   ├── BaseAgent.java    # 基类（状态机 + 流式输出）
 │   ├── ReActAgent.java   # ReAct 循环
 │   ├── ToolCallAgent.java # 工具调用代理
-│   └── TravelManus.java  # 旅游规划智能体
+│   └── TravelAgent.java  # 旅游规划智能体
 ├── tools/               # 工具链
 │   ├── TravelPlanTool.java
 │   ├── BudgetCalculatorTool.java
@@ -124,9 +130,9 @@ src/main/java/com/ruby/rubyaiagent/
 
 ## API 接口
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/ai/travel_app/chat` | 旅游问答（SSE 流式） |
+| 方法  | 路径                      | 说明                     |
+|-----|-------------------------|------------------------|
+| GET | `/ai/travel_app/chat`   | 旅游问答（SSE 流式）           |
 | GET | `/ai/travel_manus/chat` | 规划智能体（SSE 流式，需 chatId） |
 
 ## License

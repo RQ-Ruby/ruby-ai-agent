@@ -5,8 +5,7 @@ import com.alibaba.cloud.ai.graph.action.EdgeAction;
 import com.ruby.agent.workflow.TravelGraphKeys;
 
 /**
- * 条件边：意图识别后，决定走旅行规划主线还是闲聊分支。
- * 返回值是路由 key，对应 addConditionalEdges 的 mapping。
+ * 条件边：意图识别后，决定走旅行规划主线还是闲聊分支
  */
 public class IntentDispatcher implements EdgeAction {
 

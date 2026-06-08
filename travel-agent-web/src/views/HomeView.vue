@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
+import {computed, onBeforeUnmount, onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '../stores/auth.js'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -9,11 +9,11 @@ const homeRef = ref(null)
 let revealObserver = null
 
 const navItems = [
-  { label: '首页', to: '/' },
-  { label: '旅行咨询', to: '/travel' },
-  { label: '规划智能体', to: '/planner' },
-  { label: '工作流规划', to: '/workflow' },
-  { label: '用户管理', to: '/admin/users' },
+  {label: '首页', to: '/'},
+  {label: '旅行咨询', to: '/travel'},
+  {label: '规划智能体', to: '/planner'},
+  {label: '工作流规划', to: '/workflow'},
+  {label: '用户管理', to: '/admin/users'},
 ]
 
 const featureCards = [
@@ -82,15 +82,15 @@ onMounted(() => {
   }
 
   revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          revealObserver?.unobserve(entry.target)
-        }
-      })
-    },
-    { threshold: 0.14, rootMargin: '0px 0px -40px 0px' },
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            revealObserver?.unobserve(entry.target)
+          }
+        })
+      },
+      {threshold: 0.14, rootMargin: '0px 0px -40px 0px'},
   )
 
   nodes.forEach((node, index) => {
@@ -106,22 +106,22 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="homeRef" class="home-page" :style="pageStyle">
+  <div ref="homeRef" :style="pageStyle" class="home-page">
     <div class="home-page-bg"></div>
 
     <div class="home-shell">
       <header class="home-nav ink-reveal">
-        <router-link to="/" class="home-logo">
+        <router-link class="home-logo" to="/">
           <span class="home-logo-mark">行旅 AI</span>
           <span class="home-logo-sub">TOUR WITH INTELLIGENCE</span>
         </router-link>
 
-        <nav class="home-nav-menu" aria-label="首页导航">
+        <nav aria-label="首页导航" class="home-nav-menu">
           <router-link
-            v-for="item in visibleNavItems"
-            :key="item.to"
-            :to="item.to"
-            class="home-nav-link"
+              v-for="item in visibleNavItems"
+              :key="item.to"
+              :to="item.to"
+              class="home-nav-link"
           >
             {{ item.label }}
           </router-link>
@@ -129,12 +129,12 @@ onBeforeUnmount(() => {
 
         <div class="home-nav-actions">
           <template v-if="auth.isLoggedIn.value">
-            <router-link to="/user/center" class="home-user-chip">{{ userDisplayName }}</router-link>
-            <button type="button" class="home-nav-btn home-nav-btn-solid" @click="handleLogout">退出</button>
+            <router-link class="home-user-chip" to="/user/center">{{ userDisplayName }}</router-link>
+            <button class="home-nav-btn home-nav-btn-solid" type="button" @click="handleLogout">退出</button>
           </template>
           <template v-else>
-            <router-link to="/login" class="home-nav-btn home-nav-btn-ghost">登录</router-link>
-            <router-link to="/register" class="home-nav-btn home-nav-btn-solid">注册</router-link>
+            <router-link class="home-nav-btn home-nav-btn-ghost" to="/login">登录</router-link>
+            <router-link class="home-nav-btn home-nav-btn-solid" to="/register">注册</router-link>
           </template>
         </div>
       </header>
@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
                 </p>
 
                 <div class="hero-actions">
-                  <router-link to="/travel" class="hero-cta hero-cta-solid">立即开始咨询</router-link>
+                  <router-link class="hero-cta hero-cta-solid" to="/travel">立即开始咨询</router-link>
                 </div>
               </div>
 
@@ -178,32 +178,42 @@ onBeforeUnmount(() => {
 
           <div class="feature-grid">
             <article
-              v-for="feature in featureCards"
-              :key="feature.key"
-              class="feature-card ink-reveal"
-              :data-variant="feature.key"
+                v-for="feature in featureCards"
+                :key="feature.key"
+                :data-variant="feature.key"
+                class="feature-card ink-reveal"
             >
-              <div class="feature-visual" :data-variant="feature.key">
-                <svg v-if="feature.key === 'chat'" viewBox="0 0 160 120" class="feature-icon" aria-hidden="true">
-                  <path d="M26 34c0-9 7-16 16-16h43c9 0 16 7 16 16v18c0 9-7 16-16 16H63l-16 12v-12H42c-9 0-16-7-16-16V34Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
-                  <path d="M90 56c0-8 6-14 14-14h16c8 0 14 6 14 14v14c0 8-6 14-14 14h-8l-10 8v-8h-2c-8 0-14-6-14-14V56Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" opacity=".72"/>
-                  <path d="M18 106c14-18 26-30 37-35 7 6 12 12 16 19 9-14 18-24 29-31 11 10 24 26 40 47" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <div :data-variant="feature.key" class="feature-visual">
+                <svg v-if="feature.key === 'chat'" aria-hidden="true" class="feature-icon" viewBox="0 0 160 120">
+                  <path
+                      d="M26 34c0-9 7-16 16-16h43c9 0 16 7 16 16v18c0 9-7 16-16 16H63l-16 12v-12H42c-9 0-16-7-16-16V34Z"
+                      fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"/>
+                  <path d="M90 56c0-8 6-14 14-14h16c8 0 14 6 14 14v14c0 8-6 14-14 14h-8l-10 8v-8h-2c-8 0-14-6-14-14V56Z"
+                        fill="none" opacity=".72" stroke="currentColor" stroke-linejoin="round" stroke-width="4"/>
+                  <path d="M18 106c14-18 26-30 37-35 7 6 12 12 16 19 9-14 18-24 29-31 11 10 24 26 40 47" fill="none"
+                        stroke="currentColor" stroke-linecap="round" stroke-width="4"/>
                 </svg>
-                <svg v-else-if="feature.key === 'agent'" viewBox="0 0 160 120" class="feature-icon" aria-hidden="true">
-                  <circle cx="84" cy="56" r="26" fill="none" stroke="currentColor" stroke-width="4"/>
-                  <path d="M84 24v10M84 78v10M52 56h10M106 56h10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <svg v-else-if="feature.key === 'agent'" aria-hidden="true" class="feature-icon" viewBox="0 0 160 120">
+                  <circle cx="84" cy="56" fill="none" r="26" stroke="currentColor" stroke-width="4"/>
+                  <path d="M84 24v10M84 78v10M52 56h10M106 56h10" stroke="currentColor" stroke-linecap="round"
+                        stroke-width="4"/>
                   <path d="M84 40l10 20-20 10 10-30Z" fill="currentColor" opacity=".78"/>
-                  <path d="M20 98c18-12 34-20 49-22 10 6 17 12 22 20 9-10 22-18 39-24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                  <circle cx="36" cy="92" r="4" fill="currentColor"/>
-                  <circle cx="124" cy="72" r="4" fill="currentColor"/>
+                  <path d="M20 98c18-12 34-20 49-22 10 6 17 12 22 20 9-10 22-18 39-24" fill="none" stroke="currentColor"
+                        stroke-linecap="round" stroke-width="4"/>
+                  <circle cx="36" cy="92" fill="currentColor" r="4"/>
+                  <circle cx="124" cy="72" fill="currentColor" r="4"/>
                 </svg>
-                <svg v-else viewBox="0 0 160 120" class="feature-icon" aria-hidden="true">
-                  <path d="M34 20h68c9 0 16 7 16 16v50c0 9-7 16-16 16H34" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
-                  <path d="M34 20c-8 0-14 6-14 14v54c0 8 6 14 14 14" fill="none" stroke="currentColor" stroke-width="4"/>
-                  <path d="M48 40h42M48 56h50M48 72h34" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".82"/>
-                  <path d="M90 88c8-8 15-12 22-12 7 0 14 4 24 14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                  <circle cx="90" cy="88" r="4" fill="currentColor"/>
-                  <circle cx="136" cy="90" r="4" fill="currentColor"/>
+                <svg v-else aria-hidden="true" class="feature-icon" viewBox="0 0 160 120">
+                  <path d="M34 20h68c9 0 16 7 16 16v50c0 9-7 16-16 16H34" fill="none" stroke="currentColor"
+                        stroke-linejoin="round" stroke-width="4"/>
+                  <path d="M34 20c-8 0-14 6-14 14v54c0 8 6 14 14 14" fill="none" stroke="currentColor"
+                        stroke-width="4"/>
+                  <path d="M48 40h42M48 56h50M48 72h34" opacity=".82" stroke="currentColor" stroke-linecap="round"
+                        stroke-width="4"/>
+                  <path d="M90 88c8-8 15-12 22-12 7 0 14 4 24 14" fill="none" stroke="currentColor" stroke-linecap="round"
+                        stroke-width="4"/>
+                  <circle cx="90" cy="88" fill="currentColor" r="4"/>
+                  <circle cx="136" cy="90" fill="currentColor" r="4"/>
                 </svg>
               </div>
 
@@ -234,10 +244,9 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
   color: var(--home-surface);
-  background:
-    radial-gradient(circle at 18% 10%, rgba(248, 245, 238, 0.05), transparent 18%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.08)),
-    var(--home-page-bg);
+  background: radial-gradient(circle at 18% 10%, rgba(248, 245, 238, 0.05), transparent 18%),
+  linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.08)),
+  var(--home-page-bg);
 }
 
 .home-page-bg,
@@ -250,28 +259,25 @@ onBeforeUnmount(() => {
 }
 
 .home-page::before {
-  background:
-    radial-gradient(ellipse at 14% 96%, rgba(0, 0, 0, 0.16) 0 16%, transparent 40%),
-    radial-gradient(ellipse at 38% 92%, rgba(0, 0, 0, 0.12) 0 14%, transparent 36%),
-    radial-gradient(ellipse at 62% 96%, rgba(0, 0, 0, 0.16) 0 18%, transparent 42%),
-    linear-gradient(112deg, transparent 0 18%, rgba(var(--home-gold-rgb), 0.08) 18% 18.12%, transparent 18.12% 100%),
-    linear-gradient(90deg, transparent 0 8%, rgba(248, 245, 238, 0.04) 8% 8.08%, transparent 8.08% 100%);
+  background: radial-gradient(ellipse at 14% 96%, rgba(0, 0, 0, 0.16) 0 16%, transparent 40%),
+  radial-gradient(ellipse at 38% 92%, rgba(0, 0, 0, 0.12) 0 14%, transparent 36%),
+  radial-gradient(ellipse at 62% 96%, rgba(0, 0, 0, 0.16) 0 18%, transparent 42%),
+  linear-gradient(112deg, transparent 0 18%, rgba(var(--home-gold-rgb), 0.08) 18% 18.12%, transparent 18.12% 100%),
+  linear-gradient(90deg, transparent 0 8%, rgba(248, 245, 238, 0.04) 8% 8.08%, transparent 8.08% 100%);
   opacity: 0.62;
 }
 
 .home-page::after {
-  background:
-    radial-gradient(circle at 84% 18%, rgba(var(--home-gold-rgb), 0.1), transparent 24%),
-    radial-gradient(circle at 18% 22%, rgba(248, 245, 238, 0.05), transparent 20%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%);
+  background: radial-gradient(circle at 84% 18%, rgba(var(--home-gold-rgb), 0.1), transparent 24%),
+  radial-gradient(circle at 18% 22%, rgba(248, 245, 238, 0.05), transparent 20%),
+  linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%);
   opacity: 0.9;
 }
 
 .home-page-bg {
-  background:
-    radial-gradient(circle at 22% 76%, rgba(248, 245, 238, 0.04), transparent 22%),
-    radial-gradient(circle at 86% 72%, rgba(var(--home-gold-rgb), 0.08), transparent 18%),
-    linear-gradient(135deg, transparent 0 40%, rgba(248, 245, 238, 0.03) 40% 40.08%, transparent 40.08% 100%);
+  background: radial-gradient(circle at 22% 76%, rgba(248, 245, 238, 0.04), transparent 22%),
+  radial-gradient(circle at 86% 72%, rgba(var(--home-gold-rgb), 0.08), transparent 18%),
+  linear-gradient(135deg, transparent 0 40%, rgba(248, 245, 238, 0.03) 40% 40.08%, transparent 40.08% 100%);
 }
 
 .home-shell {
@@ -290,9 +296,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 30px;
   border: 1px solid rgba(var(--home-gold-rgb), 0.58);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--home-surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--home-surface);
   box-shadow: var(--card-shadow);
   color: var(--home-primary);
 }
@@ -306,15 +311,14 @@ onBeforeUnmount(() => {
   inset: 10px;
   border-radius: 22px;
   border: 1px solid rgba(var(--home-gold-rgb), 0.28);
-  background:
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  background: linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--home-gold-rgb), 0.82), rgba(var(--home-gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
   pointer-events: none;
   opacity: 0.88;
 }
@@ -325,9 +329,8 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 18px;
   padding: 14px 20px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
-    var(--home-surface-strong);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+  var(--home-surface-strong);
   box-shadow: var(--page-shadow);
 }
 
@@ -444,19 +447,17 @@ onBeforeUnmount(() => {
   color: var(--home-surface);
   border: 1px solid rgba(var(--home-gold-rgb), 0.62);
   background: linear-gradient(135deg, rgba(var(--home-primary-rgb), 0.96), var(--home-primary));
-  box-shadow:
-    inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.18),
-    0 14px 28px rgba(7, 14, 22, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.18),
+  0 14px 28px rgba(7, 14, 22, 0.22);
 }
 
 .home-nav-btn:hover,
 .hero-cta:hover,
 .feature-link:hover {
   transform: translateY(-2px);
-  box-shadow:
-    inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.28),
-    0 0 22px rgba(var(--home-gold-rgb), 0.16),
-    0 18px 30px rgba(7, 14, 22, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.28),
+  0 0 22px rgba(var(--home-gold-rgb), 0.16),
+  0 18px 30px rgba(7, 14, 22, 0.24);
 }
 
 .home-main {
@@ -480,10 +481,9 @@ onBeforeUnmount(() => {
   inset: auto 30px 18px 30px;
   height: 180px;
   border-radius: 120px 120px 24px 24px;
-  background:
-    radial-gradient(circle at 18% 100%, rgba(var(--home-primary-rgb), 0.12), transparent 36%),
-    radial-gradient(circle at 48% 100%, rgba(var(--home-primary-rgb), 0.08), transparent 34%),
-    radial-gradient(circle at 82% 100%, rgba(var(--home-accent-rgb), 0.08), transparent 30%);
+  background: radial-gradient(circle at 18% 100%, rgba(var(--home-primary-rgb), 0.12), transparent 36%),
+  radial-gradient(circle at 48% 100%, rgba(var(--home-primary-rgb), 0.08), transparent 34%),
+  radial-gradient(circle at 82% 100%, rgba(var(--home-accent-rgb), 0.08), transparent 30%);
   opacity: 0.9;
   pointer-events: none;
 }
@@ -551,9 +551,8 @@ onBeforeUnmount(() => {
 .hero-visual {
   min-height: 360px;
   padding: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.04)),
-    rgba(248, 245, 238, 0.98);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.04)),
+  rgba(248, 245, 238, 0.98);
 }
 
 .visual-map-layer,
@@ -568,11 +567,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 22px;
   border: 1px solid rgba(var(--home-gold-rgb), 0.32);
-  background:
-    radial-gradient(circle at 22% 24%, rgba(var(--home-accent-rgb), 0.12), transparent 16%),
-    radial-gradient(circle at 76% 28%, rgba(var(--home-gold-rgb), 0.18), transparent 18%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
-    rgba(var(--home-primary-rgb), 0.06);
+  background: radial-gradient(circle at 22% 24%, rgba(var(--home-accent-rgb), 0.12), transparent 16%),
+  radial-gradient(circle at 76% 28%, rgba(var(--home-gold-rgb), 0.18), transparent 18%),
+  linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+  rgba(var(--home-primary-rgb), 0.06);
 }
 
 .visual-map-layer::before,
@@ -587,10 +585,9 @@ onBeforeUnmount(() => {
 
 .visual-map-layer::before {
   height: 62%;
-  background:
-    radial-gradient(ellipse at 18% 100%, rgba(var(--home-primary-rgb), 0.34) 0 30%, transparent 30%),
-    radial-gradient(ellipse at 48% 100%, rgba(var(--home-primary-rgb), 0.22) 0 28%, transparent 28%),
-    radial-gradient(ellipse at 80% 100%, rgba(var(--home-primary-rgb), 0.3) 0 32%, transparent 32%);
+  background: radial-gradient(ellipse at 18% 100%, rgba(var(--home-primary-rgb), 0.34) 0 30%, transparent 30%),
+  radial-gradient(ellipse at 48% 100%, rgba(var(--home-primary-rgb), 0.22) 0 28%, transparent 28%),
+  radial-gradient(ellipse at 80% 100%, rgba(var(--home-primary-rgb), 0.3) 0 32%, transparent 32%);
   opacity: 0.44;
 }
 
@@ -599,9 +596,8 @@ onBeforeUnmount(() => {
   right: 8%;
   bottom: 20%;
   height: 24%;
-  background:
-    radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.52), transparent 40%),
-    radial-gradient(ellipse at 72% 68%, rgba(255, 255, 255, 0.4), transparent 38%);
+  background: radial-gradient(ellipse at 30% 60%, rgba(255, 255, 255, 0.52), transparent 40%),
+  radial-gradient(ellipse at 72% 68%, rgba(255, 255, 255, 0.4), transparent 38%);
   filter: blur(12px);
   opacity: 0.84;
 }
@@ -735,10 +731,9 @@ onBeforeUnmount(() => {
 
 .feature-card:hover {
   transform: translateY(-6px);
-  box-shadow:
-    0 0 0 1px rgba(var(--home-gold-rgb), 0.2) inset,
-    var(--card-shadow-hover),
-    0 0 24px rgba(var(--home-gold-rgb), 0.14);
+  box-shadow: 0 0 0 1px rgba(var(--home-gold-rgb), 0.2) inset,
+  var(--card-shadow-hover),
+  0 0 24px rgba(var(--home-gold-rgb), 0.14);
 }
 
 .feature-card:hover::after {
@@ -869,16 +864,14 @@ onBeforeUnmount(() => {
   color: var(--home-accent);
   border: 1px solid rgba(var(--home-gold-rgb), 0.52);
   background: rgba(248, 245, 238, 0.98);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.62),
-    0 12px 24px rgba(7, 14, 22, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+  0 12px 24px rgba(7, 14, 22, 0.08);
 }
 
 .feature-link:hover {
-  box-shadow:
-    inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.22),
-    0 0 18px rgba(var(--home-gold-rgb), 0.12),
-    0 18px 30px rgba(7, 14, 22, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(var(--home-gold-rgb), 0.22),
+  0 0 18px rgba(var(--home-gold-rgb), 0.12),
+  0 18px 30px rgba(7, 14, 22, 0.18);
 }
 
 .ink-reveal {

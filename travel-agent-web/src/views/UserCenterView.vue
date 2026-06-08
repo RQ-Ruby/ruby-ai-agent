@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
+import {computed, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '../stores/auth.js'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -88,9 +88,8 @@ onMounted(async () => {
   padding: 28px;
   border-radius: 28px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -155,9 +154,8 @@ onMounted(async () => {
   padding: 24px;
   border-radius: 24px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }

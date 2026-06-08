@@ -1,9 +1,9 @@
 <script setup>
-import { ref, watch, nextTick, onBeforeUnmount, onMounted } from 'vue'
-import { marked } from 'marked'
-import { fetchSse } from '../utils/sseStream'
+import {nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import {marked} from 'marked'
+import {fetchSse} from '../utils/sseStream'
 
-marked.setOptions({ breaks: true, gfm: true })
+marked.setOptions({breaks: true, gfm: true})
 
 function enhanceLinks(html) {
   if (!html) return ''
@@ -26,17 +26,17 @@ function renderMarkdown(text) {
 }
 
 const props = defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: '' },
+  title: {type: String, required: true},
+  subtitle: {type: String, default: ''},
   /** 会话标识（例如恋爱大师的 chatId），展示在标题旁 */
-  sessionLabel: { type: String, default: '' },
+  sessionLabel: {type: String, default: ''},
   /** (message: string) => 完整请求 URL（含 query） */
-  buildStreamUrl: { type: Function, required: true },
-  emptyTitle: { type: String, default: '开始一段新的对话' },
-  emptyDescription: { type: String, default: '输入消息后发送，AI 回复将以流式方式实时显示。' },
-  placeholder: { type: String, default: '输入消息，Enter 发送，Shift+Enter 换行' },
-  userLabel: { type: String, default: '我' },
-  assistantLabel: { type: String, default: 'AI' },
+  buildStreamUrl: {type: Function, required: true},
+  emptyTitle: {type: String, default: '开始一段新的对话'},
+  emptyDescription: {type: String, default: '输入消息后发送，AI 回复将以流式方式实时显示。'},
+  placeholder: {type: String, default: '输入消息，Enter 发送，Shift+Enter 换行'},
+  userLabel: {type: String, default: '我'},
+  assistantLabel: {type: String, default: 'AI'},
 })
 
 const emit = defineEmits(['new-chat', 'stream-complete'])
@@ -66,14 +66,14 @@ function clearMessages() {
   errorText.value = ''
 }
 
-defineExpose({ loadHistory, clearMessages })
+defineExpose({loadHistory, clearMessages})
 
 const listEl = ref(null)
 
 watch(
-  () => messages.value.map((m) => m.content),
-  () => scrollToBottom(),
-  { deep: true },
+    () => messages.value.map((m) => m.content),
+    () => scrollToBottom(),
+    {deep: true},
 )
 
 function resetMessages() {
@@ -110,15 +110,15 @@ onMounted(() => {
   }
 
   revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          revealObserver?.unobserve(entry.target)
-        }
-      })
-    },
-    { threshold: 0.12, rootMargin: '0px 0px -36px 0px' },
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            revealObserver?.unobserve(entry.target)
+          }
+        })
+      },
+      {threshold: 0.12, rootMargin: '0px 0px -36px 0px'},
   )
 
   nodes.forEach((node, index) => {
@@ -132,8 +132,8 @@ async function send() {
   if (!text || streaming.value) return
 
   errorText.value = ''
-  messages.value.push({ role: 'user', content: text })
-  messages.value.push({ role: 'assistant', content: '' })
+  messages.value.push({role: 'user', content: text})
+  messages.value.push({role: 'assistant', content: ''})
   input.value = ''
 
   const assistantIndex = messages.value.length - 1
@@ -185,11 +185,13 @@ function onKeydown(e) {
         <p v-if="subtitle" class="chat-subtitle">{{ subtitle }}</p>
         <div class="chat-meta-row">
           <p v-if="sessionLabel" class="chat-session">会话 ID：{{ sessionLabel }}</p>
-          <span class="chat-status" :data-streaming="streaming">{{ streaming ? '生成中' : '已就绪' }}</span>
+          <span :data-streaming="streaming" class="chat-status">{{ streaming ? '生成中' : '已就绪' }}</span>
         </div>
       </div>
       <div class="chat-header-actions">
-        <button type="button" class="ghost-btn" :disabled="streaming || messages.length === 0" @click="resetMessages">清空会话</button>
+        <button :disabled="streaming || messages.length === 0" class="ghost-btn" type="button" @click="resetMessages">
+          清空会话
+        </button>
         <router-link class="back-link" to="/">返回首页</router-link>
       </div>
     </header>
@@ -203,17 +205,17 @@ function onKeydown(e) {
         </div>
       </div>
       <div
-        v-for="(m, i) in messages"
-        :key="i"
-        class="msg-row"
-        :data-role="m.role"
+          v-for="(m, i) in messages"
+          :key="i"
+          :data-role="m.role"
+          class="msg-row"
       >
         <div class="bubble">
           <span class="bubble-label">{{ m.role === 'user' ? userLabel : assistantLabel }}</span>
           <div
-            v-if="m.role === 'assistant'"
-            class="bubble-text markdown-body"
-            v-html="m.content ? renderMarkdown(m.content) : '<span class=&quot;thinking-dots&quot;>思考中<span>.</span><span>.</span><span>.</span></span>'"
+              v-if="m.role === 'assistant'"
+              class="bubble-text markdown-body"
+              v-html="m.content ? renderMarkdown(m.content) : '<span class=&quot;thinking-dots&quot;>思考中<span>.</span><span>.</span><span>.</span></span>'"
           />
           <div v-else class="bubble-text">{{ m.content }}</div>
         </div>
@@ -224,27 +226,27 @@ function onKeydown(e) {
 
     <footer class="chat-input-bar ink-reveal">
       <textarea
-        v-model="input"
-        class="chat-textarea"
-        rows="3"
-        :placeholder="placeholder"
-        :disabled="streaming"
-        @keydown="onKeydown"
+          v-model="input"
+          :disabled="streaming"
+          :placeholder="placeholder"
+          class="chat-textarea"
+          rows="3"
+          @keydown="onKeydown"
       />
       <div class="chat-actions">
         <button
-          v-if="streaming"
-          type="button"
-          class="stop-btn"
-          @click="abortStream"
+            v-if="streaming"
+            class="stop-btn"
+            type="button"
+            @click="abortStream"
         >
           停止生成
         </button>
         <button
-          type="button"
-          class="send-btn"
-          :disabled="streaming || !input.trim()"
-          @click="send"
+            :disabled="streaming || !input.trim()"
+            class="send-btn"
+            type="button"
+            @click="send"
         >
           {{ streaming ? '生成中…' : '发送消息' }}
         </button>
@@ -272,9 +274,8 @@ function onKeydown(e) {
   padding: 28px 28px 24px;
   border: 1px solid var(--border-strong);
   border-radius: 32px 32px 0 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -288,15 +289,14 @@ function onKeydown(e) {
 
 .chat-header::before {
   inset: 12px;
-  background:
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  background: linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
   border: 1px solid rgba(var(--gold-rgb), 0.28);
   border-radius: 24px;
   opacity: 0.88;
@@ -304,10 +304,9 @@ function onKeydown(e) {
 
 .chat-header::after {
   inset: 0;
-  background:
-    radial-gradient(circle at 16% 22%, rgba(var(--gold-rgb), 0.08), transparent 20%),
-    radial-gradient(circle at 86% 18%, rgba(var(--accent-rgb), 0.06), transparent 18%),
-    linear-gradient(112deg, transparent 0 28%, rgba(var(--gold-rgb), 0.05) 28% 28.2%, transparent 28.2% 100%);
+  background: radial-gradient(circle at 16% 22%, rgba(var(--gold-rgb), 0.08), transparent 20%),
+  radial-gradient(circle at 86% 18%, rgba(var(--accent-rgb), 0.06), transparent 18%),
+  linear-gradient(112deg, transparent 0 28%, rgba(var(--gold-rgb), 0.05) 28% 28.2%, transparent 28.2% 100%);
   opacity: 0.46;
 }
 
@@ -438,10 +437,9 @@ function onKeydown(e) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background:
-    radial-gradient(circle at 12% 14%, rgba(var(--gold-rgb), 0.08), transparent 20%),
-    radial-gradient(circle at 88% 18%, rgba(var(--accent-rgb), 0.05), transparent 18%),
-    rgba(248, 245, 238, 0.88);
+  background: radial-gradient(circle at 12% 14%, rgba(var(--gold-rgb), 0.08), transparent 20%),
+  radial-gradient(circle at 88% 18%, rgba(var(--accent-rgb), 0.05), transparent 18%),
+  rgba(248, 245, 238, 0.88);
   border-left: 1px solid var(--border-strong);
   border-right: 1px solid var(--border-strong);
 }
@@ -457,9 +455,8 @@ function onKeydown(e) {
   border-radius: 26px;
   text-align: center;
   border: 1px solid rgba(var(--gold-rgb), 0.44);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)),
-    rgba(248, 245, 238, 0.96);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)),
+  rgba(248, 245, 238, 0.96);
   overflow: hidden;
 }
 
@@ -469,15 +466,14 @@ function onKeydown(e) {
   inset: 12px;
   border: 1px solid rgba(var(--gold-rgb), 0.24);
   border-radius: 20px;
-  background:
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px 16px / 20px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px 16px / 1px 20px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) 16px / 20px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) 16px / 1px 20px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px calc(100% - 16px) / 20px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px calc(100% - 16px) / 1px 20px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) calc(100% - 16px) / 20px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) calc(100% - 16px) / 1px 20px no-repeat;
+  background: linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px 16px / 20px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px 16px / 1px 20px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) 16px / 20px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) 16px / 1px 20px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px calc(100% - 16px) / 20px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) 16px calc(100% - 16px) / 1px 20px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) calc(100% - 16px) / 20px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.72), rgba(var(--gold-rgb), 0.72)) calc(100% - 16px) calc(100% - 16px) / 1px 20px no-repeat;
   pointer-events: none;
 }
 
@@ -582,8 +578,13 @@ function onKeydown(e) {
   font-family: 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif SC', serif;
 }
 
-.markdown-body :deep(h3) { font-size: 1.05rem; }
-.markdown-body :deep(h4) { font-size: 0.98rem; }
+.markdown-body :deep(h3) {
+  font-size: 1.05rem;
+}
+
+.markdown-body :deep(h4) {
+  font-size: 0.98rem;
+}
 
 .markdown-body :deep(p) {
   margin: 6px 0;
@@ -629,21 +630,35 @@ function onKeydown(e) {
   margin: 6px 0;
 }
 
-.markdown-body :deep(strong) { color: var(--text); }
+.markdown-body :deep(strong) {
+  color: var(--text);
+}
 
 .thinking-dots {
   color: var(--muted);
   font-style: italic;
 }
+
 .thinking-dots span {
   display: inline-block;
   animation: blink 1.2s infinite;
 }
-.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
 @keyframes blink {
-  0%, 60%, 100% { opacity: 0.2; }
-  30% { opacity: 1; }
+  0%, 60%, 100% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
 }
 
 .chat-error {
@@ -665,9 +680,8 @@ function onKeydown(e) {
   border: 1px solid var(--border-strong);
   border-top: none;
   border-radius: 0 0 32px 32px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }

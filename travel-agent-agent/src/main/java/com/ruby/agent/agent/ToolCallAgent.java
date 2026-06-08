@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * 处理工具调用的基础代理类，具体实现了 think 和 act 方法，可以用作创建实例的父类  
- */  
+ * 处理工具调用的基础代理类，具体实现了 think 和 act 方法，可以用作创建实例的父类
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Slf4j
@@ -32,15 +32,12 @@ public class ToolCallAgent extends ReActAgent {
 
     // 可用的工具  
     private final ToolCallback[] availableTools;
-
-    // 保存了工具调用信息的响应  
-    private ChatResponse toolCallChatResponse;
-
-    // 工具调用管理者  
+    // 工具调用管理者
     private final ToolCallingManager toolCallingManager;
-
-    // 禁用内置的工具调用机制，自己维护上下文  
+    // 禁用内置的工具调用机制，自己维护上下文
     private final ChatOptions chatOptions;
+    // 保存了工具调用信息的响应
+    private ChatResponse toolCallChatResponse;
 
     public ToolCallAgent(ToolCallback[] availableTools) {
         super();
@@ -80,7 +77,7 @@ public class ToolCallAgent extends ReActAgent {
                 try {
                     getChatClient().prompt(prompt)
                             .system(getSystemPrompt())
-                            .tools(availableTools)
+                            .toolCallbacks(availableTools)
                             .stream()
                             .chatResponse()
                             .toStream()
@@ -102,7 +99,7 @@ public class ToolCallAgent extends ReActAgent {
                     // 流式未返回任何帧，退化
                     chatResponse = getChatClient().prompt(prompt)
                             .system(getSystemPrompt())
-                            .tools(availableTools)
+                            .toolCallbacks(availableTools)
                             .call()
                             .chatResponse();
                 }
@@ -110,7 +107,7 @@ public class ToolCallAgent extends ReActAgent {
                 // 同步调用（例如 run() 路径）
                 chatResponse = getChatClient().prompt(prompt)
                         .system(getSystemPrompt())
-                        .tools(availableTools)
+                        .toolCallbacks(availableTools)
                         .call()
                         .chatResponse();
             }

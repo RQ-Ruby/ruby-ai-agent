@@ -17,11 +17,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
+ * @author RQ
  * @description PDF 生成工具
  * @return:
- * @author RQ
  * @date: 2026/3/30 下午6:34
- * */
+ */
 public class PDFGenerationTool {
 
     @Tool(description = "Generate a PDF file with given content")
@@ -71,7 +71,7 @@ public class PDFGenerationTool {
      * 找到任意可用字体即返回；都找不到则返回 null。
      */
     private PdfFont loadChineseFont() {
-        String[] candidates = new String[] {
+        String[] candidates = new String[]{
                 // Windows
                 "C:/Windows/Fonts/msyh.ttc,0",
                 "C:/Windows/Fonts/msyh.ttf",

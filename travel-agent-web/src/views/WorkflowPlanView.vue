@@ -3,7 +3,7 @@ import WorkflowChatPanel from '../components/WorkflowChatPanel.vue'
 </script>
 
 <template>
-  <WorkflowChatPanel />
+  <WorkflowChatPanel/>
 </template>
 
 <style scoped>

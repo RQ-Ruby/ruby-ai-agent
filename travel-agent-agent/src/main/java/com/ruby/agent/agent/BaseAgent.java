@@ -18,45 +18,38 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 抽象基础代理类，用于管理代理状态和执行流程。  
- *   
- * 提供状态转换、内存管理和基于步骤的执行循环的基础功能。  
- * 子类必须实现step方法。  
- */  
+ * 抽象基础代理类，用于管理代理状态和执行流程。
+ * 
+ * 提供状态转换、内存管理和基于步骤的执行循环的基础功能。
+ * 子类必须实现step方法。
+ */
 @Data
 @Slf4j
-public abstract class BaseAgent {  
-  
-    // 核心属性  
-    private String name;  
-  
-    // 提示  
-    private String systemPrompt;  
-    private String nextStepPrompt;  
-  
-    // 状态  
-    private AgentState state = AgentState.IDLE;
-  
-    // 执行控制  
-    private int maxSteps = 10;  
-    private int currentStep = 0;  
-    private int duplicateResponseThreshold = 2;
-    private int recentResponseWindow = 3;
-    private final Deque<String> recentResponses = new ArrayDeque<>();
-    private String loopInterventionPrompt;
-  
-    // LLM  
-    private ChatClient chatClient;
-  
-    // Memory（需要自主维护会话上下文）  
-    private List<Message> messageList = new ArrayList<>();
+public abstract class BaseAgent {
 
+    private final Deque<String> recentResponses = new ArrayDeque<>();
     // 流式输出钩子：由子类在 think()/act() 中填写，用于让前端实时看到思考过程
     protected String currentThinking = "";
     protected String currentAction = "";
-
     // 流式 token 接收器：不为 null 时，子类在 think() 期间逐 token 推送 delta。
     protected java.util.function.Consumer<String> tokenSink;
+    // 核心属性
+    private String name;
+    // 提示
+    private String systemPrompt;
+    private String nextStepPrompt;
+    // 状态
+    private AgentState state = AgentState.IDLE;
+    // 执行控制
+    private int maxSteps = 10;
+    private int currentStep = 0;
+    private int duplicateResponseThreshold = 2;
+    private int recentResponseWindow = 3;
+    private String loopInterventionPrompt;
+    // LLM
+    private ChatClient chatClient;
+    // Memory（需要自主维护会话上下文）
+    private List<Message> messageList = new ArrayList<>();
 
     protected boolean detectAndRecordRepeatedResponse(String responseSignature) {
         if (responseSignature == null || responseSignature.isBlank()) {
@@ -82,50 +75,50 @@ public abstract class BaseAgent {
         loopInterventionPrompt = null;
         return prompt;
     }
-  
-    /**  
-     * 运行代理  
-     *  
-     * @param userPrompt 用户提示词  
-     * @return 执行结果  
-     */  
-    public String run(String userPrompt) {  
-        if (this.state != AgentState.IDLE) {  
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Cannot run agent from state: " + this.state);  
-        }  
+
+    /**
+     * 运行代理
+     *
+     * @param userPrompt 用户提示词
+     * @return 执行结果
+     */
+    public String run(String userPrompt) {
+        if (this.state != AgentState.IDLE) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Cannot run agent from state: " + this.state);
+        }
         if (StringUtil.isBlank(userPrompt)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot run agent with empty user prompt");  
-        }  
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot run agent with empty user prompt");
+        }
         // 更改状态  
-        state = AgentState.RUNNING;  
+        state = AgentState.RUNNING;
         // 记录消息上下文  
         messageList.add(new UserMessage(userPrompt));
         // 保存结果列表  
-        List<String> results = new ArrayList<>();  
-        try {  
-            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {  
-                int stepNumber = i + 1;  
-                currentStep = stepNumber;  
-                log.info("Executing step " + stepNumber + "/" + maxSteps);  
+        List<String> results = new ArrayList<>();
+        try {
+            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+                int stepNumber = i + 1;
+                currentStep = stepNumber;
+                log.info("Executing step " + stepNumber + "/" + maxSteps);
                 // 单步执行  
-                String stepResult = step();  
-                String result = "Step " + stepNumber + ": " + stepResult;  
-                results.add(result);  
-            }  
+                String stepResult = step();
+                String result = "Step " + stepNumber + ": " + stepResult;
+                results.add(result);
+            }
             // 检查是否超出步骤限制  
-            if (currentStep >= maxSteps) {  
-                state = AgentState.FINISHED;  
-                results.add("Terminated: Reached max steps (" + maxSteps + ")");  
-            }  
-            return String.join("\n", results);  
-        } catch (Exception e) {  
-            state = AgentState.ERROR;  
-            log.error("Error executing agent", e);  
-            return "执行错误" + e.getMessage();  
-        } finally {  
+            if (currentStep >= maxSteps) {
+                state = AgentState.FINISHED;
+                results.add("Terminated: Reached max steps (" + maxSteps + ")");
+            }
+            return String.join("\n", results);
+        } catch (Exception e) {
+            state = AgentState.ERROR;
+            log.error("Error executing agent", e);
+            return "执行错误" + e.getMessage();
+        } finally {
             // 清理资源  
-            this.cleanup();  
-        }  
+            this.cleanup();
+        }
     }
 
 
@@ -134,67 +127,67 @@ public abstract class BaseAgent {
      *
      * @param userPrompt 用户提示词
      * @return SseEmitter实例
-     */
-    public SseEmitter runStream(String userPrompt) {
-        // 创建SseEmitter，设置较长的超时时间
-        SseEmitter emitter = new SseEmitter(300000L); // 5分钟超时
+                                    */
+                            public SseEmitter runStream(String userPrompt) {
+                                // 创建SseEmitter，设置较长的超时时间
+                                SseEmitter emitter = new SseEmitter(300000L); // 5分钟超时
 
-        // 使用线程异步处理，避免阻塞主线程
-        CompletableFuture.runAsync(() -> {
-            StringBuilder visibleOutput = new StringBuilder();
-            try {
-                // 允许从 FINISHED / ERROR 状态重新发起一轮（保留 messageList，做多轮记忆）。
-                // 只拒绝 RUNNING（并发同一会话）这种确实不安全的情况。
-                if (this.state == AgentState.FINISHED || this.state == AgentState.ERROR) {
-                    this.state = AgentState.IDLE;
-                    this.currentStep = 0;
-                }
-                if (this.state != AgentState.IDLE) {
-                    emitter.send("错误：无法从状态运行代理: " + this.state);
-                    emitter.complete();
-                    return;
-                }
-                if (StringUtil.isBlank(userPrompt)) {
-                    emitter.send("错误：不能使用空提示词运行代理");
-                    emitter.complete();
-                    return;
-                }
+                                // 使用线程异步处理，避免阻塞主线程
+                                CompletableFuture.runAsync(() -> {
+                                    StringBuilder visibleOutput = new StringBuilder();
+                                    try {
+                                        // 允许从 FINISHED / ERROR 状态重新发起一轮（保留 messageList，做多轮记忆）。
+                                        // 只拒绝 RUNNING（并发同一会话）这种确实不安全的情况。
+                                        if (this.state == AgentState.FINISHED || this.state == AgentState.ERROR) {
+                                            this.state = AgentState.IDLE;
+                                            this.currentStep = 0;
+                                        }
+                                        if (this.state != AgentState.IDLE) {
+                                            emitter.send("错误：无法从状态运行代理: " + this.state);
+                                            emitter.complete();
+                                            return;
+                                        }
+                                        if (StringUtil.isBlank(userPrompt)) {
+                                            emitter.send("错误：不能使用空提示词运行代理");
+                                            emitter.complete();
+                                            return;
+                                        }
 
-                // 更改状态
-                state = AgentState.RUNNING;
-                // 记录消息上下文
-                messageList.add(new UserMessage(userPrompt));
+                                        // 更改状态
+                                        state = AgentState.RUNNING;
+                                        // 记录消息上下文
+                                        messageList.add(new UserMessage(userPrompt));
 
-                try {
-                    // 将 token 汇流到 SSE：子类的 think() 会逐 token 调用这个 sink
-                    this.tokenSink = delta -> {
-                        try {
-                            visibleOutput.append(delta);
-                            emitter.send(delta);
-                        } catch (Exception ignore) {
-                            // 客户端已断开，忽略
-                        }
-                    };
+                                        try {
+                                            // 将 token 汇流到 SSE：子类的 think() 会逐 token 调用这个 sink
+                                            this.tokenSink = delta -> {
+                                                try {
+                                                    visibleOutput.append(delta);
+                                                    emitter.send(delta);
+                                                } catch (Exception ignore) {
+                                                    // 客户端已断开，忽略
+                                                }
+                                            };
 
-                    for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
-                        int stepNumber = i + 1;
-                        currentStep = stepNumber;
-                        currentThinking = "";
-                        currentAction = "";
-                        log.info("Executing step " + stepNumber + "/" + maxSteps);
+                                            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+                                                int stepNumber = i + 1;
+                                                currentStep = stepNumber;
+                                                currentThinking = "";
+                                                currentAction = "";
+                                                log.info("Executing step " + stepNumber + "/" + maxSteps);
 
-                        // 单步执行（think() 会使用 tokenSink 逐 token 推送）
-                        String stepResult = step();
+                                                // 单步执行（think() 会使用 tokenSink 逐 token 推送）
+                                                String stepResult = step();
 
-                        // 如果本步调用了工具，紧接一个简洁的行内执行标记
-                        if (currentAction != null && !currentAction.isBlank()) {
-                            String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
-                            visibleOutput.append(actionChunk);
-                            emitter.send(actionChunk);
-                        } else if ((currentThinking == null || currentThinking.isBlank())
-                                && stepResult != null && !stepResult.isBlank()) {
-                            // 傅底：think 未输出且无工具，退化发送 step 文本
-                            visibleOutput.append(stepResult);
+                                                // 如果本步调用了工具，紧接一个简洁的行内执行标记
+                                                if (currentAction != null && !currentAction.isBlank()) {
+                                                    String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
+                                                    visibleOutput.append(actionChunk);
+                                                    emitter.send(actionChunk);
+                                                } else if ((currentThinking == null || currentThinking.isBlank())
+                                                        && stepResult != null && !stepResult.isBlank()) {
+                                                    // 傅底：think 未输出且无工具，退化发送 step 文本
+                                                    visibleOutput.append(stepResult);
                             emitter.send(stepResult);
                         }
                     }
@@ -248,19 +241,19 @@ public abstract class BaseAgent {
     }
 
 
-    /**  
-     * 执行单个步骤  
-     *  
-     * @return 步骤执行结果  
-     */  
-    public abstract String step();  
-  
-    /**  
-     * 清理资源  
-     */  
-    protected void cleanup() {  
+    /**
+     * 执行单个步骤
+     *
+     * @return 步骤执行结果
+     */
+    public abstract String step();
+
+    /**
+     * 清理资源
+     */
+    protected void cleanup() {
         // 子类可以重写此方法来清理资源  
-    }  
+    }
 
     protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
     }

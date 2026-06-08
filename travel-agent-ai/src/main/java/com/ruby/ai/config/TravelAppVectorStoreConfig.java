@@ -1,5 +1,8 @@
-package com.ruby.ai.rag;
+package com.ruby.ai.config;
 
+import com.ruby.ai.rag.documentIndex.MyTokenTextSplitter;
+import com.ruby.ai.rag.documentIndex.MyKeywordEnricher;
+import com.ruby.ai.rag.documentIndex.TravelAppDocumentLoader;
 import jakarta.annotation.Resource;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;

@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * 节点 3：参数完整性校验。
- *
+ * 
  * 必填：destination、days；缺失时进入 clarify 分支反问用户。
  * 非必填：people、budget、travelMode、preferences、travelTime —— 缺失时由后续节点采用合理默认值。
  */

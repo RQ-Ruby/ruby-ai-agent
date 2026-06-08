@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * @description  网络搜索工具类
- * @return:  搜索结果
  * @author RQ
+ * @description 网络搜索工具类
+ * @return: 搜索结果
  * @date: 2026/3/30 下午5:52
  */
 public class WebSearchTool {

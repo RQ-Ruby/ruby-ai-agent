@@ -3,26 +3,26 @@ package com.ruby.agent.workflow.nodes;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.ruby.agent.workflow.TravelGraphKeys;
-import com.ruby.ai.chatmemory.TwoLevelChatMemory;
+import com.ruby.ai.chatmemory.PersistentChatMemory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
 /**
  * 节点 4：缺参数反问。
- *
+ * 
  * 不调用 LLM，直接按规则拼装一句精炼的反问话术，避免反复 LLM 调用。
  * 把反问写入 finalResponse，工作流走 END，前端把反问展示给用户、等待补充。
- *
+ * 
  * 关键：本节点也要把"用户原话 + 反问回复"写入 ChatMemory，否则下一轮回流时
  * ParamExtractNode 拿不到首轮的 destination/days 等信息。
  */
 @Slf4j
 public class ClarifyNode implements NodeAction {
 
-    private final TwoLevelChatMemory chatMemory;
+    private final PersistentChatMemory chatMemory;
 
-    public ClarifyNode(TwoLevelChatMemory chatMemory) {
+    public ClarifyNode(PersistentChatMemory chatMemory) {
         this.chatMemory = chatMemory;
     }
 

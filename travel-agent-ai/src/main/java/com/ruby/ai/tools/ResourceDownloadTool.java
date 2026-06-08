@@ -9,9 +9,9 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import java.io.File;
 
 /**
+ * @author RQ
  * @description 资源下载工具
  * @return:
- * @author RQ
  * @date: 2026/3/30 下午6:34
  */
 public class ResourceDownloadTool {

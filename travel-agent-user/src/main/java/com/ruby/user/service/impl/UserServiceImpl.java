@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     /**
-     * 盐值（混淆密码，参考鱼皮项目命名习惯）
+     * 盐值
      */
     private static final String SALT = "ruby";
 

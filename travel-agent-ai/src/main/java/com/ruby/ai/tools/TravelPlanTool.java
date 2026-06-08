@@ -7,9 +7,15 @@ import java.util.*;
 
 /**
  * 行旅 AI 旅游行程生成工具：根据目的地、天数、预算、偏好生成一份「像朋友规划」的逐日行程草案。
- *
  */
 public class TravelPlanTool {
+
+    private static final List<String> KNOWN_TAGS = Arrays.asList(
+            "美食", "亲子", "情侣", "古风", "汉服", "自然", "小众", "购物",
+            "文博", "博物馆", "夜景", "摄影", "户外", "登山", "海边", "温泉", "宠物"
+    );
+
+    // ============ 偏好解析 ============
 
     @Tool(description = "根据目的地、天数、预算、人数、偏好生成一份贴心、可落地的逐日旅游行程草案。"
             + "输入：destination(目的地)、days(天数)、budget(总预算，单位：元，0 表示不限)、"
@@ -111,13 +117,6 @@ public class TravelPlanTool {
         return sb.toString();
     }
 
-    // ============ 偏好解析 ============
-
-    private static final List<String> KNOWN_TAGS = Arrays.asList(
-            "美食", "亲子", "情侣", "古风", "汉服", "自然", "小众", "购物",
-            "文博", "博物馆", "夜景", "摄影", "户外", "登山", "海边", "温泉", "宠物"
-    );
-
     private Set<String> parsePreferences(String preferences) {
         Set<String> tags = new LinkedHashSet<>();
         if (preferences == null || preferences.isBlank()) return tags;
@@ -139,26 +138,12 @@ public class TravelPlanTool {
 
     // ============ 预算档位 ============
 
-    private enum BudgetTier {
-        BUDGET("穷游"), STANDARD("舒适常规"), PREMIUM("品质升级");
-        final String label;
-        BudgetTier(String label) { this.label = label; }
-    }
-
     private BudgetTier classifyBudget(double budget, int days, int travelers) {
         if (budget <= 0) return BudgetTier.STANDARD;
         double perPersonPerDay = budget / Math.max(1, travelers) / Math.max(1, days);
         if (perPersonPerDay < 300) return BudgetTier.BUDGET;
         if (perPersonPerDay < 900) return BudgetTier.STANDARD;
         return BudgetTier.PREMIUM;
-    }
-
-    // ============ 出行节奏 ============
-
-    private static class Pace {
-        final String label;
-        final String hint;
-        Pace(String label, String hint) { this.label = label; this.hint = hint; }
     }
 
     private Pace classifyPace(int days) {
@@ -168,7 +153,7 @@ public class TravelPlanTool {
         return new Pace("长线慢游", "多城联动或单城深度，注意留白和休整");
     }
 
-    // ============ 每日安排 ============
+    // ============ 出行节奏 ============
 
     private String dayTitle(int d, int total, String destination, Set<String> tags) {
         if (d == 1 && total > 1) return "抵达 " + destination + "，轻松起步";
@@ -240,7 +225,7 @@ public class TravelPlanTool {
         return lines;
     }
 
-    // ============ 住宿 / 餐饮 / 交通建议 ============
+    // ============ 每日安排 ============
 
     private String hotelAdvice(BudgetTier tier, Set<String> tags, String destination) {
         String base;
@@ -272,6 +257,8 @@ public class TravelPlanTool {
         return s.toString();
     }
 
+    // ============ 住宿 / 餐饮 / 交通建议 ============
+
     private String transportAdvice(int days, BudgetTier tier) {
         StringBuilder s = new StringBuilder();
         s.append("市内优先地铁 + 步行，远距离用打车 / 网约车，时间和体力都更稳。");
@@ -283,8 +270,6 @@ public class TravelPlanTool {
         }
         return s.toString();
     }
-
-    // ============ 提醒 ============
 
     private List<String> buildTips(int days, BudgetTier tier, Set<String> tags) {
         List<String> tips = new ArrayList<>();
@@ -311,5 +296,26 @@ public class TravelPlanTool {
 
     private String formatMoney(double v) {
         return String.format("%.0f", v);
+    }
+
+    // ============ 提醒 ============
+
+    private enum BudgetTier {
+        BUDGET("穷游"), STANDARD("舒适常规"), PREMIUM("品质升级");
+        final String label;
+
+        BudgetTier(String label) {
+            this.label = label;
+        }
+    }
+
+    private static class Pace {
+        final String label;
+        final String hint;
+
+        Pace(String label, String hint) {
+            this.label = label;
+            this.hint = hint;
+        }
     }
 }

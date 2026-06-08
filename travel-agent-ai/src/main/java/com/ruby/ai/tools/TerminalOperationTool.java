@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
+ * @author RQ
  * @description 终端操作工具
  * @return:
- * @author RQ
  * @date: 2026/3/30 下午6:34
  */
 public class TerminalOperationTool {

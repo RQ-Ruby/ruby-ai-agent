@@ -1,26 +1,36 @@
 package com.ruby.ai.config;
 
-import com.ruby.ai.chatmemory.JdbcChatMemoryStore;
-import com.ruby.ai.chatmemory.JdbcChatSessionStore;
-import com.ruby.ai.chatmemory.RedisChatMemoryStore;
-import com.ruby.ai.chatmemory.TwoLevelChatMemory;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.service.ChatMessageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * ChatMemory 二级缓存装配：
- * - RedisTemplate<String, byte[]>：String key + 原始字节 value（Kryo 序列化）
- * - JdbcChatMemoryStore：基于 MySQL 主库
- * - TwoLevelChatMemory：组合 Redis + MySQL
+ * AI 对话记忆配置。
+ * 
+ * 本系统统一使用「MySQL 持久化 + Redis 缓存」方案：
+ * <ul>
+ *     <li>MySQL：保存完整对话历史，是最终可信数据源。</li>
+ *     <li>Redis：缓存完整会话内容，只用于提升连续对话读取速度。</li>
+ *     <li>ChatMemory：上层统一使用 PersistentChatMemory，不再单独接触 Redis 或文件存储。</li>
+ * </ul>
+ *
+ * @author RQ
  */
 @Configuration
 public class ChatMemoryConfig {
 
+    /**
+     * 构建对话记忆专用 RedisTemplate。
+     * 
+     * key 使用字符串；value 使用 byte[]，保存 Kryo 序列化后的完整消息列表。
+     *
+     * @param connectionFactory Redis 连接工厂
+     * @return 对话记忆专用 RedisTemplate
+     */
     @Bean
     public RedisTemplate<String, byte[]> chatMemoryRedisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, byte[]> template = new RedisTemplate<>();
@@ -33,28 +43,18 @@ public class ChatMemoryConfig {
         return template;
     }
 
+    /**
+     * 构建系统唯一的 ChatMemory 实现。
+     * 
+     * 上层统一注入 PersistentChatMemory，不再单独注入 Redis 存储、文件存储等实现。
+     *
+     * @param chatMemoryRedisTemplate 对话记忆 RedisTemplate
+     * @param chatMessageService      对话消息持久化服务
+     * @return 持久化对话记忆组件
+     */
     @Bean
-    public RedisChatMemoryStore redisChatMemoryStore(RedisTemplate<String, byte[]> chatMemoryRedisTemplate) {
-        return new RedisChatMemoryStore(chatMemoryRedisTemplate);
-    }
-
-    @Bean
-    public JdbcChatMemoryStore jdbcChatMemoryStore(@Qualifier("mysqlJdbcTemplate") JdbcTemplate mysqlJdbcTemplate) {
-        JdbcChatMemoryStore store = new JdbcChatMemoryStore(mysqlJdbcTemplate);
-        store.initSchema();
-        return store;
-    }
-
-    @Bean
-    public JdbcChatSessionStore jdbcChatSessionStore(@Qualifier("mysqlJdbcTemplate") JdbcTemplate mysqlJdbcTemplate) {
-        JdbcChatSessionStore store = new JdbcChatSessionStore(mysqlJdbcTemplate);
-        store.initSchema();
-        return store;
-    }
-
-    @Bean
-    public TwoLevelChatMemory twoLevelChatMemory(RedisChatMemoryStore redisChatMemoryStore,
-                                                 JdbcChatMemoryStore jdbcChatMemoryStore) {
-        return new TwoLevelChatMemory(redisChatMemoryStore, jdbcChatMemoryStore);
+    public PersistentChatMemory persistentChatMemory(RedisTemplate<String, byte[]> chatMemoryRedisTemplate,
+                                                     ChatMessageService chatMessageService) {
+        return new PersistentChatMemory(chatMemoryRedisTemplate, chatMessageService);
     }
 }

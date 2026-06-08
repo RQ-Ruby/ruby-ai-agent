@@ -1,6 +1,6 @@
 package com.ruby.ai.config;
 
-import com.ruby.ai.rag.TravelAppDocumentLoader;
+import com.ruby.ai.rag.documentIndex.TravelAppDocumentLoader;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
@@ -17,9 +17,10 @@ import java.util.List;
 
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
+
 /**
  * 配置PostgreSQL向量存储组件
- * */
+ */
 @Configuration
 @Slf4j
 public class PgVectorVectorStoreConfig {

@@ -1,22 +1,22 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
+import {computed, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '../stores/auth.js'
 
 const router = useRouter()
 const auth = useAuthStore()
 const logoutLoading = ref(false)
 
 const navItems = [
-  { label: '首页', to: '/' },
-  { label: '旅行咨询', to: '/travel' },
-  { label: '规划智能体', to: '/planner' },
-  { label: '工作流规划', to: '/workflow' },
+  {label: '首页', to: '/'},
+  {label: '旅行咨询', to: '/travel'},
+  {label: '规划智能体', to: '/planner'},
+  {label: '工作流规划', to: '/workflow'},
 ]
 
 const visibleNavItems = computed(() => {
   if (auth.isAdmin.value) {
-    return [...navItems, { label: '用户管理', to: '/admin/users' }]
+    return [...navItems, {label: '用户管理', to: '/admin/users'}]
   }
   return navItems
 })
@@ -44,17 +44,17 @@ async function handleLogout() {
 <template>
   <header class="app-header">
     <div class="app-header-inner">
-      <router-link to="/" class="brand-link">
+      <router-link class="brand-link" to="/">
         <span class="brand-main">行旅 AI</span>
         <span class="brand-sub">TOUR WITH INTELLIGENCE</span>
       </router-link>
 
       <nav class="header-nav">
         <router-link
-          v-for="item in visibleNavItems"
-          :key="item.to"
-          :to="item.to"
-          class="header-nav-link"
+            v-for="item in visibleNavItems"
+            :key="item.to"
+            :to="item.to"
+            class="header-nav-link"
         >
           {{ item.label }}
         </router-link>
@@ -62,7 +62,7 @@ async function handleLogout() {
 
       <div class="header-user-area">
         <template v-if="auth.isLoggedIn.value">
-          <router-link to="/user/center" class="user-brief">
+          <router-link class="user-brief" to="/user/center">
             <span class="user-avatar">{{ avatarText }}</span>
             <span class="user-name">{{ userDisplayName }}</span>
           </router-link>
@@ -72,8 +72,8 @@ async function handleLogout() {
         </template>
 
         <template v-else>
-          <router-link to="/login" class="header-auth-link header-auth-link-ghost">登录</router-link>
-          <router-link to="/register" class="header-auth-link header-auth-link-solid">注册</router-link>
+          <router-link class="header-auth-link header-auth-link-ghost" to="/login">登录</router-link>
+          <router-link class="header-auth-link header-auth-link-solid" to="/register">注册</router-link>
         </template>
       </div>
     </div>
@@ -100,9 +100,8 @@ async function handleLogout() {
   padding: 14px 20px;
   border-radius: 28px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
-    var(--surface-strong);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+  var(--surface-strong);
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(14px);
   overflow: hidden;
@@ -117,15 +116,14 @@ async function handleLogout() {
 
 .app-header-inner::before {
   inset: 10px;
-  background:
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
-    linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
+  background: linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) 18px / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) 18px calc(100% - 18px) / 1px 24px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 24px 1px no-repeat,
+  linear-gradient(rgba(var(--gold-rgb), 0.82), rgba(var(--gold-rgb), 0.82)) calc(100% - 18px) calc(100% - 18px) / 1px 24px no-repeat;
   border: 1px solid rgba(var(--gold-rgb), 0.28);
   border-radius: 20px;
   opacity: 0.86;
@@ -133,9 +131,8 @@ async function handleLogout() {
 
 .app-header-inner::after {
   inset: 0;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(var(--accent-rgb), 0.08), transparent 22%),
-    radial-gradient(circle at 88% 20%, rgba(var(--gold-rgb), 0.08), transparent 20%);
+  background: radial-gradient(circle at 12% 18%, rgba(var(--accent-rgb), 0.08), transparent 22%),
+  radial-gradient(circle at 88% 20%, rgba(var(--gold-rgb), 0.08), transparent 20%);
   opacity: 0.5;
 }
 
@@ -190,7 +187,7 @@ async function handleLogout() {
   font-size: 0.9rem;
   border: 1px solid transparent;
   transition: background 0.24s ease, color 0.24s ease, border-color 0.24s ease,
-    transform 0.24s ease;
+  transform 0.24s ease;
 }
 
 .header-nav-link:hover {
@@ -230,7 +227,7 @@ async function handleLogout() {
   font-weight: 700;
   text-decoration: none;
   transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease,
-    background 0.24s ease;
+  background 0.24s ease;
 }
 
 .header-auth-link-ghost,

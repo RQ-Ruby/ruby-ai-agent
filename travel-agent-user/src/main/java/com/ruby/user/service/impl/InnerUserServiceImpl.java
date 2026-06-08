@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 用户服务实现
+ * 用户服务实现（内部服务）
  *
  * @author RQ
  */

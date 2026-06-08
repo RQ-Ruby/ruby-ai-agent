@@ -22,23 +22,23 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        
+
         <!-- 核心框架版本 -->
         <spring-boot.version>3.3.3</spring-boot.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <dubbo.version>3.3.0</dubbo.version>
-        
+
         <!-- Spring AI 版本 -->
         <spring-ai.version>1.0.0</spring-ai.version>
         <spring-ai-alibaba.version>1.0.0.4</spring-ai-alibaba.version>
-        
+
         <!-- 工具库版本 -->
         <lombok.version>1.18.32</lombok.version>
         <hutool.version>5.8.38</hutool.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <knife4j.version>4.4.0</knife4j.version>
-        
+
         <!-- 其他依赖版本 -->
         <kryo.version>5.6.0</kryo.version>
         <jsoup.version>1.17.2</jsoup.version>

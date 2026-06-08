@@ -12,11 +12,11 @@ import java.util.Map;
 
 /**
  * 节点：MCP 信息增强。
- *
+ * 
  * 在 RAG 检索之后、行程生成之前执行。利用高德地图 MCP 工具获取：
  * 1. 目的地实时天气
  * 2. 热门景点 / 美食 / 酒店真实 POI
- *
+ * 
  * 产出的信息会作为额外上下文传给 ItineraryGenerateNode，使行程方案更落地。
  * 若 MCP 不可用或调用失败，节点降级为空信息，不阻塞工作流。
  */
@@ -25,11 +25,11 @@ public class McpEnrichNode implements NodeAction {
 
     private static final String PROMPT_TEMPLATE = """
             你是一个旅游信息采集助手。请使用可用的工具，完成以下任务并以纯文本汇总输出：
-            
+                        
             1. 查询目的地【%s】的天气预报（调用 maps_weather）。
             2. 搜索目的地【%s】的热门景点（调用 maps_text_search，关键词: "%s 景点"）。
             3. 搜索目的地【%s】的推荐美食/餐厅（调用 maps_text_search，关键词: "%s 美食"）。
-            
+                        
             输出格式（不要输出 JSON，输出自然语言汇总）：
             ## 天气情况
             …
@@ -37,7 +37,7 @@ public class McpEnrichNode implements NodeAction {
             …（列出名称、地址、评分，最多 5 个）
             ## 推荐美食/餐厅
             …（列出名称、地址、评分，最多 5 个）
-            
+                        
             如果某个工具调用失败，跳过该部分即可，不要报错。
             """;
 

@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import {computed, onMounted} from 'vue'
+import {useRoute} from 'vue-router'
 import AppHeader from './components/AppHeader.vue'
-import { useAuthStore } from './stores/auth.js'
+import {useAuthStore} from './stores/auth.js'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -16,9 +16,9 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader v-if="showGlobalHeader" />
+    <AppHeader v-if="showGlobalHeader"/>
     <main :class="mainClassName">
-      <router-view />
+      <router-view/>
     </main>
   </div>
 </template>

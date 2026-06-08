@@ -1,4 +1,4 @@
-package com.ruby.ai.rag;
+package com.ruby.ai.rag.RetrievalAugment;
 
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;

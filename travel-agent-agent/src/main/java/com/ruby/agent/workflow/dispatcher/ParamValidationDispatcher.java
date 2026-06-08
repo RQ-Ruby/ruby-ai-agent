@@ -5,7 +5,7 @@ import com.alibaba.cloud.ai.graph.action.EdgeAction;
 import com.ruby.agent.workflow.TravelGraphKeys;
 
 /**
- * 条件边：参数校验后，决定继续往后走（complete）还是反问用户（missing）。
+ * 条件边：参数校验后，决定继续往后走（complete）还是反问用户（missing）
  */
 public class ParamValidationDispatcher implements EdgeAction {
 

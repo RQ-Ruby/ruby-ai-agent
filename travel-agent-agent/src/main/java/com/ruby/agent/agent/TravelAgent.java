@@ -1,14 +1,14 @@
 package com.ruby.agent.agent;
 
-import com.ruby.ai.advisor.MyLoggerAdvisor;
-import com.ruby.ai.chatmemory.JdbcChatSessionStore;
-import com.ruby.ai.chatmemory.TwoLevelChatMemory;
+import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.factory.TravelChatClientFactory;
+import com.ruby.ai.service.ChatSessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.stereotype.Component;
@@ -20,17 +20,19 @@ import java.util.List;
 /**
  * 行旅 AI 旅游规划智能体（ReAct 模式 + 工具调用 + SSE 流式输出）
  * 对应原项目 rubyManus 的位置：复杂任务型 Agent
- *
+ * 
  * 后期可由 LangGraph4j 工作流（com.ruby.agent.workflow）接管复杂规划场景，
  * 这里仍保留 ReAct 单循环作为「轻量场景」入口。
  */
 @Component
 @Slf4j
-public class TravelManus extends ToolCallAgent {
+public class TravelAgent extends ToolCallAgent {
 
-    private final TwoLevelChatMemory twoLevelChatMemory;
+    private final PersistentChatMemory chatMemory;
 
-    private final JdbcChatSessionStore jdbcChatSessionStore;
+    private final ChatSessionService chatSessionService;
+
+    private final TravelChatClientFactory travelChatClientFactory;
 
     private String conversationId;
 
@@ -38,20 +40,22 @@ public class TravelManus extends ToolCallAgent {
 
     private String chatId;
 
-    public TravelManus(ToolCallback[] allTools,
+    public TravelAgent(ToolCallback[] allTools,
                        ToolCallbackProvider mcpToolCallbackProvider,
                        ChatModel dashscopeChatModel,
-                       TwoLevelChatMemory twoLevelChatMemory,
-                       JdbcChatSessionStore jdbcChatSessionStore) {
+                       PersistentChatMemory chatMemory,
+                       ChatSessionService chatSessionService,
+                       TravelChatClientFactory travelChatClientFactory) {
         super(mergeTools(allTools, mcpToolCallbackProvider));
-        this.twoLevelChatMemory = twoLevelChatMemory;
-        this.jdbcChatSessionStore = jdbcChatSessionStore;
-        this.setName("TravelManus");
+        this.chatMemory = chatMemory;
+        this.chatSessionService = chatSessionService;
+        this.travelChatClientFactory = travelChatClientFactory;
+        this.setName("TravelAgent");
 
         String SYSTEM_PROMPT = """
-                你是【行旅 AI · 国内旅游规划智能体】（TravelManus），擅长为中国境内出游用户提供贴心、可靠、有人情味的行程规划与出行建议。
+                你是【行旅 AI · 国内旅游规划智能体】（TravelAgent），擅长为中国境内出游用户提供贴心、可靠、有人情味的行程规划与出行建议。
                 你的任务是在用户明确表达旅行需求后，结合现有工具能力，完成国内旅游规划、信息补充、预算估算与落地建议输出。
-                
+                                
                 请严格遵守以下原则：
                 0. 先判断是否真的需要规划：
                    - 用户只是打招呼（如「你好」「在吗」「我是 XXX」）、自我介绍、闲聊或仅询问你的能力时：
@@ -106,7 +110,7 @@ public class TravelManus extends ToolCallAgent {
 
         String NEXT_STEP_PROMPT = """
                 请基于用户真实意图判断当前应该如何回应，不要空泛寒暄，也不要在用户没有提出旅行需求时硬生生造规划。
-                
+                                
                 执行策略：
                 1. 先判断本轮用户输入是否包含明确的旅行意图：
                    - 仅打招呼 / 自我介绍 / 闲聊 / 询问你能力时：
@@ -146,87 +150,8 @@ public class TravelManus extends ToolCallAgent {
         this.setNextStepPrompt(NEXT_STEP_PROMPT);
         this.setMaxSteps(20);
 
-        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
-                .defaultAdvisors(new MyLoggerAdvisor())
-                .build();
+        ChatClient chatClient = travelChatClientFactory.getTravelAgentClient("default").chatClient();
         this.setChatClient(chatClient);
-    }
-
-    public TravelManus bindSession(Long userId, String chatId, String conversationId) {
-        this.userId = userId;
-        this.chatId = chatId;
-        this.conversationId = conversationId;
-        restorePersistedHistory();
-        return this;
-    }
-
-    @Override
-    protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
-        if (!success || conversationId == null || conversationId.isBlank()) {
-            return;
-        }
-        String visibleAnswer = normalizeAssistantOutput(assistantOutput);
-        if (visibleAnswer.isBlank()) {
-            return;
-        }
-        try {
-            twoLevelChatMemory.add(conversationId, List.of(
-                    new UserMessage(userPrompt),
-                    new AssistantMessage(visibleAnswer)
-            ));
-            jdbcChatSessionStore.touchSession(
-                    userId,
-                    "travel_manus",
-                    chatId,
-                    conversationId,
-                    buildSessionTitle(userPrompt),
-                    visibleAnswer
-            );
-        } catch (Exception e) {
-            log.warn("[TravelManus] 持久化会话失败: {}", e.getMessage());
-        }
-    }
-
-    private void restorePersistedHistory() {
-        if (conversationId == null || conversationId.isBlank()) {
-            return;
-        }
-        try {
-            List<Message> persistedMessages = twoLevelChatMemory.get(conversationId, 100);
-            if (persistedMessages == null || persistedMessages.isEmpty()) {
-                return;
-            }
-            List<Message> currentMessages = getMessageList();
-            if (currentMessages != null && !currentMessages.isEmpty()) {
-                return;
-            }
-            getMessageList().addAll(persistedMessages);
-        } catch (Exception e) {
-            log.warn("[TravelManus] 恢复历史会话失败: {}", e.getMessage());
-        }
-    }
-
-    private String normalizeAssistantOutput(String assistantOutput) {
-        if (assistantOutput == null) {
-            return "";
-        }
-        String normalized = assistantOutput
-                .replaceAll("(?m)^> 🔧.*$", "")
-                .replaceAll("(?m)^> ⚠️.*$", "")
-                .replaceAll("\n{3,}", "\n\n")
-                .trim();
-        return normalized;
-    }
-
-    private String buildSessionTitle(String userPrompt) {
-        String title = userPrompt == null ? "新会话" : userPrompt.trim().replaceAll("\\s+", " ");
-        if (title.isBlank()) {
-            return "新会话";
-        }
-        if (title.length() <= 24) {
-            return title;
-        }
-        return title.substring(0, 24);
     }
 
     /**
@@ -253,5 +178,82 @@ public class TravelManus extends ToolCallAgent {
             }
         }
         return merged.toArray(new ToolCallback[0]);
+    }
+
+    public TravelAgent bindSession(Long userId, String chatId, String conversationId) {
+        this.userId = userId;
+        this.chatId = chatId;
+        this.conversationId = conversationId;
+        restorePersistedHistory();
+        return this;
+    }
+
+    @Override
+    protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
+        if (!success || conversationId == null || conversationId.isBlank()) {
+            return;
+        }
+        String visibleAnswer = normalizeAssistantOutput(assistantOutput);
+        if (visibleAnswer.isBlank()) {
+            return;
+        }
+        try {
+            chatMemory.add(conversationId, List.of(
+                    new UserMessage(userPrompt),
+                    new AssistantMessage(visibleAnswer)
+            ));
+            chatSessionService.touchSession(
+                    userId,
+                    "travel_manus",
+                    chatId,
+                    conversationId,
+                    buildSessionTitle(userPrompt),
+                    visibleAnswer
+            );
+        } catch (Exception e) {
+            log.warn("[TravelAgent] 持久化会话失败: {}", e.getMessage());
+        }
+    }
+
+    private void restorePersistedHistory() {
+        if (conversationId == null || conversationId.isBlank()) {
+            return;
+        }
+        try {
+            List<Message> persistedMessages = chatMemory.get(conversationId, 100);
+            if (persistedMessages == null || persistedMessages.isEmpty()) {
+                return;
+            }
+            List<Message> currentMessages = getMessageList();
+            if (currentMessages != null && !currentMessages.isEmpty()) {
+                return;
+            }
+            getMessageList().addAll(persistedMessages);
+        } catch (Exception e) {
+            log.warn("[TravelAgent] 恢复历史会话失败: {}", e.getMessage());
+        }
+    }
+
+    private String normalizeAssistantOutput(String assistantOutput) {
+        if (assistantOutput == null) {
+            return "";
+        }
+        String normalized = assistantOutput
+                .replaceAll("(?m)^> 🔧.*$", "")
+                .replaceAll("(?m)^> ⚠️.*$", "")
+                .replaceAll("\n{3,}", "\n\n")
+                .trim();
+        return normalized;
+    }
+
+    private String buildSessionTitle(String userPrompt) {
+        String title = userPrompt == null ? "新会话" : userPrompt.trim().replaceAll("\\s+", " ");
+        if (title.isBlank()) {
+            return "新会话";
+        }
+        if (title.length() <= 24) {
+            return title;
+        }
+        return title.substring(0, 24);
     }
 }

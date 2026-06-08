@@ -24,7 +24,7 @@ public class ChitchatNode implements NodeAction {
             请根据用户消息做出回应：
             - 如果用户问的是目的地天气、景点、美食等信息，请主动调用对应工具（如 maps_weather、maps_text_search）来回答，不要拒绝。
             - 如果用户问的与旅游完全无关，用不超过 80 字的中文友好回复，并引导他："如果有出行计划，可以告诉我目的地、天数和预算，我帮你规划"。
-            
+                        
             用户消息：%s
             """;
 

@@ -1,12 +1,6 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  USER_ROLE_OPTIONS,
-  addUser,
-  deleteUser,
-  listUsersByPage,
-  updateUser,
-} from '../api/user.js'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {addUser, deleteUser, listUsersByPage, updateUser, USER_ROLE_OPTIONS,} from '../api/user.js'
 
 const loading = ref(false)
 const createLoading = ref(false)
@@ -49,7 +43,7 @@ const editForm = reactive({
 
 const hasRecords = computed(() => pageState.records.length > 0)
 const totalPages = computed(() => Math.max(1, Math.ceil(pageState.total / pageState.pageSize)))
-const roleOptionsWithAll = computed(() => [{ label: '全部角色', value: '' }, ...USER_ROLE_OPTIONS])
+const roleOptionsWithAll = computed(() => [{label: '全部角色', value: ''}, ...USER_ROLE_OPTIONS])
 
 function setFeedback(type, text) {
   feedback.type = type
@@ -287,7 +281,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <p v-if="feedback.text" class="feedback" :class="feedback.type === 'error' ? 'feedback-error' : 'feedback-success'">
+    <p v-if="feedback.text" :class="feedback.type === 'error' ? 'feedback-error' : 'feedback-success'" class="feedback">
       {{ feedback.text }}
     </p>
 
@@ -303,11 +297,11 @@ onMounted(async () => {
         <div class="filter-grid">
           <label class="field">
             <span class="field-label">账号</span>
-            <input v-model="queryForm.userAccount" class="field-input" type="text" placeholder="按账号模糊搜索" />
+            <input v-model="queryForm.userAccount" class="field-input" placeholder="按账号模糊搜索" type="text"/>
           </label>
           <label class="field">
             <span class="field-label">昵称</span>
-            <input v-model="queryForm.userName" class="field-input" type="text" placeholder="按昵称模糊搜索" />
+            <input v-model="queryForm.userName" class="field-input" placeholder="按昵称模糊搜索" type="text"/>
           </label>
           <label class="field">
             <span class="field-label">角色</span>
@@ -320,10 +314,10 @@ onMounted(async () => {
         </div>
 
         <div class="actions-row">
-          <button class="action-btn action-btn-primary" type="button" @click="handleSearch" :disabled="loading">
+          <button :disabled="loading" class="action-btn action-btn-primary" type="button" @click="handleSearch">
             {{ loading ? '查询中...' : '查询' }}
           </button>
-          <button class="action-btn action-btn-secondary" type="button" @click="handleResetSearch" :disabled="loading">
+          <button :disabled="loading" class="action-btn action-btn-secondary" type="button" @click="handleResetSearch">
             重置
           </button>
         </div>
@@ -352,50 +346,52 @@ onMounted(async () => {
         <div v-else class="table-wrap">
           <table class="user-table">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>账号</th>
-                <th>昵称</th>
-                <th>角色</th>
-                <th>简介</th>
-                <th>创建时间</th>
-                <th>操作</th>
-              </tr>
+            <tr>
+              <th>ID</th>
+              <th>账号</th>
+              <th>昵称</th>
+              <th>角色</th>
+              <th>简介</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="user in pageState.records" :key="user.id">
-                <td>{{ user.id }}</td>
-                <td>{{ user.userAccount }}</td>
-                <td>{{ user.userName || '-' }}</td>
-                <td>
-                  <span class="role-chip" :data-role="user.userRole">{{ formatRole(user.userRole) }}</span>
-                </td>
-                <td class="user-profile-cell">{{ user.userProfile || '-' }}</td>
-                <td>{{ formatTime(user.createTime) }}</td>
-                <td>
-                  <div class="table-actions">
-                    <button class="table-btn" type="button" @click="startEdit(user)">编辑</button>
-                    <button
+            <tr v-for="user in pageState.records" :key="user.id">
+              <td>{{ user.id }}</td>
+              <td>{{ user.userAccount }}</td>
+              <td>{{ user.userName || '-' }}</td>
+              <td>
+                <span :data-role="user.userRole" class="role-chip">{{ formatRole(user.userRole) }}</span>
+              </td>
+              <td class="user-profile-cell">{{ user.userProfile || '-' }}</td>
+              <td>{{ formatTime(user.createTime) }}</td>
+              <td>
+                <div class="table-actions">
+                  <button class="table-btn" type="button" @click="startEdit(user)">编辑</button>
+                  <button
+                      :disabled="deleteId === user.id"
                       class="table-btn table-btn-danger"
                       type="button"
                       @click="handleDelete(user)"
-                      :disabled="deleteId === user.id"
-                    >
-                      {{ deleteId === user.id ? '删除中...' : '删除' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  >
+                    {{ deleteId === user.id ? '删除中...' : '删除' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
 
         <div class="pagination-row">
-          <button class="action-btn action-btn-secondary" type="button" @click="goPrevPage" :disabled="pageState.current <= 1 || loading">
+          <button :disabled="pageState.current <= 1 || loading" class="action-btn action-btn-secondary" type="button"
+                  @click="goPrevPage">
             上一页
           </button>
           <span class="pagination-text">共 {{ pageState.total }} 条</span>
-          <button class="action-btn action-btn-secondary" type="button" @click="goNextPage" :disabled="pageState.current >= totalPages || loading">
+          <button :disabled="pageState.current >= totalPages || loading" class="action-btn action-btn-secondary" type="button"
+                  @click="goNextPage">
             下一页
           </button>
         </div>
@@ -415,19 +411,20 @@ onMounted(async () => {
         <div class="form-stack">
           <label class="field">
             <span class="field-label">账号</span>
-            <input v-model="createForm.userAccount" class="field-input" type="text" placeholder="至少 4 位" />
+            <input v-model="createForm.userAccount" class="field-input" placeholder="至少 4 位" type="text"/>
           </label>
           <label class="field">
             <span class="field-label">昵称</span>
-            <input v-model="createForm.userName" class="field-input" type="text" placeholder="可选" />
+            <input v-model="createForm.userName" class="field-input" placeholder="可选" type="text"/>
           </label>
           <label class="field">
             <span class="field-label">头像地址</span>
-            <input v-model="createForm.userAvatar" class="field-input" type="text" placeholder="可选" />
+            <input v-model="createForm.userAvatar" class="field-input" placeholder="可选" type="text"/>
           </label>
           <label class="field">
             <span class="field-label">简介</span>
-            <textarea v-model="createForm.userProfile" class="field-input field-textarea" rows="4" placeholder="可选"></textarea>
+            <textarea v-model="createForm.userProfile" class="field-input field-textarea" placeholder="可选"
+                      rows="4"></textarea>
           </label>
           <label class="field">
             <span class="field-label">角色</span>
@@ -438,10 +435,11 @@ onMounted(async () => {
         </div>
 
         <div class="actions-row">
-          <button class="action-btn action-btn-primary" type="button" @click="handleCreate" :disabled="createLoading">
+          <button :disabled="createLoading" class="action-btn action-btn-primary" type="button" @click="handleCreate">
             {{ createLoading ? '创建中...' : '创建用户' }}
           </button>
-          <button class="action-btn action-btn-secondary" type="button" @click="closeCreateDialog" :disabled="createLoading">
+          <button :disabled="createLoading" class="action-btn action-btn-secondary" type="button"
+                  @click="closeCreateDialog">
             取消
           </button>
         </div>
@@ -461,29 +459,34 @@ onMounted(async () => {
         <div class="form-stack">
           <label class="field">
             <span class="field-label">昵称</span>
-            <input v-model="editForm.userName" class="field-input" type="text" placeholder="更新昵称" :disabled="!editForm.id" />
+            <input v-model="editForm.userName" :disabled="!editForm.id" class="field-input" placeholder="更新昵称"
+                   type="text"/>
           </label>
           <label class="field">
             <span class="field-label">头像地址</span>
-            <input v-model="editForm.userAvatar" class="field-input" type="text" placeholder="更新头像" :disabled="!editForm.id" />
+            <input v-model="editForm.userAvatar" :disabled="!editForm.id" class="field-input" placeholder="更新头像"
+                   type="text"/>
           </label>
           <label class="field">
             <span class="field-label">简介</span>
-            <textarea v-model="editForm.userProfile" class="field-input field-textarea" rows="4" placeholder="更新简介" :disabled="!editForm.id"></textarea>
+            <textarea v-model="editForm.userProfile" :disabled="!editForm.id" class="field-input field-textarea" placeholder="更新简介"
+                      rows="4"></textarea>
           </label>
           <label class="field">
             <span class="field-label">角色</span>
-            <select v-model="editForm.userRole" class="field-input field-select" :disabled="!editForm.id">
+            <select v-model="editForm.userRole" :disabled="!editForm.id" class="field-input field-select">
               <option v-for="item in USER_ROLE_OPTIONS" :key="item.value" :value="item.value">{{ item.label }}</option>
             </select>
           </label>
         </div>
 
         <div class="actions-row">
-          <button class="action-btn action-btn-primary" type="button" @click="handleUpdate" :disabled="!editForm.id || updateLoading">
+          <button :disabled="!editForm.id || updateLoading" class="action-btn action-btn-primary" type="button"
+                  @click="handleUpdate">
             {{ updateLoading ? '保存中...' : '保存修改' }}
           </button>
-          <button class="action-btn action-btn-secondary" type="button" @click="closeEditDialog" :disabled="updateLoading">
+          <button :disabled="updateLoading" class="action-btn action-btn-secondary" type="button"
+                  @click="closeEditDialog">
             取消
           </button>
         </div>
@@ -508,9 +511,8 @@ onMounted(async () => {
   padding: 28px;
   border-radius: 28px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -607,9 +609,8 @@ onMounted(async () => {
   padding: 24px;
   border-radius: 24px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
@@ -864,9 +865,8 @@ onMounted(async () => {
   padding: 24px;
   border-radius: 26px;
   border: 1px solid var(--border-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
-    var(--surface-elevated);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06)),
+  var(--surface-elevated);
   box-shadow: var(--card-shadow-hover);
   overflow-x: hidden;
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * 节点 6：智能行程生成。
- *
+ * 
  * 用「出行参数 + RAG 检索到的本地知识」喂给大模型，按天产出结构化行程。
  */
 @Slf4j
@@ -19,7 +19,7 @@ public class ItineraryGenerateNode implements NodeAction {
     private static final String PROMPT_TEMPLATE = """
             你是专业旅游规划师，请综合以下信息为用户产出一份**按天结构化**的行程方案。
             使用 Markdown 输出，控制在 1200 汉字以内；不要照抄知识库原文，要提炼整合。
-            
+                        
             ## 用户出行参数
             - 目的地：%s
             - 天数：%d 天
@@ -28,13 +28,13 @@ public class ItineraryGenerateNode implements NodeAction {
             - 出行方式：%s
             - 偏好：%s
             - 出行时间：%s
-            
+                        
             ## 旅行知识库相关片段（RAG 检索）
             %s
-            
+                        
             ## 实时信息增强（MCP 天气 & POI）
             %s
-            
+                        
             请按以下结构输出：
             1. **行程总览**：核心节奏一句话概括
             2. **每日安排**（Day 1 / Day 2 …）：
@@ -43,7 +43,7 @@ public class ItineraryGenerateNode implements NodeAction {
             3. **预算建议**：交通 / 住宿 / 餐饮 / 门票 / 其它 占比与小计
             4. **天气提醒**：根据实时天气给出穿衣与出行建议
             5. **避坑 & 贴士**：3-5 条
-            
+                        
             如果某些字段用户没填写，请采用合理默认值（如人数默认 2、预算未限定时按人均 600 元/天估算），
             并在「行程总览」一段中简要标注"已采用的默认值"。
             """;

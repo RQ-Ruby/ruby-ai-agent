@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * 节点 5：RAG 旅行知识库检索。
- *
+ * 
  * 用「目的地 + 偏好」做查询，从 pgVectorVectorStore 拉取相关的景点 / 美食 / 住宿 / 攻略文档。
  */
 @Slf4j

@@ -12,10 +12,10 @@ import java.util.Map;
 /**
  * 节点 1：意图识别。
  * 判定用户当前输入是「旅行规划/咨询」还是「普通闲聊」。
- *
+ * 
  * 输出：
- *   - intent: "travel" 或 "chitchat"
- *   - chitchatReply: 闲聊场景下顺手生成的简短回复（仅 chitchat 分支使用）
+ * - intent: "travel" 或 "chitchat"
+ * - chitchatReply: 闲聊场景下顺手生成的简短回复（仅 chitchat 分支使用）
  */
 @Slf4j
 public class IntentClassifyNode implements NodeAction {
@@ -27,7 +27,7 @@ public class IntentClassifyNode implements NodeAction {
               以及"查查青岛的天气""帮我看看XX有什么好玩的"等旅游信息查询。
             - chitchat：与旅游完全无关的闲聊或不相关问题（如数学题、编程、日常寒暄等）
             只输出一个词，不要标点，不要解释。
-            
+                        
             用户消息：%s
             """;
 
