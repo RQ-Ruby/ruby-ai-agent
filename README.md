@@ -133,7 +133,7 @@ src/main/java/com/ruby/rubyaiagent/
 | 方法  | 路径                      | 说明                     |
 |-----|-------------------------|------------------------|
 | GET | `/ai/travel_app/chat`   | 旅游问答（SSE 流式）           |
-| GET | `/ai/travel_manus/chat` | 规划智能体（SSE 流式，需 chatId） |
+| GET | `/ai/travel_agent/chat` | 规划智能体（SSE 流式，需 chatId） |
 
 ## License
 

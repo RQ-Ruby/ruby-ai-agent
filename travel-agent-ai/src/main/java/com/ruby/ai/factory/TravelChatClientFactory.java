@@ -100,6 +100,22 @@ public class TravelChatClientFactory {
     }
 
     /**
+     * 创建普通流式对话 ChatClient（带缓存）
+     */
+    public CachedTravelAgentClient createStreamRagChatClient(String conversationId) {
+        String cacheKey = normalizeCacheKey(conversationId);
+        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelAgentClient(createStreamRagChatClient(), key));
+    }
+
+    /**
+     * 创建ReAct Agent ChatClient（带缓存）
+     */
+    public CachedTravelAgentClient getTravelAgentClient(String conversationId) {
+        String cacheKey = normalizeCacheKey(conversationId);
+        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelAgentClient(createAgentChatClient(), key));
+    }
+
+    /**
      * 创建【工作流】专用ChatClient
      * 仅使用基础公共配置，无额外RAG/工具增强
      * 适用场景：旅游规划工作流内部对话
@@ -109,11 +125,6 @@ public class TravelChatClientFactory {
         return baseBuilder()
                 .defaultAdvisors(ragAdvisor)
                 .build();
-    }
-
-    public CachedTravelAgentClient getTravelAgentClient(String conversationId) {
-        String cacheKey = normalizeCacheKey(conversationId);
-        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelAgentClient(createAgentChatClient(), key));
     }
 
     /**

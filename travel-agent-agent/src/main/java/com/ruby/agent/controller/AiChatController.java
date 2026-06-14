@@ -60,7 +60,7 @@ public class AiChatController {
      * @param request HTTP 请求，用于获取当前登录用户并隔离用户会话
      * @return SSE 推送器，持续输出智能体执行过程和最终回复
      */
-    @GetMapping("/travel_manus/chat")
+    @GetMapping("/travel_agent/chat")
     public SseEmitter doChatWithTravelAgent(String message, String chatId, HttpServletRequest request) {
         User loginUser = InnerUserService.getLoginUser(request);
         return aiChatService.chatWithTravelAgent(message, chatId, loginUser);

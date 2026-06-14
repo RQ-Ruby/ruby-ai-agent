@@ -8,10 +8,10 @@ export function buildTravelChatStreamUrl(message, chatId) {
     })
 }
 
-/** 行旅 AI 规划智能体 SSE：GET /ai/travel_manus/chat */
+/** 行旅 AI 规划智能体 SSE：GET /ai/travel_agent/chat */
 export function buildTravelAgentStreamUrl(message, chatId) {
     return http.getUri({
-        url: '/ai/travel_manus/chat',
+        url: '/ai/travel_agent/chat',
         params: {message, chatId},
     })
 }

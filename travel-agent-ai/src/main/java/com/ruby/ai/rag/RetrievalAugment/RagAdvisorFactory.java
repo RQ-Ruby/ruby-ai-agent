@@ -11,9 +11,6 @@ import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 /**
  * RAG 检索增强 Advisor 工厂类
  *
- * 在Spring AI RAG架构中的位置：
- * ChatClient -> Advisor链 -> RetrievalAugmentationAdvisor -> DocumentRetriever -> VectorStore
- *
  * 核心功能：
  * 1.文档过滤与检索
  * 2.查询增强与关联

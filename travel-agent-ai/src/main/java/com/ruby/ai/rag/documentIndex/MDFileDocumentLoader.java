@@ -112,7 +112,7 @@ public class MDFileDocumentLoader {
      * @return 分块后的Document列表
      */
     private List<Document> splitDocument(Document document, String fileName) {
-        // 第一步：文本规范化，统一换行符和空白字符
+        // 1.文本规范化，统一换行符和空白字符
         String text = normalizeText(document.getText());
 
         // 空文本直接返回空列表

@@ -18,58 +18,92 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 抽象基础代理类，用于管理代理状态和执行流程。
- * 
- * 提供状态转换、内存管理和基于步骤的执行循环的基础功能。
- * 子类必须实现step方法。
+ * 抽象基础代理类，所有智能体的根父类
+ *
+ * 提供智能体生命周期管理、状态转换、循环检测、内存管理和执行流程控制的基础能力
+ * （支持同步运行和SSE流式运行两种模式）
  */
 @Data
 @Slf4j
 public abstract class BaseAgent {
 
+    // 最近响应缓存队列，用于检测重复响应和循环调用
     private final Deque<String> recentResponses = new ArrayDeque<>();
-    // 流式输出钩子：由子类在 think()/act() 中填写，用于让前端实时看到思考过程
+
+    // 流式输出钩子：由子类在think()/act()中填充示
     protected String currentThinking = "";
     protected String currentAction = "";
-    // 流式 token 接收器：不为 null 时，子类在 think() 期间逐 token 推送 delta。
+
+    // 流式token接收器：非空时，子类在think()期间逐token推送delta给前端
     protected java.util.function.Consumer<String> tokenSink;
-    // 核心属性
+
+    // 智能体基本信息
     private String name;
-    // 提示
+    // 系统提示词：定义智能体的角色、能力和行为规范
     private String systemPrompt;
+    // 下一步提示词：每轮思考前注入的引导提示
     private String nextStepPrompt;
-    // 状态
+
+    // 智能体运行状态
     private AgentState state = AgentState.IDLE;
-    // 执行控制
-    private int maxSteps = 10;
-    private int currentStep = 0;
-    private int duplicateResponseThreshold = 2;
-    private int recentResponseWindow = 3;
-    private String loopInterventionPrompt;
-    // LLM
+
+    // 执行控制参数
+    private int maxSteps = 10; // 最大执行步数，防止无限循环
+    private int currentStep = 0; // 当前执行步数
+    private int duplicateResponseThreshold = 2; // 重复响应阈值，超过则触发干预
+    private int recentResponseWindow = 3; // 最近响应窗口大小
+    private String loopInterventionPrompt; // 循环干预提示词，检测到循环时注入
+
+    // LLM客户端
     private ChatClient chatClient;
-    // Memory（需要自主维护会话上下文）
+
+    // 会话内存：自主维护的消息上下文列表
     private List<Message> messageList = new ArrayList<>();
 
+    /**
+     * 检测并记录重复响应
+     * 用于防止智能体陷入重复思考或重复工具调用的死循环
+     *
+     * @param responseSignature 响应签名（文本内容或工具调用信息）
+     * @return true表示检测到重复，false表示正常
+     */
     protected boolean detectAndRecordRepeatedResponse(String responseSignature) {
+        // 空签名不检测
         if (responseSignature == null || responseSignature.isBlank()) {
             return false;
         }
+
+        // 标准化签名：去除多余空白字符
         String normalized = responseSignature.replaceAll("\\s+", " ").trim();
+
+        // 统计当前窗口内的重复次数
         long duplicateCount = recentResponses.stream()
                 .filter(normalized::equals)
                 .count();
+
+        // 将当前签名加入队列
         recentResponses.addLast(normalized);
+
+        // 维护窗口大小，移除最旧的响应
         while (recentResponses.size() > recentResponseWindow) {
             recentResponses.removeFirst();
         }
+
+        // 超过阈值则生成循环干预提示
         if (duplicateCount + 1 >= duplicateResponseThreshold) {
             loopInterventionPrompt = "观察到你正在重复相同的响应或工具调用。请不要重复已尝试过的无效路径，改用新的策略推进任务；如果已有足够信息，请直接给出最终答案；如果无法继续，请调用终止工具结束。";
             return true;
         }
+
         return false;
     }
 
+    /**
+     * 消费循环干预提示词
+     * 调用后会清空提示词，确保只注入一次
+     *
+     * @return 循环干预提示词，如无则返回null
+     */
     protected String consumeLoopInterventionPrompt() {
         String prompt = loopInterventionPrompt;
         loopInterventionPrompt = null;
@@ -77,131 +111,158 @@ public abstract class BaseAgent {
     }
 
     /**
-     * 运行代理
+     * 同步运行智能体
+     * 执行完成后返回完整结果字符串
      *
-     * @param userPrompt 用户提示词
-     * @return 执行结果
+     * @param userPrompt 用户输入的提示词
+     * @return 智能体执行的完整结果
+     * @throws BusinessException 当智能体状态错误或参数无效时抛出
      */
     public String run(String userPrompt) {
+        // 状态检查：只能从IDLE状态启动
         if (this.state != AgentState.IDLE) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "Cannot run agent from state: " + this.state);
         }
+
+        // 参数校验：用户提示词不能为空
         if (StringUtil.isBlank(userPrompt)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot run agent with empty user prompt");
         }
-        // 更改状态  
+
+        // 初始化运行状态
         state = AgentState.RUNNING;
-        // 记录消息上下文  
+        // 将用户消息加入上下文
         messageList.add(new UserMessage(userPrompt));
-        // 保存结果列表  
+        // 保存每步执行结果
         List<String> results = new ArrayList<>();
+
         try {
+            // 主执行循环：直到达到最大步数或任务完成
             for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
                 int stepNumber = i + 1;
                 currentStep = stepNumber;
                 log.info("Executing step " + stepNumber + "/" + maxSteps);
-                // 单步执行  
+
+                // 执行单步逻辑（由子类实现）
                 String stepResult = step();
                 String result = "Step " + stepNumber + ": " + stepResult;
                 results.add(result);
             }
-            // 检查是否超出步骤限制  
+
+            // 处理达到最大步数的情况
             if (currentStep >= maxSteps) {
                 state = AgentState.FINISHED;
                 results.add("Terminated: Reached max steps (" + maxSteps + ")");
             }
+
+            // 合并所有步骤结果返回
             return String.join("\n", results);
         } catch (Exception e) {
+            // 异常处理：标记为错误状态并记录日志
             state = AgentState.ERROR;
             log.error("Error executing agent", e);
             return "执行错误" + e.getMessage();
         } finally {
-            // 清理资源  
+            // 无论成功失败，最终都清理资源
             this.cleanup();
         }
     }
 
-
     /**
-     * 运行代理（流式输出）
+     * 流式运行智能体
+     * 通过SSE实时推送思考过程和执行结果给前端
+     * 支持多轮会话（保留历史消息上下文）
      *
-     * @param userPrompt 用户提示词
-     * @return SseEmitter实例
-                                    */
-                            public SseEmitter runStream(String userPrompt) {
-                                // 创建SseEmitter，设置较长的超时时间
-                                SseEmitter emitter = new SseEmitter(300000L); // 5分钟超时
+     * @param userPrompt 用户输入的提示词
+     * @return SseEmitter实例，用于向前端推送事件
+     */
+    public SseEmitter runStream(String userPrompt) {
+        // 创建SSE发射器，设置5分钟超时（适合复杂任务）
+        SseEmitter emitter = new SseEmitter(300000L);
 
-                                // 使用线程异步处理，避免阻塞主线程
-                                CompletableFuture.runAsync(() -> {
-                                    StringBuilder visibleOutput = new StringBuilder();
-                                    try {
-                                        // 允许从 FINISHED / ERROR 状态重新发起一轮（保留 messageList，做多轮记忆）。
-                                        // 只拒绝 RUNNING（并发同一会话）这种确实不安全的情况。
-                                        if (this.state == AgentState.FINISHED || this.state == AgentState.ERROR) {
-                                            this.state = AgentState.IDLE;
-                                            this.currentStep = 0;
-                                        }
-                                        if (this.state != AgentState.IDLE) {
-                                            emitter.send("错误：无法从状态运行代理: " + this.state);
-                                            emitter.complete();
-                                            return;
-                                        }
-                                        if (StringUtil.isBlank(userPrompt)) {
-                                            emitter.send("错误：不能使用空提示词运行代理");
-                                            emitter.complete();
-                                            return;
-                                        }
+        // 异步处理任务，避免阻塞Web请求线程
+        CompletableFuture.runAsync(() -> {
+            // 保存可见输出内容，用于最终持久化
+            StringBuilder visibleOutput = new StringBuilder();
+            try {
+                // 允许从FINISHED/ERROR状态重新发起一轮（保留历史消息，支持多轮对话）
+                // 只拒绝RUNNING状态，防止并发执行同一会话
+                if (this.state == AgentState.FINISHED || this.state == AgentState.ERROR) {
+                    this.state = AgentState.IDLE;
+                    this.currentStep = 0;
+                }
 
-                                        // 更改状态
-                                        state = AgentState.RUNNING;
-                                        // 记录消息上下文
-                                        messageList.add(new UserMessage(userPrompt));
+                // 状态检查
+                if (this.state != AgentState.IDLE) {
+                    emitter.send("错误：无法从状态运行代理: " + this.state);
+                    emitter.complete();
+                    return;
+                }
 
-                                        try {
-                                            // 将 token 汇流到 SSE：子类的 think() 会逐 token 调用这个 sink
-                                            this.tokenSink = delta -> {
-                                                try {
-                                                    visibleOutput.append(delta);
-                                                    emitter.send(delta);
-                                                } catch (Exception ignore) {
-                                                    // 客户端已断开，忽略
-                                                }
-                                            };
+                // 参数校验
+                if (StringUtil.isBlank(userPrompt)) {
+                    emitter.send("错误：不能使用空提示词运行代理");
+                    emitter.complete();
+                    return;
+                }
 
-                                            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
-                                                int stepNumber = i + 1;
-                                                currentStep = stepNumber;
-                                                currentThinking = "";
-                                                currentAction = "";
-                                                log.info("Executing step " + stepNumber + "/" + maxSteps);
+                // 初始化运行状态
+                state = AgentState.RUNNING;
+                // 将用户消息加入上下文
+                messageList.add(new UserMessage(userPrompt));
 
-                                                // 单步执行（think() 会使用 tokenSink 逐 token 推送）
-                                                String stepResult = step();
+                try {
+                    // 设置token接收器：子类think()方法会逐token调用此方法推送流式内容
+                    this.tokenSink = delta -> {
+                        try {
+                            visibleOutput.append(delta);
+                            emitter.send(delta);
+                        } catch (Exception ignore) {
+                            // 客户端断开连接时忽略异常
+                        }
+                    };
 
-                                                // 如果本步调用了工具，紧接一个简洁的行内执行标记
-                                                if (currentAction != null && !currentAction.isBlank()) {
-                                                    String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
-                                                    visibleOutput.append(actionChunk);
-                                                    emitter.send(actionChunk);
-                                                } else if ((currentThinking == null || currentThinking.isBlank())
-                                                        && stepResult != null && !stepResult.isBlank()) {
-                                                    // 傅底：think 未输出且无工具，退化发送 step 文本
-                                                    visibleOutput.append(stepResult);
+                    // 主执行循环
+                    for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+                        int stepNumber = i + 1;
+                        currentStep = stepNumber;
+                        // 重置当前步的思考和行动状态
+                        currentThinking = "";
+                        currentAction = "";
+                        log.info("Executing step " + stepNumber + "/" + maxSteps);
+
+                        // 执行单步逻辑（think()会使用tokenSink逐token推送）
+                        String stepResult = step();
+
+                        // 如果本步调用了工具，推送工具执行标记
+                        if (currentAction != null && !currentAction.isBlank()) {
+                            // 格式化工具执行信息，替换换行防止破坏SSE格式
+                            String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
+                            visibleOutput.append(actionChunk);
+                            emitter.send(actionChunk);
+                        }
+                        // 兜底：如果think未输出且无工具调用，直接发送step结果
+                        else if ((currentThinking == null || currentThinking.isBlank())
+                                && stepResult != null && !stepResult.isBlank()) {
+                            visibleOutput.append(stepResult);
                             emitter.send(stepResult);
                         }
                     }
-                    // 检查是否超出步骤限制
+
+                    // 处理达到最大步数的情况
                     if (currentStep >= maxSteps && state != AgentState.FINISHED) {
                         state = AgentState.FINISHED;
                         String warningChunk = "\n\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n";
                         visibleOutput.append(warningChunk);
                         emitter.send(warningChunk);
                     }
+
+                    // 流式运行完成后的回调（子类可重写实现持久化等逻辑）
                     afterStreamingRun(userPrompt, visibleOutput.toString(), state == AgentState.FINISHED);
-                    // 正常完成
+                    // 正常完成SSE连接
                     emitter.complete();
                 } catch (Exception e) {
+                    // 内部执行异常处理
                     state = AgentState.ERROR;
                     log.error("执行智能体失败", e);
                     try {
@@ -211,6 +272,7 @@ public abstract class BaseAgent {
                         emitter.send(errorChunk);
                         emitter.complete();
                     } catch (Exception ex) {
+                        // 发送错误消息失败时，直接完成错误
                         emitter.completeWithError(ex);
                     }
                 } finally {
@@ -218,18 +280,21 @@ public abstract class BaseAgent {
                     this.cleanup();
                 }
             } catch (Exception e) {
+                // 外层异常处理
                 emitter.completeWithError(e);
             }
         });
 
-        // 设置超时和完成回调
+        // 设置SSE超时回调
         emitter.onTimeout(() -> {
             this.state = AgentState.ERROR;
             this.cleanup();
             log.warn("SSE connection timed out");
         });
 
+        // 设置SSE完成回调
         emitter.onCompletion(() -> {
+            // 如果连接完成时智能体仍在运行，标记为完成
             if (this.state == AgentState.RUNNING) {
                 this.state = AgentState.FINISHED;
             }
@@ -240,21 +305,31 @@ public abstract class BaseAgent {
         return emitter;
     }
 
-
     /**
-     * 执行单个步骤
+     * 执行单个步骤的抽象方法
+     * 由子类实现具体的单步执行逻辑
      *
-     * @return 步骤执行结果
+     * @return 步骤执行结果字符串
      */
     public abstract String step();
 
     /**
-     * 清理资源
+     * 清理资源的钩子方法
+     * 子类可以重写此方法来清理特定资源
      */
     protected void cleanup() {
-        // 子类可以重写此方法来清理资源  
+        // 子类可重写
     }
 
+    /**
+     * 流式运行完成后的回调方法
+     * 子类可重写实现会话持久化、统计等功能
+     *
+     * @param userPrompt 用户输入的提示词
+     * @param assistantOutput 智能体完整的输出内容
+     * @param success 执行是否成功
+     */
     protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
+        // 子类可重写
     }
 }

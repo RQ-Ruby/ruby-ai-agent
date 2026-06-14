@@ -5,10 +5,10 @@ import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.service.ChatSessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.stereotype.Component;
@@ -18,40 +18,56 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 行旅 AI 旅游规划智能体（ReAct 模式 + 工具调用 + SSE 流式输出）
- * 对应原项目 rubyManus 的位置：复杂任务型 Agent
- * 
- * 后期可由 LangGraph4j 工作流（com.ruby.agent.workflow）接管复杂规划场景，
- * 这里仍保留 ReAct 单循环作为「轻量场景」入口。
+ * 行旅AI旅游规划智能体
+ *
+ * 基于ToolCallAgent，提供旅行规划专长的系统提示词、Tools、MCP、RAG能力
  */
 @Component
 @Slf4j
 public class TravelAgent extends ToolCallAgent {
 
+    // 持久化聊天记忆：用于保存会话历史
     private final PersistentChatMemory chatMemory;
 
+    // 会话服务：用于管理会话元数据
     private final ChatSessionService chatSessionService;
 
+    // 聊天客户端工厂：创建专用的ChatClient实例
     private final TravelChatClientFactory travelChatClientFactory;
 
-    private String conversationId;
+    // 会话绑定信息
+    private String conversationId; // 会话ID
+    private Long userId; // 用户ID
+    private String chatId; // 聊天ID
 
-    private Long userId;
-
-    private String chatId;
-
+    /**
+     * 构造函数
+     * 合并自定义工具和MCP工具，初始化系统提示词和执行参数
+     *
+     * @param allTools 自定义工具数组
+     * @param mcpToolCallbackProvider MCP工具提供者
+     * @param dashscopeChatModel 通义千问聊天模型
+     * @param chatMemory 持久化聊天记忆
+     * @param chatSessionService 会话服务
+     * @param travelChatClientFactory 聊天客户端工厂
+     */
     public TravelAgent(ToolCallback[] allTools,
                        ToolCallbackProvider mcpToolCallbackProvider,
                        ChatModel dashscopeChatModel,
                        PersistentChatMemory chatMemory,
                        ChatSessionService chatSessionService,
                        TravelChatClientFactory travelChatClientFactory) {
+        // 合并自定义工具和MCP工具
         super(mergeTools(allTools, mcpToolCallbackProvider));
+
         this.chatMemory = chatMemory;
         this.chatSessionService = chatSessionService;
         this.travelChatClientFactory = travelChatClientFactory;
+
+        // 设置智能体名称
         this.setName("TravelAgent");
 
+        // 系统提示词：定义旅游规划智能体的角色、能力和行为规范
         String SYSTEM_PROMPT = """
                 你是【行旅 AI · 国内旅游规划智能体】（TravelAgent），擅长为中国境内出游用户提供贴心、可靠、有人情味的行程规划与出行建议。
                 你的任务是在用户明确表达旅行需求后，结合现有工具能力，完成国内旅游规划、信息补充、预算估算与落地建议输出。
@@ -108,6 +124,7 @@ public class TravelAgent extends ToolCallAgent {
                 """;
         this.setSystemPrompt(SYSTEM_PROMPT);
 
+        // 下一步提示词：每轮思考前注入，引导智能体正确执行
         String NEXT_STEP_PROMPT = """
                 请基于用户真实意图判断当前应该如何回应，不要空泛寒暄，也不要在用户没有提出旅行需求时硬生生造规划。
                                 
@@ -148,21 +165,32 @@ public class TravelAgent extends ToolCallAgent {
                 7. 完成后调用 doTerminate 结束。
                 """;
         this.setNextStepPrompt(NEXT_STEP_PROMPT);
+
+        // 设置最大执行步数为20，适合复杂的旅游规划任务
         this.setMaxSteps(20);
 
+        // 创建专用的ChatClient实例，并缓存到ConcurrentHashMap
         ChatClient chatClient = travelChatClientFactory.getTravelAgentClient("default").chatClient();
         this.setChatClient(chatClient);
     }
 
     /**
-     * 合并自写工具与 MCP 工具，让 ReAct 智能体一次性拥有全部能力。
-     * MCP 启动失败时降级为只用自写工具，不影响主流程。
+     * 合并自定义工具与MCP工具
+     * MCP启动失败时自动降级为只使用自定义工具，保证主流程不受影响
+     *
+     * @param manualTools 自定义工具数组
+     * @param mcpProvider MCP工具提供者
+     * @return 合并后的工具数组
      */
     private static ToolCallback[] mergeTools(ToolCallback[] manualTools, ToolCallbackProvider mcpProvider) {
         List<ToolCallback> merged = new ArrayList<>();
+
+        // 添加自定义工具
         if (manualTools != null) {
             merged.addAll(Arrays.asList(manualTools));
         }
+
+        // 添加MCP工具（失败时忽略）
         if (mcpProvider != null) {
             try {
                 var fnCallbacks = mcpProvider.getToolCallbacks();
@@ -174,86 +202,146 @@ public class TravelAgent extends ToolCallAgent {
                     }
                 }
             } catch (Exception ignored) {
-                // MCP 未就绪时降级
+                // MCP未就绪时降级，不抛出异常
             }
         }
+
         return merged.toArray(new ToolCallback[0]);
     }
 
+    /**
+     * 绑定会话信息
+     * 并从持久化存储中恢复历史会话消息
+     *
+     * @param userId 用户ID
+     * @param chatId 聊天ID
+     * @param conversationId 会话ID
+     * @return 当前TravelAgent实例（支持链式调用）
+     */
     public TravelAgent bindSession(Long userId, String chatId, String conversationId) {
         this.userId = userId;
         this.chatId = chatId;
         this.conversationId = conversationId;
+        // 恢复历史会话
         restorePersistedHistory();
         return this;
     }
 
+    /**
+     * 重写流式运行完成后的回调
+     * 实现会话历史的持久化和会话元数据的更新
+     *
+     * @param userPrompt 用户输入的提示词
+     * @param assistantOutput 智能体完整的输出内容
+     * @param success 执行是否成功
+     */
     @Override
     protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
+        // 失败或无会话ID时不持久化
         if (!success || conversationId == null || conversationId.isBlank()) {
             return;
         }
+
+        // 标准化输出内容：移除流式标记和多余空行
         String visibleAnswer = normalizeAssistantOutput(assistantOutput);
         if (visibleAnswer.isBlank()) {
             return;
         }
+
         try {
+            // 持久化聊天消息
             chatMemory.add(conversationId, List.of(
                     new UserMessage(userPrompt),
                     new AssistantMessage(visibleAnswer)
             ));
+
+            // 更新会话元数据（标题、最后消息等）
             chatSessionService.touchSession(
                     userId,
-                    "travel_manus",
+                    "travel_agent",
                     chatId,
                     conversationId,
                     buildSessionTitle(userPrompt),
                     visibleAnswer
             );
         } catch (Exception e) {
+            // 持久化失败只记录警告，不影响用户体验
             log.warn("[TravelAgent] 持久化会话失败: {}", e.getMessage());
         }
     }
 
+    /**
+     * 从持久化存储中恢复历史会话消息
+     * 仅在当前消息列表为空时恢复，避免重复添加
+     */
     private void restorePersistedHistory() {
         if (conversationId == null || conversationId.isBlank()) {
             return;
         }
+
         try {
+            // 获取最近100条历史消息
             List<Message> persistedMessages = chatMemory.get(conversationId, 100);
             if (persistedMessages == null || persistedMessages.isEmpty()) {
                 return;
             }
+
+            // 只有当前消息列表为空时才恢复历史
             List<Message> currentMessages = getMessageList();
             if (currentMessages != null && !currentMessages.isEmpty()) {
                 return;
             }
+
             getMessageList().addAll(persistedMessages);
         } catch (Exception e) {
+            // 恢复失败只记录警告
             log.warn("[TravelAgent] 恢复历史会话失败: {}", e.getMessage());
         }
     }
 
+    /**
+     * 标准化智能体输出内容
+     * 移除流式输出中的特殊标记，清理多余空行
+     *
+     * @param assistantOutput 原始输出内容
+     * @return 标准化后的输出内容
+     */
     private String normalizeAssistantOutput(String assistantOutput) {
         if (assistantOutput == null) {
             return "";
         }
+
         String normalized = assistantOutput
+                // 移除工具执行标记行
                 .replaceAll("(?m)^> 🔧.*$", "")
+                // 移除警告标记行
                 .replaceAll("(?m)^> ⚠️.*$", "")
+                // 将多个连续空行替换为两个空行
                 .replaceAll("\n{3,}", "\n\n")
                 .trim();
+
         return normalized;
     }
 
+    /**
+     * 构建会话标题
+     * 使用用户提示词的前24个字符作为会话标题
+     *
+     * @param userPrompt 用户输入的提示词
+     * @return 会话标题
+     */
     private String buildSessionTitle(String userPrompt) {
         String title = userPrompt == null ? "新会话" : userPrompt.trim().replaceAll("\\s+", " ");
+
         if (title.isBlank()) {
             return "新会话";
         }
+
+        // 限制标题长度为24个字符
         if (title.length() <= 24) {
             return title;
         }
+
         return title.substring(0, 24);
     }
 }

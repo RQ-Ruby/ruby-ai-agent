@@ -56,11 +56,11 @@ onMounted(async () => {
         <article class="info-card">
           <h2>后续可扩展</h2>
           <ul class="todo-list">
-            <li>展示我的旅行会话历史</li>
-            <li>保存常用目的地与偏好</li>
-            <li>管理工作流规划记录</li>
-            <li>管理员后台与角色权限页面</li>
-          </ul>
+            展示我的旅行会话历史
+            保存常用目的地与偏好
+            管理工作流规划记录
+            管理员后台与角色权限页面
+
         </article>
       </div>
     </section>

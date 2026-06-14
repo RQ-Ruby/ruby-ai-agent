@@ -49,7 +49,7 @@ function createChatId() {
 
 async function refreshSessions() {
   try {
-    const {data} = await fetchChatSessions('travel_manus')
+    const {data} = await fetchChatSessions('travel_agent')
     sessions.value = Array.isArray(data) ? data : []
   } catch (e) {
     console.warn('加载规划会话失败', e)
