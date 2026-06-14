@@ -4,9 +4,11 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 
 /**
- * 创建上下文查询增强器的工厂
+ * 查询增强器 （查询增强与关联）
+ *
+ * 通过配置的 RAG 切片注入模板，把查询出来的内容关联到提示词中
  */
-public class TravelAppContextualQueryAugmenterFactory {
+public class QueryAugmenter {
 
     public static ContextualQueryAugmenter createInstance() {
         PromptTemplate emptyContextPromptTemplate = new PromptTemplate("""

@@ -21,26 +21,26 @@ public class McpDebugConfig {
 
     @PostConstruct
     public void debugMcpTools() {
-        log.info("🔍 MCP Configuration Path: {}", mcpConfigPath);
+        log.info("MCP Configuration Path: {}", mcpConfigPath);
 
         // 检查配置文件是否存在
         if (mcpConfigPath.startsWith("classpath:")) {
             String path = mcpConfigPath.substring("classpath:".length());
             var resource = getClass().getClassLoader().getResource(path);
             if (resource != null) {
-                log.info("✅ MCP config file found: {}", resource);
+                log.info("MCP config file found: {}", resource);
             } else {
-                log.error("❌ MCP config file NOT found: {}", path);
+                log.error("MCP config file NOT found: {}", path);
             }
         }
 
         if (toolCallbackProvider == null) {
-            log.error("❌ ToolCallbackProvider is NULL - MCP client not initialized!");
+            log.error("ToolCallbackProvider is NULL - MCP client not initialized!");
             log.error("Check: 1) mcp-servers.json exists 2) spring.ai.dashscope.mcp.client.stdio.servers-configuration is set");
             return;
         }
 
-        log.info("✅ ToolCallbackProvider found");
+        log.info("ToolCallbackProvider found");
 
         // 等待 MCP 服务器启动并注册工具
         int maxRetries = 5;
@@ -48,19 +48,19 @@ public class McpDebugConfig {
 
         for (int i = 0; i < maxRetries; i++) {
             var tools = toolCallbackProvider.getToolCallbacks();
-            log.info("📋 Attempt {}/{} - Registered tools count: {}", i + 1, maxRetries, tools.length);
+            log.info("Attempt {}/{} - Registered tools count: {}", i + 1, maxRetries, tools.length);
 
             if (tools.length > 0) {
-                log.info("✅ Tools successfully loaded!");
+                log.info("Tools successfully loaded!");
                 Arrays.stream(tools).forEach(t -> {
                     var toolDefinition = t.getToolDefinition();
-                    log.info("  🔧 Tool: {} - {}", toolDefinition.name(), toolDefinition.description());
+                    log.info(" Tool: {} - {}", toolDefinition.name(), toolDefinition.description());
                 });
                 return;
             }
 
             if (i < maxRetries - 1) {
-                log.warn("⏳ No tools found yet, waiting {}ms before retry...", retryDelayMs);
+                log.warn("No tools found yet, waiting {}ms before retry...", retryDelayMs);
                 try {
                     Thread.sleep(retryDelayMs);
                 } catch (InterruptedException e) {
@@ -70,7 +70,7 @@ public class McpDebugConfig {
             }
         }
 
-        log.error("❌ No tools registered after {} attempts! MCP servers failed to start.", maxRetries);
+        log.error("No tools registered after {} attempts! MCP servers failed to start.", maxRetries);
         log.error("Possible reasons:");
         log.error("  1. mcp-servers.json format error");
         log.error("  2. jar path incorrect (check working directory)");

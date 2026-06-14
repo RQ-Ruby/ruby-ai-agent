@@ -33,8 +33,9 @@ public class AiChatController {
 
     /**
      * 旅行咨询流式接口（普通流式对话）
-     * 前端通过 EventSource 建立 SSE 连接，用于景点、美食、交通、住宿、避坑等轻量旅行问答场景。
-     * 后端链路为 Controller → AiChatService → TravelApp → Spring AI ChatClient。
+     * 用于景点、美食、交通、住宿、避坑等轻量旅行问答场景。
+     *
+     * 生成链路为 Controller → AiChatService → TravelApp → Spring AI ChatClient。
      *
      * @param message 用户本轮输入内容
      * @param chatId  前端会话 ID，同一会话保持一致，用于恢复上下文和历史记录
@@ -49,8 +50,10 @@ public class AiChatController {
 
     /**
      * TravelAgent 旅行规划智能体流式接口（ReAct 架构 Agent）
-     * 前端通过 EventSource 建立 SSE 连接，用于需要工具调用、多步推理、复杂任务执行的旅行规划场景。
-     * 后端链路为 Controller → AiChatService → TravelAgent → ToolCallAgent → 工具与 MCP 能力。
+     * 用于需要工具调用、多步推理、复杂任务执行的旅行规划场景。
+     *
+     * 生成链路为 Controller → AiChatService → TravelAgent → ToolCallAgent → 工具与 MCP 能力。
+     *
      *
      * @param message 用户本轮输入内容
      * @param chatId  前端会话 ID，同一会话保持一致，用于复用智能体上下文
@@ -65,8 +68,9 @@ public class AiChatController {
 
     /**
      * 旅游规划工作流流式接口（Workflow 架构 Agent）
-     * 前端通过 EventSource 建立 SSE 连接，用于完整旅游规划场景，会收到 status、progress、result、error 四类事件。
-     * 后端链路为 Controller → AiChatService → TravelPlanningWorkflow → Workflow Nodes。
+     * 用于完整旅游规划场景，会收到 status、progress、result、error 四类事件。
+     *
+     * 生成链路为 Controller → AiChatService → TravelPlanningWorkflow → Workflow Nodes。
      *
      * @param message 用户本轮输入内容，通常包含目的地、出行天数、预算、偏好等规划需求
      * @param chatId  前端会话 ID，同一会话保持一致，用于恢复上下文和历史记录
@@ -79,26 +83,12 @@ public class AiChatController {
         return aiChatService.planWithWorkflow(message, chatId, loginUser);
     }
 
-    /**
-     * 查询当前会话的聊天历史
-     *
-     * @param chatId  前端会话 ID
-     * @param request HTTP 请求，用于获取当前登录用户并隔离用户会话
-     * @return 当前会话最近 50 条消息，role 表示消息角色，content 表示消息内容
-     */
     @GetMapping("/chat/history")
     public BaseResponse<List<Map<String, String>>> getCommonChatHistory(String chatId, HttpServletRequest request) {
         User loginUser = InnerUserService.getLoginUser(request);
         return ResultUtils.success(aiSessionService.listChatHistory(loginUser, chatId));
     }
 
-    /**
-     * 查询当前用户的聊天会话列表
-     *
-     * @param scene   会话场景标识，不能为空
-     * @param request HTTP 请求，用于获取当前登录用户
-     * @return 当前用户在指定场景下的会话列表
-     */
     @GetMapping("/chat/sessions")
     public BaseResponse<List<ChatSessionVO>> listChatSessions(String scene, HttpServletRequest request) {
         User loginUser = InnerUserService.getLoginUser(request);

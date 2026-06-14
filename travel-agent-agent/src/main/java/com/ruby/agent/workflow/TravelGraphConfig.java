@@ -14,6 +14,7 @@ import com.ruby.ai.factory.WorkflowChatClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -101,7 +102,7 @@ public class TravelGraphConfig {
                                        PersistentChatMemory chatMemory,
                                        TravelChatClientFactory travelChatClientFactory,
                                        WorkflowChatClientFactory workflowChatClientFactory,
-                                       org.springframework.ai.vectorstore.VectorStore pgVectorVectorStore,
+                                       VectorStore pgVectorVectorStore,
                                        ToolCallbackProvider mcpToolCallbackProvider) throws Exception {
 
         //  1. 初始化工作流所有执行节点 
