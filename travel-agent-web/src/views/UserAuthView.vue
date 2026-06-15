@@ -118,7 +118,8 @@ onMounted(async () => {
           <span class="brand-card-title">{{ sideTitle }}</span>
           <ul class="brand-list">
             <li v-for="item in featureList" :key="item">{{ item }}
-
+            </li>
+          </ul>
         </div>
       </aside>
 

@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AI 接口控制器
- * 负责接收前端请求、完成登录用户解析，并将具体 AI 调用链路交给 Service 层编排。
+ * AI聊天接口控制器
+ *
+ * @author ruby
+ * @date 2026-06-15
  */
 @RestController
 @RequestMapping("/ai")
@@ -34,8 +36,6 @@ public class AiChatController {
     /**
      * 旅行咨询流式接口（普通流式对话）
      * 用于景点、美食、交通、住宿、避坑等轻量旅行问答场景。
-     *
-     * 生成链路为 Controller → AiChatService → TravelApp → Spring AI ChatClient。
      *
      * @param message 用户本轮输入内容
      * @param chatId  前端会话 ID，同一会话保持一致，用于恢复上下文和历史记录
@@ -52,9 +52,6 @@ public class AiChatController {
      * TravelAgent 旅行规划智能体流式接口（ReAct 架构 Agent）
      * 用于需要工具调用、多步推理、复杂任务执行的旅行规划场景。
      *
-     * 生成链路为 Controller → AiChatService → TravelAgent → ToolCallAgent → 工具与 MCP 能力。
-     *
-     *
      * @param message 用户本轮输入内容
      * @param chatId  前端会话 ID，同一会话保持一致，用于复用智能体上下文
      * @param request HTTP 请求，用于获取当前登录用户并隔离用户会话
@@ -70,7 +67,6 @@ public class AiChatController {
      * 旅游规划工作流流式接口（Workflow 架构 Agent）
      * 用于完整旅游规划场景，会收到 status、progress、result、error 四类事件。
      *
-     * 生成链路为 Controller → AiChatService → TravelPlanningWorkflow → Workflow Nodes。
      *
      * @param message 用户本轮输入内容，通常包含目的地、出行天数、预算、偏好等规划需求
      * @param chatId  前端会话 ID，同一会话保持一致，用于恢复上下文和历史记录
@@ -83,12 +79,35 @@ public class AiChatController {
         return aiChatService.planWithWorkflow(message, chatId, loginUser);
     }
 
+    /**
+     * 获取指定会话的聊天历史记录
+     * 返回当前登录用户下，指定会话ID的所有聊天消息列表
+     *
+     * @param chatId  要查询的会话唯一标识，不能为空
+     * @param request HTTP请求对象，用于从会话中获取当前登录用户信息
+     * @return 聊天历史记录列表，每条记录为Map结构，包含以下字段：
+     *         - role: 消息角色（user: 用户消息，assistant: AI回复）
+     *         - content: 消息内容
+     *         - timestamp: 消息发送时间戳（毫秒）
+     */
     @GetMapping("/chat/history")
     public BaseResponse<List<Map<String, String>>> getCommonChatHistory(String chatId, HttpServletRequest request) {
         User loginUser = InnerUserService.getLoginUser(request);
         return ResultUtils.success(aiSessionService.listChatHistory(loginUser, chatId));
     }
 
+    /**
+     * 获取当前用户指定场景下的所有会话列表
+     * 返回当前登录用户在指定业务场景下创建的所有会话，按最后更新时间倒序排列
+     *
+     * @param scene   业务场景标识，可选值：
+     *                - travel_app: 普通旅行咨询场景
+     *                - travel_agent: ReAct智能体场景
+     *                - workflow: 旅行规划工作流场景
+     *                传入空值时返回所有场景的会话列表
+     * @param request HTTP请求对象，用于从会话中获取当前登录用户信息
+     * @return 会话列表，每个元素包含会话ID、标题、创建时间、最后更新时间等信息
+     */
     @GetMapping("/chat/sessions")
     public BaseResponse<List<ChatSessionVO>> listChatSessions(String scene, HttpServletRequest request) {
         User loginUser = InnerUserService.getLoginUser(request);

@@ -1,20 +1,15 @@
 package com.ruby.ai.rag.documentIndex;
 
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
@@ -33,9 +28,9 @@ public class PgVectorVectorStoreConfig {
     /**
      * 向量嵌入维度
      * 必须与使用的EmbeddingModel输出维度完全一致
-     * （1536是阿里云通义千问Embedding模型的默认输出维度，若调整Embedding模型应当对齐此值）
+     * （1024是阿里云通义千问Embedding模型的默认输出维度，若调整Embedding模型应当对齐此值）
      */
-    private static final int EMBEDDING_DIMENSIONS = 1536;
+    private static final int EMBEDDING_DIMENSIONS = 1024;
 
     /**
      * 最大批量嵌入大小
@@ -43,29 +38,13 @@ public class PgVectorVectorStoreConfig {
      * 避免单次请求过大导致API超时或内存溢出
      * （通义千问API建议单次请求不超过50个文档）
      */
-    private static final int MAX_EMBEDDING_BATCH_SIZE = 20;
-
-    /**
-     * 注入Markdown文档加载器
-     * 负责从classpath加载旅游攻略文档并完成智能语义分块
-     */
-    @Resource
-    private MDFileDocumentLoader MDFileDocumentLoader;
-
-    /**
-     * 向量化功能开关
-     * 从配置文件读取，默认值为true
-     * 开发环境可设置为false，避免每次启动都重新向量化所有文档
-     * 生产环境应设置为true，确保启动时自动更新知识库
-     */
-    @Value("${rag.vectorization.enabled:true}")
-    private boolean vectorizationEnabled;
+   public static final int MAX_EMBEDDING_BATCH_SIZE = 10;
 
     /**
      * 创建并配置PgVector向量存储Bean
      * 这是Spring AI RAG系统的核心组件，负责向量的存储和检索
      *
-     * @param jdbcTemplate 专门用于PgVector的JdbcTemplate，通过Qualifier指定
+     * @param jdbcTemplate            专门用于PgVector的JdbcTemplate，通过Qualifier指定
      * @param dashscopeEmbeddingModel 通义千问嵌入模型，负责将文本转换为向量
      * @return 配置完成的VectorStore实例
      */
@@ -81,8 +60,7 @@ public class PgVectorVectorStoreConfig {
                 .dimensions(EMBEDDING_DIMENSIONS)
                 // 使用余弦距离计算向量相似度，最适合语义检索场景
                 .distanceType(COSINE_DISTANCE)
-                // 使用HNSW索引，这是目前性能最好的近似最近邻搜索索引
-                // 比IVFFLAT索引查询速度更快，适合高并发检索场景
+                // 使用HNSW索引，性能最好的近似最近邻搜索索引
                 .indexType(HNSW)
                 // 禁用Spring AI的自动Schema初始化
                 // 我们自己实现了更智能的表创建和维度校验逻辑
@@ -94,41 +72,18 @@ public class PgVectorVectorStoreConfig {
                 // 设置批量处理的最大文档数
                 .maxDocumentBatchSize(MAX_EMBEDDING_BATCH_SIZE)
                 .build();
-
-        // 检查向量化功能开关
-        if (!vectorizationEnabled) {
-            log.info("RAG向量化功能已关闭，仅完成向量表校验与创建，跳过文档导入");
-            return vectorStore;
-        }
-
-        // 3.核心步骤：文档收集与语义切割
-        log.info("开始加载旅游知识库文档并进行向量化处理");
-        List<Document> documents = MDFileDocumentLoader.loadMarkdowns();
-
-        // 如果没有加载到任何文档，记录警告并返回
-        if (documents.isEmpty()) {
-            log.warn("旅游知识库未加载到任何可向量化的文档，跳过PgVectorStore数据导入");
-            return vectorStore;
-        }
-
-        log.info("成功加载 {} 个文档块，开始批量向量化存储", documents.size());
-
-        // 4.核心步骤：向量转换与存储
-        addDocumentsInBatches(vectorStore, documents, MAX_EMBEDDING_BATCH_SIZE);
-
-        log.info("旅游知识库向量化完成，共存储 {} 个向量", documents.size());
         return vectorStore;
     }
 
     /**
      * 确保向量表存在且配置正确
-     * 实现了智能的表管理逻辑：
+     * 实现了表管理的逻辑：
      * 1. 自动安装pgvector扩展（如果未安装）
      * 2. 检查表是否存在，不存在则创建
      * 3. 检查向量维度是否匹配，不匹配则重建表
      * 4. 保留原表的其他字段和数据（仅当维度匹配时）
      *
-     * @param jdbcTemplate 数据库操作模板
+     * @param jdbcTemplate       数据库操作模板
      * @param expectedDimensions 期望的向量维度
      */
     private void ensureVectorTable(JdbcTemplate jdbcTemplate, int expectedDimensions) {
@@ -187,34 +142,5 @@ public class PgVectorVectorStoreConfig {
 
             log.info("PgVector表创建成功");
         }
-    }
-
-    /**
-     * 向量转换与存储
-     * （将大列表拆分为多个小批量处理，避免单次请求过大）
-     *
-     * @param vectorStore 向量存储实例
-     * @param documents 待添加的文档列表
-     * @param batchSize 每批处理的文档数量
-     */
-    private void addDocumentsInBatches(VectorStore vectorStore, List<Document> documents, int batchSize) {
-        int totalDocuments = documents.size();
-        int totalBatches = (totalDocuments + batchSize - 1) / batchSize;
-
-        log.info("开始批量向量化，共 {} 个文档，分 {} 批处理", totalDocuments, totalBatches);
-
-        // 循环处理每一批文档
-        for (int start = 0; start < totalDocuments; start += batchSize) {
-            int end = Math.min(start + batchSize, totalDocuments);
-            int currentBatch = (start / batchSize) + 1;
-
-            log.debug("正在处理第 {} 批，文档范围: {}-{}", currentBatch, start + 1, end);
-
-            // 添加当前批文档到向量存储
-            // VectorStore.add()方法会自动调用EmbeddingModel生成向量并存储
-            vectorStore.add(documents.subList(start, end));
-        }
-
-        log.info("所有批次向量化处理完成");
     }
 }
