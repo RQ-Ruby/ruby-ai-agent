@@ -14,6 +14,7 @@ const navItems = [
   {label: '规划智能体', to: '/planner'},
   {label: '工作流规划', to: '/workflow'},
   {label: '用户管理', to: '/admin/users'},
+  {label: '知识库管理', to: '/admin/rag'},
 ]
 
 const featureCards = [

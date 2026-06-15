@@ -16,7 +16,7 @@ const navItems = [
 
 const visibleNavItems = computed(() => {
   if (auth.isAdmin.value) {
-    return [...navItems, {label: '用户管理', to: '/admin/users'}]
+    return [...navItems, {label: '用户管理', to: '/admin/users'}, {label: '知识库管理', to: '/admin/rag'}]
   }
   return navItems
 })

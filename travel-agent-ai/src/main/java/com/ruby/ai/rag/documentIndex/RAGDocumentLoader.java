@@ -1,27 +1,33 @@
 package com.ruby.ai.rag.documentIndex;
 
+import com.ruby.ai.service.RagKnowledgeDocumentService;
+import com.ruby.model.entity.RagKnowledgeDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.markdown.MarkdownDocumentReader;
 import org.springframework.ai.reader.markdown.config.MarkdownDocumentReaderConfig;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * 旅游攻略文档加载器
- * 负责从classpath读取Markdown格式的旅游攻略文档，并转换为Spring AI可处理的Document对象
- * 实现了语义切分、文本规范化和元数据增强功能，为后续RAG检索提供高质量的文档块
+ * <p>
+ * 实现了文档结构切分、文本规范化和元数据增强功能，为后续RAG检索提供高质量的文档块
  */
 @Component
 @Slf4j
-public class MDFileDocumentLoader {
+public class RAGDocumentLoader {
+
+    @jakarta.annotation.Resource
+    private RagKnowledgeDocumentService ragKnowledgeDocumentService;
 
     /**
      * 单个文档块的最大字符长度
@@ -38,23 +44,7 @@ public class MDFileDocumentLoader {
     private static final int CHUNK_OVERLAP = 120;
 
     /**
-     * Spring资源模式解析器
-     * 用于加载classpath下的多个资源文件，支持通配符匹配
-     */
-    private final ResourcePatternResolver resourcePatternResolver;
-
-    /**
-     * 构造函数，注入资源解析器
-     * Spring会自动注入ResourcePatternResolver的实现类
-     *
-     * @param resourcePatternResolver Spring资源模式解析器
-     */
-    public MDFileDocumentLoader(ResourcePatternResolver resourcePatternResolver) {
-        this.resourcePatternResolver = resourcePatternResolver;
-    }
-
-    /**
-     * 文档收集与语义切割
+     * 文档收集与文档结构切割
      * 读取classpath:document/*.md下的所有文件，解析并分块
      *
      * @return 分块后的Document对象列表，包含元数据信息
@@ -62,43 +52,51 @@ public class MDFileDocumentLoader {
     public List<Document> loadMarkdowns() {
         List<Document> allDocuments = new ArrayList<>();
 
-        try {
-            // 使用通配符匹配classpath:document目录下所有.md文件
-            Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.md");
+        // 查询出 MySQL 中的 RAG 文档
+        List<RagKnowledgeDocument> docs = ragKnowledgeDocumentService.list();
 
-            // 遍历每个Markdown文件
-            for (Resource resource : resources) {
-                String fileName = resource.getFilename();
-                log.info("正在加载旅游攻略文档: {}", fileName);
+        if (docs.isEmpty()) {
+            log.warn("MySQL 知识库为空，跳过向量化");
+            return List.of();
+        }
 
-                // 配置Markdown解析器
-                MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
-                        // 禁用水平分割线创建新文档（保持文档连续性）
-                        .withHorizontalRuleCreateDocument(false)
-                        // 排除代码块（旅游攻略中一般不需要代码内容）
-                        .withIncludeCodeBlock(false)
-                        // 排除引用块（避免引用内容干扰检索）
-                        .withIncludeBlockquote(false)
-                        // 添加文件名元数据，便于后续溯源
-                        .withAdditionalMetadata("filename", fileName)
-                        .build();
 
-                // 创建Markdown文档读取器
-                MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
+        // 遍历每个文档实体对象
+        for (RagKnowledgeDocument doc : docs) {
 
-                // 解析Markdown文档并进行基于文档结构的分块处理
-                for (Document document : reader.get()) {
-                    allDocuments.addAll(splitDocument(document, fileName));
-                }
+            String fileName = doc.getTitle() != null ? doc.getTitle() : "document-" + doc.getId();
 
-                log.info("文档 {} 加载完成", fileName);
+            log.info("正在处理知识库文档: {}", fileName);
+            // 把 content 字符串包装成 Spring Resource
+            Resource resource = new ByteArrayResource(
+                    doc.getContent().getBytes(UTF_8),
+                    fileName + ".md"
+            );
+
+            // 配置Markdown解析器
+            MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
+                    // 禁用水平分割线创建新文档（保持文档连续性）
+                    .withHorizontalRuleCreateDocument(false)
+                    // 排除代码块（旅游攻略中一般不需要代码内容）
+                    .withIncludeCodeBlock(false)
+                    // 排除引用块（避免引用内容干扰检索）
+                    .withIncludeBlockquote(false)
+                    // 添加文件名元数据，便于后续溯源
+                    .withAdditionalMetadata("filename", fileName)
+                    .build();
+
+            // 创建Markdown文档读取器
+            MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
+
+            // 解析Markdown文档并进行基于文档结构的分块处理
+            for (Document document : reader.get()) {
+                allDocuments.addAll(splitDocument(document, fileName));
             }
 
-            log.info("所有旅游攻略文档加载完成，共生成 {} 个文档块", allDocuments.size());
-
-        } catch (IOException e) {
-            log.error("旅游攻略Markdown文档加载失败", e);
+            log.info("文档 {} 加载完成", fileName);
         }
+
+        log.info("所有旅游攻略文档加载完成，共生成 {} 个文档块", allDocuments.size());
 
         return allDocuments;
     }
@@ -126,7 +124,7 @@ public class MDFileDocumentLoader {
             return List.of(copyDocument(document, text, fileName, 1));
         }
 
-        // 进行语义切分
+        // 进行文档结构切分
         List<String> chunks = splitText(text);
         List<Document> chunkDocuments = new ArrayList<>(chunks.size());
         int chunkCount = chunks.size();
@@ -143,9 +141,9 @@ public class MDFileDocumentLoader {
     /**
      * 复制Document对象并创建新的文档块（重载方法，默认总块数为1）
      *
-     * @param source 源Document对象
-     * @param text 新文档的文本内容
-     * @param fileName 源文件名
+     * @param source     源Document对象
+     * @param text       新文档的文本内容
+     * @param fileName   源文件名
      * @param chunkIndex 当前块索引（从1开始）
      * @return 新的Document对象
      */
@@ -157,9 +155,9 @@ public class MDFileDocumentLoader {
      * 复制Document对象并创建新的文档块
      * 保留原始元数据，并添加分块相关的元数据
      *
-     * @param source 源Document对象
-     * @param text 新文档的文本内容
-     * @param fileName 源文件名
+     * @param source     源Document对象
+     * @param text       新文档的文本内容
+     * @param fileName   源文件名
      * @param chunkIndex 当前块索引（从1开始）
      * @param chunkCount 总块数
      * @return 新的Document对象
@@ -181,7 +179,7 @@ public class MDFileDocumentLoader {
      * 智能文本分块算法
      * 核心特点：
      * 1. 按最大长度分割
-     * 2. 优先在中文语义边界（句号、感叹号、问号、分号、换行）处分割
+     * 2. 优先在中文文档结构边界（句号、感叹号、问号、分号、换行）处分割
      * 3. 保留相邻块之间的重叠内容
      * 4. 跳过空白字符
      *
@@ -199,7 +197,7 @@ public class MDFileDocumentLoader {
 
             // 如果不是最后一块，尝试找到更合适的分割位置
             if (end < textLength) {
-                // 在[minSplit, end]范围内寻找语义边界
+                // 在[minSplit, end]范围内寻找文档结构边界
                 int adjustedEnd = findSplitPosition(text, start, end);
                 // 确保分割位置有效（不会导致块过小）
                 if (adjustedEnd > start) {
@@ -235,29 +233,29 @@ public class MDFileDocumentLoader {
 
     /**
      * 寻找最佳分割位置
-     * 从后往前查找中文语义边界字符，避免将一个完整的句子分割开
+     * 从后往前查找中文文档结构边界字符，避免将一个完整的句子分割开
      * 只在文本后半部分查找，防止块过小
      *
-     * @param text 完整文本
+     * @param text  完整文本
      * @param start 当前块的起始位置
-     * @param end 当前块的理论结束位置
+     * @param end   当前块的理论结束位置
      * @return 最佳分割位置（分割后字符的索引）
      */
     private int findSplitPosition(String text, int start, int end) {
         // 最小分割位置：确保块至少有一半的长度
         int minSplit = start + (MAX_EMBEDDING_TEXT_LENGTH / 2);
 
-        // 从后往前查找语义边界字符
+        // 从后往前查找文档结构边界字符
         for (int i = end - 1; i > minSplit; i--) {
             char current = text.charAt(i);
-            // 中文语义边界：换行、句号、感叹号、问号、分号
+            // 中文文档结构边界：换行、句号、感叹号、问号、分号
             if (current == '\n' || current == '。' || current == '！' || current == '？' || current == '；') {
                 // 返回边界字符的下一个位置作为分割点
                 return i + 1;
             }
         }
 
-        // 如果没有找到合适的语义边界，直接使用理论结束位置
+        // 如果没有找到合适的文档结构边界，直接使用理论结束位置
         return end;
     }
 
