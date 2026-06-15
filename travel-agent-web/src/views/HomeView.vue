@@ -211,7 +211,8 @@ onBeforeUnmount(() => {
                         stroke-width="4"/>
                   <path d="M48 40h42M48 56h50M48 72h34" opacity=".82" stroke="currentColor" stroke-linecap="round"
                         stroke-width="4"/>
-                  <path d="M90 88c8-8 15-12 22-12 7 0 14 4 24 14" fill="none" stroke="currentColor" stroke-linecap="round"
+                  <path d="M90 88c8-8 15-12 22-12 7 0 14 4 24 14" fill="none" stroke="currentColor"
+                        stroke-linecap="round"
                         stroke-width="4"/>
                   <circle cx="90" cy="88" fill="currentColor" r="4"/>
                   <circle cx="136" cy="90" fill="currentColor" r="4"/>

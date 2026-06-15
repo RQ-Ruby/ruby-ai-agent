@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * 支持工具调用的ReAct智能体实现类
- *
+ * <p>
  * 基于ReActAgent，提供ReAct完整的工具调用能力
  * （具体实现了think()和act()方法，，支持同步和流式两种调用模式，自动处理工具调用的上下文维护和结果整合）
  */
@@ -198,7 +198,7 @@ public class ToolCallAgent extends ReActAgent {
      * 构建响应签名，用于重复检测
      * 工具调用时使用"工具名:参数"格式，文本响应时直接使用文本内容
      *
-     * @param result 思考文本内容
+     * @param result       思考文本内容
      * @param toolCallList 工具调用列表
      * @return 响应签名字符串
      */

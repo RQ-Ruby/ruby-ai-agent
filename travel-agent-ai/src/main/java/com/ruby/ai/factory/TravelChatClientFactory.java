@@ -39,19 +39,29 @@ public class TravelChatClientFactory {
 
     private static final String RAG_STATUS_PUBLISHED = "published";
 
-    /** AI大模型核心接口（通义千问） */
+    /**
+     * AI大模型核心接口（通义千问）
+     */
     private final ChatModel chatModel;
 
-    /** 持久化聊天内存：保存用户对话历史，实现多轮对话 */
+    /**
+     * 持久化聊天内存：保存用户对话历史，实现多轮对话
+     */
     private final PersistentChatMemory chatMemory;
 
-    /** Postgres向量库：用于RAG知识库检索 */
+    /**
+     * Postgres向量库：用于RAG知识库检索
+     */
     private final VectorStore pgVectorVectorStore;
 
-    /** 查询重写器：优化用户问题，提升RAG检索精度 */
+    /**
+     * 查询重写器：优化用户问题，提升RAG检索精度
+     */
     private final QueryRewriter queryRewriter;
 
-    /** AI工具回调提供者 */
+    /**
+     * AI工具回调提供者
+     */
     @Getter
     private final ToolCallbackProvider toolCallbackProvider;
 
@@ -81,6 +91,7 @@ public class TravelChatClientFactory {
      * 创建【基础RAG问答】专用ChatClient
      * 基础配置 + RAG检索顾问
      * 适用场景：非流式、基于知识库的旅游问答
+     *
      * @return ChatClient RAG专用客户端
      */
     public ChatClient createRagChatClient() {
@@ -93,6 +104,7 @@ public class TravelChatClientFactory {
      * 创建【流式RAG问答】专用ChatClient
      * 复用基础RAG客户端配置
      * 适用场景：SSE流式输出的旅游问答
+     *
      * @return ChatClient 流式RAG客户端
      */
     public ChatClient createStreamRagChatClient() {
@@ -119,6 +131,7 @@ public class TravelChatClientFactory {
      * 创建【工作流】专用ChatClient
      * 仅使用基础公共配置，无额外RAG/工具增强
      * 适用场景：旅游规划工作流内部对话
+     *
      * @return ChatClient 工作流专用客户端
      */
     public ChatClient createWorkflowChatClient() {
@@ -131,6 +144,7 @@ public class TravelChatClientFactory {
      * 创建【AI智能体】专用ChatClient
      * 基础配置 + RAG检索增强
      * 适用场景：TravelAgent智能体复杂任务处理
+     *
      * @return ChatClient 智能体专用客户端
      */
     public ChatClient createAgentChatClient() {

@@ -42,7 +42,7 @@ public class AiSessionServiceImpl implements AiSessionService {
      * 生成内部唯一会话ID
      * 采用"用户ID:标准化chatId"格式，保证不同用户的会话完全隔离
      *
-     * @param user 当前登录用户
+     * @param user   当前登录用户
      * @param chatId 前端传入的会话ID
      * @return 内部唯一会话ID
      */
@@ -67,7 +67,7 @@ public class AiSessionServiceImpl implements AiSessionService {
      * 查询指定会话的聊天历史
      * 最多返回最近50条消息，按时间顺序排列（最早的在前，最新的在后）
      *
-     * @param user 当前登录用户
+     * @param user   当前登录用户
      * @param chatId 前端会话ID
      * @return 聊天历史列表，每条消息包含role和content字段
      */
@@ -85,7 +85,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     /**
      * 查询用户指定场景下的所有会话列表
      *
-     * @param user 当前登录用户
+     * @param user  当前登录用户
      * @param scene 场景标识（travel_app/workflow/travel_agent）
      * @return 会话列表VO，包含会话ID、标题、最后活跃时间等信息
      * @throws BusinessException 当scene为空时抛出参数错误异常
@@ -101,11 +101,11 @@ public class AiSessionServiceImpl implements AiSessionService {
      * 在每次对话完成后调用，用于前端会话列表展示
      * 异常静默处理，不影响主对话流程
      *
-     * @param user 当前登录用户
-     * @param scene 场景标识
-     * @param chatId 前端会话ID
-     * @param conversationId 内部唯一会话ID
-     * @param userMessage 用户本轮输入内容，用于生成会话标题
+     * @param user             当前登录用户
+     * @param scene            场景标识
+     * @param chatId           前端会话ID
+     * @param conversationId   内部唯一会话ID
+     * @param userMessage      用户本轮输入内容，用于生成会话标题
      * @param assistantPreview 助手回复预览，用于会话列表展示
      */
     @Override

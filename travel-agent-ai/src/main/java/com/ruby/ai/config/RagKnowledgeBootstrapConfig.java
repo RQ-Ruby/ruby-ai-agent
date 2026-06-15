@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * RAG 启动后初始化
- *
  */
 @Configuration
 @Slf4j

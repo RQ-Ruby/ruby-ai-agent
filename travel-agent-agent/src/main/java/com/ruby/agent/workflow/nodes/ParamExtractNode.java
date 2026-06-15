@@ -16,10 +16,10 @@ import java.util.regex.Pattern;
 
 /**
  * 节点 2：出行参数抽取。
- * 
+ * <p>
  * 从「当前用户输入 + 历史会话记忆」中提取核心参数：
  * destination / days / people / budget / travelMode / preferences / travelTime
- * 
+ * <p>
  * 支持「回流修改」分支：用户后续说"改一下行程""预算调低"，会把历史轮的参数和本轮调整合并。
  */
 @Slf4j

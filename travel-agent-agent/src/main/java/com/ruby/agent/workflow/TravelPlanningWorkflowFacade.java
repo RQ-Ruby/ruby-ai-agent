@@ -22,14 +22,19 @@ import java.util.Optional;
 @Component
 public class TravelPlanningWorkflowFacade {
 
-    /** 工作流配置类构建的原始状态图（定义了节点、流程、状态键） */
+    /**
+     * 工作流配置类构建的原始状态图（定义了节点、流程、状态键）
+     */
     private final StateGraph stateGraph;
 
-    /** 编译后的可执行工作流图（Graph 引擎最终运行的实例） */
+    /**
+     * 编译后的可执行工作流图（Graph 引擎最终运行的实例）
+     */
     private CompiledGraph compiledGraph;
 
     /**
      * 构造方法：依赖注入 已配置好的旅游规划状态图
+     *
      * @param travelStateGraph TravelGraphConfig 中配置的 StateGraph Bean
      */
     public TravelPlanningWorkflowFacade(StateGraph travelStateGraph) {
@@ -39,6 +44,7 @@ public class TravelPlanningWorkflowFacade {
     /**
      * Bean 初始化后执行：编译状态图为可执行实例
      * 工作流编译是重量级操作，仅在服务启动时执行一次
+     *
      * @throws Exception 编译失败抛出异常
      */
     @PostConstruct
@@ -85,14 +91,14 @@ public class TravelPlanningWorkflowFacade {
      * 工作流执行结果 封装记录（Java 16+ Record 不可变数据类）
      * 作用：统一收拢工作流所有输出字段，简化上层调用，适配前端SSE展示
      *
-     * @param finalResponse    最终返回给用户的完整回答/行程方案
-     * @param intent           识别出的用户意图（travel/chitchat）
-     * @param missingFields    缺失的旅行参数
-     * @param clarifyQuestion  反问用户的补充提问
-     * @param destination      抽取的旅行目的地
-     * @param days             抽取的旅行天数
-     * @param completedNodes   工作流中已执行完成的节点列表
-     * @param error            错误信息（无错误则为null）
+     * @param finalResponse   最终返回给用户的完整回答/行程方案
+     * @param intent          识别出的用户意图（travel/chitchat）
+     * @param missingFields   缺失的旅行参数
+     * @param clarifyQuestion 反问用户的补充提问
+     * @param destination     抽取的旅行目的地
+     * @param days            抽取的旅行天数
+     * @param completedNodes  工作流中已执行完成的节点列表
+     * @param error           错误信息（无错误则为null）
      */
     public record Result(
             String finalResponse,
@@ -141,6 +147,7 @@ public class TravelPlanningWorkflowFacade {
 
         /**
          * 静态工厂方法：快速创建 执行失败 的 Result 对象
+         *
          * @param err 错误描述信息
          * @return 仅包含错误信息的结果对象
          */
@@ -150,6 +157,7 @@ public class TravelPlanningWorkflowFacade {
 
         /**
          * 业务判断方法：工作流是否执行成功
+         *
          * @return true=成功无错误，false=执行失败
          */
         public boolean ok() {

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AI聊天应用服务实现类
- *
+ * <p>
  * 实现多场景AI对话的会话管理、流式输出、上下文持久化与异常处理
  *
  * @author ruby
@@ -62,12 +62,12 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 普通旅行问答流式接口实现
      * 用于景点、美食、交通、住宿、避坑等轻量旅行问答场景，基于RAG知识库检索增强。
-     *
+     * <p>
      * 生成链路为 AiChatService → TravelChatClientFactory → Spring AI ChatClient → RAG Advisor。
      *
      * @param message 用户本轮输入内容
-     * @param chatId 前端会话ID，同一会话保持一致，用于恢复上下文和历史记录
-     * @param user 当前登录用户，用于隔离用户会话
+     * @param chatId  前端会话ID，同一会话保持一致，用于恢复上下文和历史记录
+     * @param user    当前登录用户，用于隔离用户会话
      * @return SSE推送器，持续输出模型生成的文本片段
      */
     @Override
@@ -102,13 +102,13 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * TravelAgent旅行规划智能体流式接口实现
      * 用于需要工具调用、多步推理、复杂任务执行的旅行规划场景，支持实时展示思考过程。
-     *
+     * <p>
      * 生成链路为 AiChatService → TravelAgent → ToolCallAgent → ReAct循环 → 工具与MCP能力。
      * 采用ConcurrentHashMap缓存智能体实例，同一会话复用同一个智能体对象，保证上下文连续性。
      *
      * @param message 用户本轮输入内容
-     * @param chatId 前端会话ID，同一会话保持一致，用于复用智能体上下文
-     * @param user 当前登录用户，用于隔离用户会话
+     * @param chatId  前端会话ID，同一会话保持一致，用于复用智能体上下文
+     * @param user    当前登录用户，用于隔离用户会话
      * @return SSE推送器，持续输出智能体思考过程、工具执行结果和最终回复
      */
     @Override
@@ -138,13 +138,13 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 旅游规划工作流流式接口实现
      * 用于完整旅游规划场景，会向客户端发送status、progress、result、error四类结构化事件。
-     *
+     * <p>
      * 生成链路为 AiChatService → TravelPlanningWorkflowFacade → 工作流节点执行器。
      * 使用虚拟线程执行工作流，避免阻塞主线程，提升系统并发能力。
      *
      * @param message 用户本轮输入内容，通常包含目的地、出行天数、预算、偏好等规划需求
-     * @param chatId 前端会话ID，同一会话保持一致，用于恢复上下文和历史记录
-     * @param user 当前登录用户，用于隔离用户会话
+     * @param chatId  前端会话ID，同一会话保持一致，用于恢复上下文和历史记录
+     * @param user    当前登录用户，用于隔离用户会话
      * @return SSE推送器，持续输出工作流执行进度、状态和最终规划结果
      */
     @Override
@@ -169,9 +169,9 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 发送普通旅行问答的流式文本片段
      *
-     * @param emitter SSE推送器
+     * @param emitter       SSE推送器
      * @param answerBuilder 完整回答构建器，用于最终持久化
-     * @param chunk 模型生成的单条文本片段
+     * @param chunk         模型生成的单条文本片段
      */
     private void sendTravelAppChunk(SseEmitter emitter, StringBuilder answerBuilder, String chunk) {
         try {
@@ -185,12 +185,12 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 完成普通旅行问答流式输出，持久化会话信息
      *
-     * @param emitter SSE推送器
-     * @param user 当前登录用户
-     * @param chatId 前端会话ID
+     * @param emitter        SSE推送器
+     * @param user           当前登录用户
+     * @param chatId         前端会话ID
      * @param conversationId 内部唯一会话ID
-     * @param message 用户输入内容
-     * @param answerBuilder 完整回答构建器
+     * @param message        用户输入内容
+     * @param answerBuilder  完整回答构建器
      */
     private void completeTravelAppStream(SseEmitter emitter,
                                          User user,
@@ -208,11 +208,11 @@ public class AiChatServiceImpl implements AiChatService {
      * 执行旅游规划工作流主逻辑
      * 按顺序执行工作流节点，实时推送执行进度和结果
      *
-     * @param emitter SSE推送器
-     * @param user 当前登录用户
-     * @param chatId 前端会话ID
+     * @param emitter        SSE推送器
+     * @param user           当前登录用户
+     * @param chatId         前端会话ID
      * @param conversationId 内部唯一会话ID
-     * @param message 用户输入的规划需求
+     * @param message        用户输入的规划需求
      */
     private void runWorkflow(SseEmitter emitter, User user, String chatId, String conversationId, String message) {
         try {
@@ -250,9 +250,9 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 发送结构化SSE事件
      *
-     * @param emitter SSE推送器
+     * @param emitter   SSE推送器
      * @param eventName 事件名称（status/progress/result/error）
-     * @param data 事件数据内容
+     * @param data      事件数据内容
      * @throws IOException 发送失败时抛出
      */
     private void sendEvent(SseEmitter emitter, String eventName, String data) throws IOException {
@@ -284,7 +284,7 @@ public class AiChatServiceImpl implements AiChatService {
      * 发送工作流执行错误事件
      *
      * @param emitter SSE推送器
-     * @param e 异常对象
+     * @param e       异常对象
      */
     private void sendWorkflowError(SseEmitter emitter, Exception e) {
         try {

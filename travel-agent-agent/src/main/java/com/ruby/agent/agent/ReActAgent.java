@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * ReAct (Reasoning and Acting) 模式的代理抽象类
- * 
+ * <p>
  * 基于BaseAgent，提供"思考-行动"循环执行模式的能力
  */
 @EqualsAndHashCode(callSuper = true)

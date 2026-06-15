@@ -13,14 +13,50 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {path: '/', name: 'home', component: HomeView, meta: {title: '应用首页'}},
-        {path: '/travel', name: 'travel', component: TravelChatView, meta: {title: '行旅 AI · 旅行咨询', requiresAuth: true}},
-        {path: '/planner', name: 'planner', component: TravelPlannerView, meta: {title: '行旅 AI · 规划智能体', requiresAuth: true}},
-        {path: '/workflow', name: 'workflow', component: WorkflowPlanView, meta: {title: '行旅 AI · 工作流规划', requiresAuth: true}},
+        {
+            path: '/travel',
+            name: 'travel',
+            component: TravelChatView,
+            meta: {title: '行旅 AI · 旅行咨询', requiresAuth: true}
+        },
+        {
+            path: '/planner',
+            name: 'planner',
+            component: TravelPlannerView,
+            meta: {title: '行旅 AI · 规划智能体', requiresAuth: true}
+        },
+        {
+            path: '/workflow',
+            name: 'workflow',
+            component: WorkflowPlanView,
+            meta: {title: '行旅 AI · 工作流规划', requiresAuth: true}
+        },
         {path: '/login', name: 'login', component: UserAuthView, props: {mode: 'login'}, meta: {title: '用户登录'}},
-        {path: '/register', name: 'register', component: UserAuthView, props: {mode: 'register'}, meta: {title: '用户注册'}},
-        {path: '/user/center', name: 'user-center', component: UserCenterView, meta: {title: '用户中心', requiresAuth: true}},
-        {path: '/admin/users', name: 'admin-users', component: AdminUserManageView, meta: {title: '用户管理', requiresAuth: true, requiresAdmin: true}},
-        {path: '/admin/rag', name: 'admin-rag', component: RagKnowledgeManageView, meta: {title: 'RAG 知识库管理', requiresAuth: true, requiresAdmin: true}},
+        {
+            path: '/register',
+            name: 'register',
+            component: UserAuthView,
+            props: {mode: 'register'},
+            meta: {title: '用户注册'}
+        },
+        {
+            path: '/user/center',
+            name: 'user-center',
+            component: UserCenterView,
+            meta: {title: '用户中心', requiresAuth: true}
+        },
+        {
+            path: '/admin/users',
+            name: 'admin-users',
+            component: AdminUserManageView,
+            meta: {title: '用户管理', requiresAuth: true, requiresAdmin: true}
+        },
+        {
+            path: '/admin/rag',
+            name: 'admin-rag',
+            component: RagKnowledgeManageView,
+            meta: {title: 'RAG 知识库管理', requiresAuth: true, requiresAdmin: true}
+        },
     ],
 })
 
@@ -33,6 +69,8 @@ router.beforeEach(async (to) => {
     return true
 })
 
-router.afterEach((to) => { if (to.meta?.title) document.title = `${to.meta.title} · 行旅 AI` })
+router.afterEach((to) => {
+    if (to.meta?.title) document.title = `${to.meta.title} · 行旅 AI`
+})
 
 export default router

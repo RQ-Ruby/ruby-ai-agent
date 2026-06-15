@@ -352,12 +352,12 @@ onMounted(() => fetchList(1))
               检索参数
             </button>
             <button
-              :disabled="refreshing"
-              class="action-btn action-btn-accent"
-              type="button"
-              @click="handleRefresh"
+                :disabled="refreshing"
+                class="action-btn action-btn-accent"
+                type="button"
+                @click="handleRefresh"
             >
-              <span class="btn-icon" :class="{'spin': refreshing}">&#x21bb;</span>
+              <span :class="{'spin': refreshing}" class="btn-icon">&#x21bb;</span>
               {{ refreshing ? '向量化中...' : '刷新向量数据库' }}
             </button>
             <button class="action-btn action-btn-primary" type="button" @click="openCreate">新增文档</button>
@@ -400,13 +400,15 @@ onMounted(() => fetchList(1))
             <div class="param-preview-title">参数预览</div>
             <div class="param-bar-wrap">
               <div class="param-bar">
-                <div :style="{width: Math.min(ragConfig.chunkSize / 80, 100) + '%'}" class="param-bar-fill bar-chunk"></div>
+                <div :style="{width: Math.min(ragConfig.chunkSize / 80, 100) + '%'}"
+                     class="param-bar-fill bar-chunk"></div>
               </div>
               <span class="param-bar-label">chunkSize: {{ ragConfig.chunkSize }}</span>
             </div>
             <div class="param-bar-wrap">
               <div class="param-bar">
-                <div :style="{width: Math.min(ragConfig.chunkOverlap / 10, 100) + '%'}" class="param-bar-fill bar-overlap"></div>
+                <div :style="{width: Math.min(ragConfig.chunkOverlap / 10, 100) + '%'}"
+                     class="param-bar-fill bar-overlap"></div>
               </div>
               <span class="param-bar-label">chunkOverlap: {{ ragConfig.chunkOverlap }}</span>
             </div>
@@ -418,7 +420,8 @@ onMounted(() => fetchList(1))
             </div>
             <div class="param-bar-wrap">
               <div class="param-bar">
-                <div :style="{width: (ragConfig.similarityThreshold * 100) + '%'}" class="param-bar-fill bar-threshold"></div>
+                <div :style="{width: (ragConfig.similarityThreshold * 100) + '%'}"
+                     class="param-bar-fill bar-threshold"></div>
               </div>
               <span class="param-bar-label">threshold: {{ ragConfig.similarityThreshold }}</span>
             </div>
@@ -463,10 +466,10 @@ onMounted(() => fetchList(1))
                 <div class="table-actions">
                   <button class="table-btn" type="button" @click="openEdit(item)">编辑</button>
                   <button
-                    :disabled="deleteId === item.id"
-                    class="table-btn table-btn-danger"
-                    type="button"
-                    @click="handleDelete(item)"
+                      :disabled="deleteId === item.id"
+                      class="table-btn table-btn-danger"
+                      type="button"
+                      @click="handleDelete(item)"
                   >{{ deleteId === item.id ? '删除中...' : '删除' }}
                   </button>
                 </div>
@@ -494,7 +497,9 @@ onMounted(() => fetchList(1))
         <div class="dialog-head">
           <div>
             <h2>{{ isEdit ? '编辑文档' : '新增文档' }}</h2>
-            <p>{{ isEdit ? `正在编辑文档 #${form.id}` : '新增文档到知识库，保存后可手动刷新向量数据库以执行向量化。' }}</p>
+            <p>{{
+                isEdit ? `正在编辑文档 #${form.id}` : '新增文档到知识库，保存后可手动刷新向量数据库以执行向量化。'
+              }}</p>
           </div>
           <button class="dialog-close" type="button" @click="closeEdit">×</button>
         </div>
@@ -521,7 +526,8 @@ onMounted(() => fetchList(1))
           </label>
           <label class="field">
             <span class="field-label">标签</span>
-            <input v-model="form.tags" class="field-input" placeholder="多个标签用逗号分隔，如：景点,美食,住宿" type="text"/>
+            <input v-model="form.tags" class="field-input" placeholder="多个标签用逗号分隔，如：景点,美食,住宿"
+                   type="text"/>
           </label>
           <label class="field">
             <span class="field-label">状态</span>
@@ -541,7 +547,8 @@ onMounted(() => fetchList(1))
           <button :disabled="saving" class="action-btn action-btn-primary" type="button" @click="handleSave">
             {{ saving ? '保存中...' : '保存' }}
           </button>
-          <button :disabled="saving" class="action-btn action-btn-secondary" type="button" @click="closeEdit">取消</button>
+          <button :disabled="saving" class="action-btn action-btn-secondary" type="button" @click="closeEdit">取消
+          </button>
         </div>
       </div>
     </div>
@@ -723,8 +730,14 @@ onMounted(() => fetchList(1))
 }
 
 @keyframes configSlideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .config-panel-head {
@@ -773,8 +786,12 @@ onMounted(() => fetchList(1))
 }
 
 @keyframes pulse-text {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .progress-track {
@@ -798,20 +815,28 @@ onMounted(() => fetchList(1))
 }
 
 @keyframes progress-glow {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .progress-shimmer {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .progress-percent {
@@ -945,8 +970,12 @@ onMounted(() => fetchList(1))
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Table ── */

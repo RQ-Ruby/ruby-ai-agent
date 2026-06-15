@@ -16,7 +16,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 
 /**
  * PgVectorVectorStore 配置类
- *
+ * <p>
  * 封装了以下核心流程的逻辑
  * 1.文档收集与语义切割
  * 2.向量转换与存储（PgVector 向量数据库）
@@ -26,19 +26,18 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 public class PgVectorVectorStoreConfig {
 
     /**
-     * 向量嵌入维度
-     * 必须与使用的EmbeddingModel输出维度完全一致
-     * （1024是阿里云通义千问Embedding模型的默认输出维度，若调整Embedding模型应当对齐此值）
-     */
-    private static final int EMBEDDING_DIMENSIONS = 1024;
-
-    /**
      * 最大批量嵌入大小
      * 控制单次向量化请求处理的文档数量
      * 避免单次请求过大导致API超时或内存溢出
      * （通义千问API建议单次请求不超过50个文档）
      */
-   public static final int MAX_EMBEDDING_BATCH_SIZE = 10;
+    public static final int MAX_EMBEDDING_BATCH_SIZE = 10;
+    /**
+     * 向量嵌入维度
+     * 必须与使用的EmbeddingModel输出维度完全一致
+     * （1024是阿里云通义千问Embedding模型的默认输出维度，若调整Embedding模型应当对齐此值）
+     */
+    private static final int EMBEDDING_DIMENSIONS = 1024;
 
     /**
      * 创建并配置PgVector向量存储Bean

@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * 节点 6：智能行程生成。
- * 
+ * <p>
  * 用「出行参数 + RAG 检索到的本地知识」喂给大模型，按天产出结构化行程。
  */
 @Slf4j
@@ -27,7 +27,7 @@ public class ItineraryGenerateNode implements NodeAction {
             2. 总长度不超过 %d 字
             3. 不要照搬知识库原文，只保留可执行建议
             4. 优先使用实时 POI；缺失时再给通用建议
-            
+                        
             ## 用户出行参数
             - 目的地：%s
             - 天数：%d 天
@@ -36,20 +36,20 @@ public class ItineraryGenerateNode implements NodeAction {
             - 出行方式：%s
             - 偏好：%s
             - 出行时间：%s
-            
+                        
             ## 旅行知识库相关片段
             %s
-            
+                        
             ## 实时信息增强
             %s
-            
+                        
             输出结构：
             1. 行程总览
             2. 每日安排（按 Day 1 / Day 2 …）
             3. 预算建议
             4. 天气提醒
             5. 避坑 & 贴士（3-5 条）
-            
+                        
             若用户未填写关键字段，请使用默认值，并在行程总览中说明。
             """;
 
@@ -113,23 +113,23 @@ public class ItineraryGenerateNode implements NodeAction {
         int estimatedPeople = people > 0 ? people : 2;
         double estimatedDailyBudget = budget > 0 ? budget : 600d * estimatedPeople;
         return String.format("""
-                # %s 行程建议
+                        # %s 行程建议
 
-                ## 行程总览
-                当前大模型响应超时，先返回一个简版行程。已采用默认值：人数按 %d 人、预算按人均 600 元/天估算。
+                        ## 行程总览
+                        当前大模型响应超时，先返回一个简版行程。已采用默认值：人数按 %d 人、预算按人均 600 元/天估算。
 
-                ## 每日安排
-                %s
+                        ## 每日安排
+                        %s
 
-                ## 预算建议
-                - 参考总预算：%.0f 元
-                - 建议优先把预算分配给交通、住宿和门票
+                        ## 预算建议
+                        - 参考总预算：%.0f 元
+                        - 建议优先把预算分配给交通、住宿和门票
 
-                ## 贴士
-                - %s
-                - 行程可根据实时天气与开放时间灵活调整
-                - 如需更精细版本，可稍后重试生成
-                """,
+                        ## 贴士
+                        - %s
+                        - 行程可根据实时天气与开放时间灵活调整
+                        - 如需更精细版本，可稍后重试生成
+                        """,
                 destination,
                 estimatedPeople,
                 buildDayPlan(days, preferences),

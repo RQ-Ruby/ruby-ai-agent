@@ -5,7 +5,7 @@ import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugment
 
 /**
  * 查询增强器 （查询增强与关联）
- *
+ * <p>
  * 通过配置的 RAG 切片注入模板，把查询出来的内容关联到提示词中
  */
 public class QueryAugmenter {

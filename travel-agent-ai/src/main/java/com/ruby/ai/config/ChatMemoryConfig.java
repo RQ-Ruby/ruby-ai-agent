@@ -10,7 +10,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
  * AI对话记忆配置类
- *
+ * <p>
  * 采用Redis缓存 + MySQL持久化存储的存储方案
  *
  * @author RQ
@@ -46,7 +46,7 @@ public class ChatMemoryConfig {
      * 构建自定义的 ChatMemory 实例,封装了对话消息的增删查逻辑，在执行对话时自动调用
      *
      * @param chatMemoryRedisTemplate 对话记忆专用RedisTemplate
-     * @param chatMessageService 对话消息MySQL持久化服务
+     * @param chatMessageService      对话消息MySQL持久化服务
      * @return 持久化聊天记忆组件实例
      */
     @Bean

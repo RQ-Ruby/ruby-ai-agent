@@ -390,7 +390,8 @@ onMounted(async () => {
             上一页
           </button>
           <span class="pagination-text">共 {{ pageState.total }} 条</span>
-          <button :disabled="pageState.current >= totalPages || loading" class="action-btn action-btn-secondary" type="button"
+          <button :disabled="pageState.current >= totalPages || loading" class="action-btn action-btn-secondary"
+                  type="button"
                   @click="goNextPage">
             下一页
           </button>
@@ -469,7 +470,8 @@ onMounted(async () => {
           </label>
           <label class="field">
             <span class="field-label">简介</span>
-            <textarea v-model="editForm.userProfile" :disabled="!editForm.id" class="field-input field-textarea" placeholder="更新简介"
+            <textarea v-model="editForm.userProfile" :disabled="!editForm.id" class="field-input field-textarea"
+                      placeholder="更新简介"
                       rows="4"></textarea>
           </label>
           <label class="field">

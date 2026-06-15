@@ -15,11 +15,7 @@ import com.ruby.model.dto.rag.RagKnowledgeDocumentSaveRequest;
 import com.ruby.model.entity.RagKnowledgeDocument;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -41,7 +37,7 @@ public class RAGController {
 
     /**
      * 分页查询RAG知识库文档列表
-     *
+     * <p>
      * 支持按文档ID、标题、源文件名称、文档状态进行条件查询
      *
      * @param req 分页查询请求参数，包含页码、每页条数和查询条件
@@ -92,7 +88,7 @@ public class RAGController {
 
     /**
      * 删除RAG知识库文档
-     *
+     * <p>
      * （删除文档不会自动删除向量数据库中的对应向量，需手动刷新向量库）
      *
      * @param id 要删除的文档唯一标识，不能为空且必须大于0

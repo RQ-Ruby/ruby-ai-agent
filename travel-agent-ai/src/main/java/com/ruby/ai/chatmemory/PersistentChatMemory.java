@@ -44,7 +44,7 @@ public class PersistentChatMemory implements ChatMemory {
     /**
      * 构造函数，注入依赖
      *
-     * @param redisTemplate 对话记忆专用RedisTemplate
+     * @param redisTemplate      对话记忆专用RedisTemplate
      * @param chatMessageService 对话消息持久化服务
      */
     public PersistentChatMemory(RedisTemplate<String, byte[]> redisTemplate,
@@ -57,7 +57,7 @@ public class PersistentChatMemory implements ChatMemory {
      * 向指定会话追加消息
      *
      * @param conversationId 会话唯一ID，已按用户+聊天维度隔离
-     * @param messages 本轮需要追加的消息列表（通常是用户消息+助手消息）
+     * @param messages       本轮需要追加的消息列表（通常是用户消息+助手消息）
      */
     @Override
     public void add(String conversationId, List<Message> messages) {
@@ -83,9 +83,9 @@ public class PersistentChatMemory implements ChatMemory {
      * 获取指定会话的最近N条消息
      *
      * @param conversationId 会话唯一ID
-     * @param lastN 需要返回的尾部消息数量
-     *              - lastN > 0：返回最近lastN条
-     *              - lastN <= 0：返回完整的会话历史
+     * @param lastN          需要返回的尾部消息数量
+     *                       - lastN > 0：返回最近lastN条
+     *                       - lastN <= 0：返回完整的会话历史
      * @return 截取后的消息列表，按时间顺序排列（最早的在前，最新的在后）
      */
     public List<Message> get(String conversationId, int lastN) {
@@ -133,10 +133,10 @@ public class PersistentChatMemory implements ChatMemory {
 
     /**
      * 追加消息后刷新Redis缓存
-     *
+     * <p>
      * 这种设计比每次追加都全量读库性能提升10倍以上
      *
-     * @param conversationId 会话唯一ID
+     * @param conversationId   会话唯一ID
      * @param appendedMessages 本轮追加的新消息列表
      */
     private void refreshCacheAfterAppend(String conversationId, List<Message> appendedMessages) {
@@ -188,7 +188,7 @@ public class PersistentChatMemory implements ChatMemory {
      * 采用覆盖写入方式，保证缓存数据的完整性
      *
      * @param conversationId 会话唯一ID
-     * @param messages 完整的会话消息列表
+     * @param messages       完整的会话消息列表
      */
     private void putCache(String conversationId, List<Message> messages) {
         try {
@@ -230,7 +230,7 @@ public class PersistentChatMemory implements ChatMemory {
      * 截取消息列表的尾部N条
      *
      * @param messages 完整的消息列表
-     * @param lastN 需要截取的尾部数量
+     * @param lastN    需要截取的尾部数量
      * @return 截取后的消息列表
      */
     private List<Message> tail(List<Message> messages, int lastN) {

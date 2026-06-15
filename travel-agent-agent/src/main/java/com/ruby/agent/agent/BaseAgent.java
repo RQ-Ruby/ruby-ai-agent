@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * 抽象基础代理类，所有智能体的根父类
- *
+ * <p>
  * 提供智能体生命周期管理、状态转换、循环检测、内存管理和执行流程控制的基础能力
  * （支持同步运行和SSE流式运行两种模式）
  */
@@ -325,9 +325,9 @@ public abstract class BaseAgent {
      * 流式运行完成后的回调方法
      * 子类可重写实现会话持久化、统计等功能
      *
-     * @param userPrompt 用户输入的提示词
+     * @param userPrompt      用户输入的提示词
      * @param assistantOutput 智能体完整的输出内容
-     * @param success 执行是否成功
+     * @param success         执行是否成功
      */
     protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
         // 子类可重写

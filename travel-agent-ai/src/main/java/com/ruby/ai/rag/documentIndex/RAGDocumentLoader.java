@@ -26,22 +26,20 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Slf4j
 public class RAGDocumentLoader {
 
-    @jakarta.annotation.Resource
-    private RagKnowledgeDocumentService ragKnowledgeDocumentService;
-
     /**
      * 单个文档块的最大字符长度
      * 该值应与嵌入模型支持的最大输入长度匹配
      * 1200字符约等于300-400个token，适合大多数中文嵌入模型
      */
     private static final int MAX_EMBEDDING_TEXT_LENGTH = 1200;
-
     /**
      * 相邻文档块之间的重叠字符数
      * 用于解决分块导致的上下文断裂问题
      * 通常设置为最大长度的10%左右，这里是120字符
      */
     private static final int CHUNK_OVERLAP = 120;
+    @jakarta.annotation.Resource
+    private RagKnowledgeDocumentService ragKnowledgeDocumentService;
 
     /**
      * 文档收集与文档结构切割

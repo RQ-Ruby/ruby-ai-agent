@@ -67,7 +67,6 @@ public class AiChatController {
      * 旅游规划工作流流式接口（Workflow 架构 Agent）
      * 用于完整旅游规划场景，会收到 status、progress、result、error 四类事件。
      *
-     *
      * @param message 用户本轮输入内容，通常包含目的地、出行天数、预算、偏好等规划需求
      * @param chatId  前端会话 ID，同一会话保持一致，用于恢复上下文和历史记录
      * @param request HTTP 请求，用于获取当前登录用户并隔离用户会话
@@ -86,9 +85,9 @@ public class AiChatController {
      * @param chatId  要查询的会话唯一标识，不能为空
      * @param request HTTP请求对象，用于从会话中获取当前登录用户信息
      * @return 聊天历史记录列表，每条记录为Map结构，包含以下字段：
-     *         - role: 消息角色（user: 用户消息，assistant: AI回复）
-     *         - content: 消息内容
-     *         - timestamp: 消息发送时间戳（毫秒）
+     * - role: 消息角色（user: 用户消息，assistant: AI回复）
+     * - content: 消息内容
+     * - timestamp: 消息发送时间戳（毫秒）
      */
     @GetMapping("/chat/history")
     public BaseResponse<List<Map<String, String>>> getCommonChatHistory(String chatId, HttpServletRequest request) {

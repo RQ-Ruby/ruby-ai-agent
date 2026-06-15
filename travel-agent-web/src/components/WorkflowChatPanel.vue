@@ -422,7 +422,7 @@ onBeforeUnmount(() => {
                 <strong>{{ stage.title }}</strong>
                 <p>{{ stage.desc }}</p>
               </div>
-              </li>
+            </li>
           </ol>
         </section>
 
@@ -476,8 +476,8 @@ onBeforeUnmount(() => {
                 <details v-if="turn.progress.length > 0" :open="turn.status === 'streaming'" class="turn-progress">
                   <summary>查看本轮节点进度（{{ turn.progress.length }}）</summary>
 
-                    <li v-for="(item, index) in turn.progress" :key="`${turn.id}_${index}`">{{ item }}
-                    </li>
+                  <li v-for="(item, index) in turn.progress" :key="`${turn.id}_${index}`">{{ item }}
+                  </li>
                 </details>
 
                 <div v-if="turn.error" class="turn-error">{{ turn.error }}</div>

@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * 行旅AI旅游规划智能体
- *
+ * <p>
  * 基于ToolCallAgent，提供旅行规划专长的系统提示词、Tools、MCP、RAG能力
  */
 @Component
@@ -44,11 +44,11 @@ public class TravelAgent extends ToolCallAgent {
      * 构造函数
      * 合并自定义工具和MCP工具，初始化系统提示词和执行参数
      *
-     * @param allTools 自定义工具数组
+     * @param allTools                自定义工具数组
      * @param mcpToolCallbackProvider MCP工具提供者
-     * @param dashscopeChatModel 通义千问聊天模型
-     * @param chatMemory 持久化聊天记忆
-     * @param chatSessionService 会话服务
+     * @param dashscopeChatModel      通义千问聊天模型
+     * @param chatMemory              持久化聊天记忆
+     * @param chatSessionService      会话服务
      * @param travelChatClientFactory 聊天客户端工厂
      */
     public TravelAgent(ToolCallback[] allTools,
@@ -213,8 +213,8 @@ public class TravelAgent extends ToolCallAgent {
      * 绑定会话信息
      * 并从持久化存储中恢复历史会话消息
      *
-     * @param userId 用户ID
-     * @param chatId 聊天ID
+     * @param userId         用户ID
+     * @param chatId         聊天ID
      * @param conversationId 会话ID
      * @return 当前TravelAgent实例（支持链式调用）
      */
@@ -231,9 +231,9 @@ public class TravelAgent extends ToolCallAgent {
      * 重写流式运行完成后的回调
      * 实现会话历史的持久化和会话元数据的更新
      *
-     * @param userPrompt 用户输入的提示词
+     * @param userPrompt      用户输入的提示词
      * @param assistantOutput 智能体完整的输出内容
-     * @param success 执行是否成功
+     * @param success         执行是否成功
      */
     @Override
     protected void afterStreamingRun(String userPrompt, String assistantOutput, boolean success) {
