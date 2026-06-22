@@ -108,7 +108,7 @@ public class ParamExtractNode implements NodeAction {
 
     private String loadHistorySummary(String conversationId) {
         try {
-            List<Message> messages = chatMemory.get(conversationId, 6);
+            List<Message> messages = chatMemory.get(conversationId);
             if (messages == null || messages.isEmpty()) {
                 return "（无历史会话）";
             }

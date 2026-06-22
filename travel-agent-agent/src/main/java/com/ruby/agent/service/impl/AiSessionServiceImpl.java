@@ -22,9 +22,6 @@ import java.util.Map;
  */
 @Service
 public class AiSessionServiceImpl implements AiSessionService {
-
-    // 聊天历史最大返回条数
-    private static final int HISTORY_LIMIT = 50;
     // 会话标题最大长度
     private static final int SESSION_TITLE_MAX_LENGTH = 24;
     // 默认会话ID
@@ -78,8 +75,8 @@ public class AiSessionServiceImpl implements AiSessionService {
         }
         // 解析生成内部唯一会话ID
         String conversationId = resolveConversationId(user, chatId);
-        // 从持久化记忆中获取最近50条消息并转换格式
-        return convertMessages(chatMemory.get(conversationId, HISTORY_LIMIT));
+        // 从持久化记忆中获取最近条消息并转换格式
+        return convertMessages(chatMemory.get(conversationId));
     }
 
     /**

@@ -280,8 +280,8 @@ public class TravelAgent extends ToolCallAgent {
         }
 
         try {
-            // 获取最近100条历史消息
-            List<Message> persistedMessages = chatMemory.get(conversationId, 100);
+            // 获取最近历史消息
+            List<Message> persistedMessages = chatMemory.get(conversationId);
             if (persistedMessages == null || persistedMessages.isEmpty()) {
                 return;
             }

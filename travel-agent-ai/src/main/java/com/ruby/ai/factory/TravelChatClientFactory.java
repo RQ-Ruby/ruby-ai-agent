@@ -37,7 +37,30 @@ public class TravelChatClientFactory {
             默认先给结论，再按普通文本小标题分点展开；不要使用 Markdown 井号标题；涉及强时效信息时提醒以官方渠道或实时工具结果为准。
             """;
 
-    private static final String RAG_STATUS_PUBLISHED = "published";
+    /**
+     * 对话摘要专用系统提示词。
+     */
+    private static final String SUMMARY_SYSTEM_PROMPT = """
+            你是一位专业的对话历史摘要专家。请严格按照以下要求总结提供的对话历史：
+
+            ## 摘要原则
+            1. 只保留核心信息：删除所有闲聊、重复内容、礼貌用语和无关细节
+            2. 突出关键要素：明确记录用户的核心需求、问题、已达成的共识和未完成的任务
+            3. 保留用户偏好：特别注意用户明确提出的喜好、禁忌和特殊要求
+            4. 客观中立：使用第三人称客观描述，不要加入主观判断或额外信息
+            5. 严格控制长度：摘要总长度不超过300字，token数控制在150以内
+
+            ## 必须包含的内容
+            - 用户最初的核心问题或请求是什么
+            - 双方已经讨论过哪些关键内容
+            - 已经得出了哪些结论或决定
+            - 还有哪些问题没有解决，下一步计划做什么
+            - 用户提到的任何重要个人信息或特殊要求
+
+            ## 输出格式
+            直接输出摘要内容，不要有任何前缀、后缀或解释性文字。
+            如果对话历史为空或没有实质内容，只输出"无历史对话"。
+            """;
 
     /**
      * AI大模型核心接口（通义千问）
@@ -69,8 +92,6 @@ public class TravelChatClientFactory {
 
     /**
      * 使用ConcurrentHashMap保证线程安全 的ChatClient 缓存列表
-     * 用于缓存多个对话服务的ChatClient，快速获取，避免重复创建，浪费堆内存，出发频繁 GC
-     * （Key：会话ID ，Value：ChatClient，使用ConcurrentHashMap保证线程安全，支持高并发场景）
      */
     private final Map<String, CachedTravelClient> travelAgentClientCache = new ConcurrentHashMap<>();
 
@@ -84,70 +105,47 @@ public class TravelChatClientFactory {
         this.pgVectorVectorStore = pgVectorVectorStore;
         this.queryRewriter = queryRewriter;
         this.toolCallbackProvider = toolCallbackProvider;
-        // 从工厂类中创建 ragAdvisor ，传入 pgVectorVectorStore 连接向量数据库，传入元信息
-        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, RAG_STATUS_PUBLISHED);
+        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, "published");
     }
 
     /**
-     * 创建【基础RAG问答】专用ChatClient
-     * 基础配置 + RAG检索顾问
-     * 适用场景：非流式、基于知识库的旅游问答
+     * 创建【对话摘要】专用ChatClient
+     * 仅使用摘要系统提示词，不加载会话记忆和RAG增强，避免摘要任务污染业务对话上下文。
      *
-     * @return ChatClient RAG专用客户端
+     * @return ChatClient 摘要专用客户端
      */
+    public ChatClient createConversationSummaryChatClient() {
+        return ChatClient.builder(chatModel)
+                .defaultSystem(SUMMARY_SYSTEM_PROMPT)
+                .build();
+    }
+
     public ChatClient createRagChatClient() {
         return baseBuilder()
                 .defaultAdvisors(ragAdvisor)
                 .build();
     }
 
-    /**
-     * 创建【流式RAG问答】专用ChatClient
-     * 复用基础RAG客户端配置
-     * 适用场景：SSE流式输出的旅游问答
-     *
-     * @return ChatClient 流式RAG客户端
-     */
     public ChatClient createStreamRagChatClient() {
         return createRagChatClient();
     }
 
-    /**
-     * 创建普通流式对话 ChatClient（带缓存）
-     */
     public CachedTravelClient createStreamRagChatClient(String conversationId) {
         String cacheKey = normalizeCacheKey(conversationId);
         return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelClient(createStreamRagChatClient(), key));
     }
 
-    /**
-     * 创建ReAct Agent ChatClient（带缓存）
-     */
     public CachedTravelClient getTravelAgentClient(String conversationId) {
         String cacheKey = normalizeCacheKey(conversationId);
         return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelClient(createAgentChatClient(), key));
     }
 
-    /**
-     * 创建【工作流】专用ChatClient
-     * 仅使用基础公共配置，无额外RAG/工具增强
-     * 适用场景：旅游规划工作流内部对话
-     *
-     * @return ChatClient 工作流专用客户端
-     */
     public ChatClient createWorkflowChatClient() {
         return baseBuilder()
                 .defaultAdvisors(ragAdvisor)
                 .build();
     }
 
-    /**
-     * 创建【AI智能体】专用ChatClient
-     * 基础配置 + RAG检索增强
-     * 适用场景：TravelAgent智能体复杂任务处理
-     *
-     * @return ChatClient 智能体专用客户端
-     */
     public ChatClient createAgentChatClient() {
         return baseBuilder()
                 .defaultAdvisors(ragAdvisor)
@@ -155,8 +153,6 @@ public class TravelChatClientFactory {
     }
 
     private ChatClient.Builder baseBuilder() {
-
-
         return ChatClient.builder(chatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(

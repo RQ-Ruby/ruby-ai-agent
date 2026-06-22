@@ -1,7 +1,10 @@
 package com.ruby.ai.config;
 
 import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
+import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.service.ChatMessageService;
+import com.ruby.ai.service.ChatSummaryService;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -10,7 +13,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
  * AI对话记忆配置类
- 
+ * <p>
  * 采用Redis缓存 + MySQL持久化存储的存储方案
  *
  * @author RQ
@@ -51,7 +54,9 @@ public class ChatMemoryConfig {
      */
     @Bean
     public TokenWindowsPersistentChatMemory persistentChatMemory(RedisTemplate<String, byte[]> chatMemoryRedisTemplate,
-                                                                 ChatMessageService chatMessageService) {
-        return new TokenWindowsPersistentChatMemory(chatMemoryRedisTemplate, chatMessageService);
+                                                                 ChatMessageService chatMessageService,
+                                                                 ChatSummaryService chatSummaryService,
+                                                                 ObjectProvider<TravelChatClientFactory> travelChatClientFactoryProvider) {
+        return new TokenWindowsPersistentChatMemory(chatMemoryRedisTemplate, chatMessageService, chatSummaryService, travelChatClientFactoryProvider);
     }
 }
