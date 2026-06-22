@@ -3,7 +3,7 @@ package com.ruby.agent.workflowAgent.nodes;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.ruby.agent.workflowAgent.TravelGraphKeys;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -20,9 +20,9 @@ import java.util.Map;
 @Slf4j
 public class ClarifyNode implements NodeAction {
 
-    private final PersistentChatMemory chatMemory;
+    private final TokenWindowsPersistentChatMemory chatMemory;
 
-    public ClarifyNode(PersistentChatMemory chatMemory) {
+    public ClarifyNode(TokenWindowsPersistentChatMemory chatMemory) {
         this.chatMemory = chatMemory;
     }
 

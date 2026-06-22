@@ -8,7 +8,7 @@ import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
 import com.ruby.agent.workflowAgent.dispatcher.IntentDispatcher;
 import com.ruby.agent.workflowAgent.dispatcher.ParamValidationDispatcher;
 import com.ruby.agent.workflowAgent.nodes.*;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.factory.WorkflowChatClientFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +99,7 @@ public class TravelGraphConfig {
      */
     @Bean
     public StateGraph travelStateGraph(KeyStrategyFactory travelKeyStrategyFactory,
-                                       PersistentChatMemory chatMemory,
+                                       TokenWindowsPersistentChatMemory chatMemory,
                                        TravelChatClientFactory travelChatClientFactory,
                                        WorkflowChatClientFactory workflowChatClientFactory,
                                        VectorStore pgVectorVectorStore,

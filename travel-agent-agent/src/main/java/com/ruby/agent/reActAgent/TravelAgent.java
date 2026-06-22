@@ -1,6 +1,6 @@
 package com.ruby.agent.reActAgent;
 
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.service.ChatSessionService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.List;
 public class TravelAgent extends ToolCallAgent {
 
     // 持久化聊天记忆：用于保存会话历史
-    private final PersistentChatMemory chatMemory;
+    private final TokenWindowsPersistentChatMemory chatMemory;
 
     // 会话服务：用于管理会话元数据
     private final ChatSessionService chatSessionService;
@@ -54,7 +54,7 @@ public class TravelAgent extends ToolCallAgent {
     public TravelAgent(ToolCallback[] allTools,
                        ToolCallbackProvider mcpToolCallbackProvider,
                        ChatModel dashscopeChatModel,
-                       PersistentChatMemory chatMemory,
+                       TokenWindowsPersistentChatMemory chatMemory,
                        ChatSessionService chatSessionService,
                        TravelChatClientFactory travelChatClientFactory) {
         // 合并自定义工具和MCP工具

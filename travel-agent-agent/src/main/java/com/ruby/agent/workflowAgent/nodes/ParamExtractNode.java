@@ -3,7 +3,7 @@ package com.ruby.agent.workflowAgent.nodes;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.ruby.agent.workflowAgent.TravelGraphKeys;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
@@ -52,9 +52,9 @@ public class ParamExtractNode implements NodeAction {
             """;
 
     private final ChatClient chatClient;
-    private final PersistentChatMemory chatMemory;
+    private final TokenWindowsPersistentChatMemory chatMemory;
 
-    public ParamExtractNode(ChatClient chatClient, PersistentChatMemory chatMemory) {
+    public ParamExtractNode(ChatClient chatClient, TokenWindowsPersistentChatMemory chatMemory) {
         this.chatClient = chatClient;
         this.chatMemory = chatMemory;
     }

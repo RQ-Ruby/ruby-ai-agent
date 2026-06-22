@@ -1,7 +1,7 @@
 package com.ruby.ai.factory;
 
 import com.ruby.ai.advisor.MyLoggerAdvisor;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.rag.RetrievalAugment.QueryRewriter;
 import com.ruby.ai.rag.RetrievalAugment.RagAdvisorFactory;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -48,7 +47,7 @@ public class TravelChatClientFactory {
     /**
      * 持久化聊天内存：保存用户对话历史，实现多轮对话
      */
-    private final PersistentChatMemory chatMemory;
+    private final TokenWindowsPersistentChatMemory chatMemory;
 
     /**
      * Postgres向量库：用于RAG知识库检索
@@ -76,7 +75,7 @@ public class TravelChatClientFactory {
     private final Map<String, CachedTravelClient> travelAgentClientCache = new ConcurrentHashMap<>();
 
     public TravelChatClientFactory(ChatModel dashscopeChatModel,
-                                   PersistentChatMemory chatMemory,
+                                   TokenWindowsPersistentChatMemory chatMemory,
                                    @Qualifier("pgVectorVectorStore") VectorStore pgVectorVectorStore,
                                    QueryRewriter queryRewriter,
                                    ToolCallbackProvider toolCallbackProvider) {
@@ -156,6 +155,8 @@ public class TravelChatClientFactory {
     }
 
     private ChatClient.Builder baseBuilder() {
+
+
         return ChatClient.builder(chatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(

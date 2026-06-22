@@ -1,6 +1,6 @@
 package com.ruby.ai.config;
 
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.service.ChatMessageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,8 +50,8 @@ public class ChatMemoryConfig {
      * @return 持久化聊天记忆组件实例
      */
     @Bean
-    public PersistentChatMemory persistentChatMemory(RedisTemplate<String, byte[]> chatMemoryRedisTemplate,
-                                                     ChatMessageService chatMessageService) {
-        return new PersistentChatMemory(chatMemoryRedisTemplate, chatMessageService);
+    public TokenWindowsPersistentChatMemory persistentChatMemory(RedisTemplate<String, byte[]> chatMemoryRedisTemplate,
+                                                                 ChatMessageService chatMessageService) {
+        return new TokenWindowsPersistentChatMemory(chatMemoryRedisTemplate, chatMessageService);
     }
 }

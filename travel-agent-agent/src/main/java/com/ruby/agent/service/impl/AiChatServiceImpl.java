@@ -4,7 +4,7 @@ import com.ruby.agent.reActAgent.TravelAgent;
 import com.ruby.agent.service.AiChatService;
 import com.ruby.agent.service.AiSessionService;
 import com.ruby.agent.workflowAgent.TravelPlanningWorkflowFacade;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.service.ChatSessionService;
 import com.ruby.model.entity.User;
@@ -51,7 +51,7 @@ public class AiChatServiceImpl implements AiChatService {
     private TravelPlanningWorkflowFacade travelPlanningWorkflowFacade;
 
     @Resource
-    private PersistentChatMemory chatMemory;
+    private TokenWindowsPersistentChatMemory chatMemory;
 
     @Resource
     private ChatSessionService chatSessionService;

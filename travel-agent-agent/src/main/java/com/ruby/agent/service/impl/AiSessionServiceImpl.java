@@ -1,7 +1,7 @@
 package com.ruby.agent.service.impl;
 
 import com.ruby.agent.service.AiSessionService;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.service.ChatSessionService;
 import com.ruby.common.exception.BusinessException;
 import com.ruby.common.exception.ErrorCode;
@@ -33,7 +33,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     private static final String DEFAULT_SESSION_TITLE = "新会话";
 
     @Resource
-    private PersistentChatMemory chatMemory;
+    private TokenWindowsPersistentChatMemory chatMemory;
 
     @Resource
     private ChatSessionService chatSessionService;

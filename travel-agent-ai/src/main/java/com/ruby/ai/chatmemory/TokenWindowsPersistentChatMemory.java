@@ -5,19 +5,24 @@ import com.ruby.ai.utils.KryoSerializerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.tokenizer.JTokkitTokenCountEstimator;
+import org.springframework.ai.tokenizer.TokenCountEstimator;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * 自定义的 ChatMemory ,封装了对话消息的增删查逻辑，在执行对话时自动调用
- * （基于Redis缓存 + MySQL持久化的存储方式）
+ * 1.基于Redis缓存 + MySQL持久化的存储方式
+ * 2.基于 Token 滑动窗口动态加载历史消息
  *
  * @author RQ
  */
 @Slf4j
-public class PersistentChatMemory implements ChatMemory {
+public class TokenWindowsPersistentChatMemory implements ChatMemory {
 
     /**
      * Redis缓存键前缀，隔离不同业务的缓存数据
@@ -28,6 +33,16 @@ public class PersistentChatMemory implements ChatMemory {
      * 缓存过期时间
      */
     private static final Duration CACHE_TTL = Duration.ofDays(7);
+
+    /**
+     * 默认上下文 token 预算
+     */
+    private static final int DEFAULT_CONTEXT_TOKEN_LIMIT = 16000;
+
+    /**
+     * Spring AI token 计数器
+     */
+    private final TokenCountEstimator tokenCountEstimator = new JTokkitTokenCountEstimator();
 
     /**
      * 对话记忆专用RedisTemplate
@@ -47,8 +62,8 @@ public class PersistentChatMemory implements ChatMemory {
      * @param redisTemplate      对话记忆专用RedisTemplate
      * @param chatMessageService 对话消息持久化服务
      */
-    public PersistentChatMemory(RedisTemplate<String, byte[]> redisTemplate,
-                                ChatMessageService chatMessageService) {
+    public TokenWindowsPersistentChatMemory(RedisTemplate<String, byte[]> redisTemplate,
+                                            ChatMessageService chatMessageService) {
         this.redisTemplate = redisTemplate;
         this.chatMessageService = chatMessageService;
     }
@@ -65,34 +80,23 @@ public class PersistentChatMemory implements ChatMemory {
         chatMessageService.appendMessages(conversationId, messages);
         // 2.刷新Redis缓存（失败只打日志，不影响主流程）
         refreshCacheAfterAppend(conversationId, messages);
+
+
     }
 
     /**
-     * 获取指定会话的最近10条消息
-     * Spring AI ChatMemory接口的默认实现
+     * 获取指定会话的上下文消息
+     * Spring AI ChatMemory 接口的默认实现
      *
-     * @param conversationId 会话唯一ID
-     * @return 最近10条消息列表，空会话返回空列表
+     * @param conversationId 会话唯一 ID
+     * @return 按 token 滑动窗口截取后的消息列表
      */
     @Override
     public List<Message> get(String conversationId) {
-        return get(conversationId, 10);
-    }
-
-    /**
-     * 获取指定会话的最近N条消息
-     *
-     * @param conversationId 会话唯一ID
-     * @param lastN          需要返回的尾部消息数量
-     *                       - lastN > 0：返回最近lastN条
-     *                       - lastN <= 0：返回完整的会话历史
-     * @return 截取后的消息列表，按时间顺序排列（最早的在前，最新的在后）
-     */
-    public List<Message> get(String conversationId, int lastN) {
-        // 先获取完整的会话消息
+        // 获取全部历史消息
         List<Message> allMessages = getAllMessages(conversationId);
-        // 再截取尾部N条
-        return tail(allMessages, lastN);
+        // 传入全部历史消息，通过最大支持的 Token 数进行截断
+        return getTokenWindowsMessages(allMessages, DEFAULT_CONTEXT_TOKEN_LIMIT);
     }
 
     /**
@@ -133,7 +137,7 @@ public class PersistentChatMemory implements ChatMemory {
 
     /**
      * 追加消息后刷新Redis缓存
-     
+     * <p>
      * 这种设计比每次追加都全量读库性能提升10倍以上
      *
      * @param conversationId   会话唯一ID
@@ -153,7 +157,7 @@ public class PersistentChatMemory implements ChatMemory {
             putCache(conversationId, cachedMessages);
         } catch (Exception e) {
             // 缓存刷新失败只打警告日志，不影响MySQL数据
-            log.warn("[PersistentChatMemory] Redis缓存刷新失败，不影响MySQL持久化: {}", e.getMessage());
+            log.warn("[TokenWindowsPersistentChatMemory] Redis缓存刷新失败，不影响MySQL持久化: {}", e.getMessage());
         }
     }
 
@@ -178,7 +182,7 @@ public class PersistentChatMemory implements ChatMemory {
             // 使用Kryo反序列化
             return KryoSerializerUtil.deserializeList(serializedData);
         } catch (Exception e) {
-            log.warn("[PersistentChatMemory] Redis缓存读取失败，将回退到MySQL: {}", e.getMessage());
+            log.warn("[TokenWindowsPersistentChatMemory] Redis缓存读取失败，将回退到MySQL: {}", e.getMessage());
             return null;
         }
     }
@@ -198,7 +202,7 @@ public class PersistentChatMemory implements ChatMemory {
             // 写入Redis并设置过期时间
             redisTemplate.opsForValue().set(cacheKey, serializedData, CACHE_TTL);
         } catch (Exception e) {
-            log.warn("[PersistentChatMemory] Redis缓存写入失败，不影响MySQL持久化: {}", e.getMessage());
+            log.warn("[TokenWindowsPersistentChatMemory] Redis缓存写入失败，不影响MySQL持久化: {}", e.getMessage());
         }
     }
 
@@ -211,7 +215,7 @@ public class PersistentChatMemory implements ChatMemory {
         try {
             redisTemplate.delete(buildCacheKey(conversationId));
         } catch (Exception e) {
-            log.warn("[PersistentChatMemory] Redis缓存删除失败，MySQL消息已清空: {}", e.getMessage());
+            log.warn("[TokenWindowsPersistentChatMemory] Redis缓存删除失败，MySQL消息已清空: {}", e.getMessage());
         }
     }
 
@@ -227,20 +231,56 @@ public class PersistentChatMemory implements ChatMemory {
     }
 
     /**
-     * 截取消息列表的尾部N条
+     * 按token滑动窗口截取消息列表
+     * 采用从后向前累加的方式，确保在固定token预算内保留尽可能多的近期上下文
      *
      * @param messages 完整的消息列表
-     * @param lastN    需要截取的尾部数量
      * @return 截取后的消息列表
      */
-    private List<Message> tail(List<Message> messages, int lastN) {
-        if (messages.isEmpty() || lastN <= 0) {
+    private List<Message> getTokenWindowsMessages(List<Message> messages, int maxTokens) {
+        if (messages.isEmpty()) {
             return messages;
         }
 
-        // 计算起始索引，保证不会越界
-        int fromIndex = Math.max(0, messages.size() - lastN);
-        // subList返回的是原列表的视图，这里直接返回即可
-        return messages.subList(fromIndex, messages.size());
+        // 存储截断后的消息列表
+        List<Message> limitedMessages = new ArrayList<>();
+        // 剩余可容纳 Token 数
+        int remainingTokens = maxTokens;
+
+        // 添加 Token 窗口支持的消息列表
+        for (int index = messages.size() - 1; index >= 0; index--) {
+            // 从最近一条获取消息
+            Message message = messages.get(index);
+            // 使用 Spring AI token 计数器估算单条消息 token 数量
+            int estimatedTokens = estimateTokens(message);
+            // 若剩余 Token 数无法容纳新的消息的 Token 数，则停止添加
+            if (!limitedMessages.isEmpty() && remainingTokens < estimatedTokens) {
+                break;
+            }
+            // 剩余 Token 数可容纳新的消息的 Token 数，添加到消息列表
+            limitedMessages.add(message);
+            // 减去本条消息占用的 Token 数
+            remainingTokens -= estimatedTokens;
+        }
+
+        // 反转消息列表，从老到新展示加载对话消息
+        Collections.reverse(limitedMessages);
+
+        log.info("本次对话加载条数：" + limitedMessages.size());
+        return limitedMessages;
+    }
+
+    /**
+     * 使用 Spring AI token 计数器估算单条消息 token 数量
+     *
+     * @param message 消息对象
+     * @return 估算 token 数
+     */
+    private int estimateTokens(Message message) {
+        String text = message.getText();
+        if (text == null || text.isBlank()) {
+            return tokenCountEstimator.estimate("");
+        }
+        return tokenCountEstimator.estimate(text);
     }
 }

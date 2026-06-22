@@ -3,7 +3,7 @@ package com.ruby.agent.workflowAgent.nodes;
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
 import com.ruby.agent.workflowAgent.TravelGraphKeys;
-import com.ruby.ai.chatmemory.PersistentChatMemory;
+import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -21,9 +21,9 @@ import java.util.Map;
 @Slf4j
 public class FinalizeNode implements NodeAction {
 
-    private final PersistentChatMemory chatMemory;
+    private final TokenWindowsPersistentChatMemory chatMemory;
 
-    public FinalizeNode(PersistentChatMemory chatMemory) {
+    public FinalizeNode(TokenWindowsPersistentChatMemory chatMemory) {
         this.chatMemory = chatMemory;
     }
 
@@ -35,7 +35,7 @@ public class FinalizeNode implements NodeAction {
      * @param userMessage    用户原文
      * @param aiAnswer       AI 回复
      */
-    public static void persistShortAnswer(PersistentChatMemory memory,
+    public static void persistShortAnswer(TokenWindowsPersistentChatMemory memory,
                                           String conversationId,
                                           String userMessage,
                                           String aiAnswer) {
