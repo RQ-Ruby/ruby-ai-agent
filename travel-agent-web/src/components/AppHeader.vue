@@ -11,7 +11,7 @@ const navItems = [
   {label: '首页', to: '/'},
   {label: '旅行咨询', to: '/travel'},
   {label: '规划智能体', to: '/planner'},
-  {label: '工作流规划', to: '/workflow'},
+  {label: '工作流规划', to: '/workflowAgent'},
 ]
 
 const visibleNavItems = computed(() => {

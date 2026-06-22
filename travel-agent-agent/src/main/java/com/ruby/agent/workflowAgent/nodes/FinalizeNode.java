@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import com.ruby.ai.chatmemory.PersistentChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * 节点 7：结果输出 & 记忆保存。
- * <p>
+ 
  * 把行程作为最终回答存入 finalResponse，并把「用户原话 + AI 行程」写入持久化对话记忆，
  * 用于后续轮（"改一下行程""预算调低"）回流到 param_extract 时拿到上下文。
  */

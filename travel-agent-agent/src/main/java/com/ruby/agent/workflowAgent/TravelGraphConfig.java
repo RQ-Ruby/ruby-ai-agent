@@ -1,13 +1,13 @@
-package com.ruby.agent.workflow;
+package com.ruby.agent.workflowAgent;
 
 import com.alibaba.cloud.ai.graph.KeyStrategyFactory;
 import com.alibaba.cloud.ai.graph.KeyStrategyFactoryBuilder;
 import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.state.strategy.AppendStrategy;
 import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy;
-import com.ruby.agent.workflow.dispatcher.IntentDispatcher;
-import com.ruby.agent.workflow.dispatcher.ParamValidationDispatcher;
-import com.ruby.agent.workflow.nodes.*;
+import com.ruby.agent.workflowAgent.dispatcher.IntentDispatcher;
+import com.ruby.agent.workflowAgent.dispatcher.ParamValidationDispatcher;
+import com.ruby.agent.workflowAgent.nodes.*;
 import com.ruby.ai.chatmemory.PersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.factory.WorkflowChatClientFactory;

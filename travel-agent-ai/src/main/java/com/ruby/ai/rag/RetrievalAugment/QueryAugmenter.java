@@ -4,19 +4,33 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 
 /**
- * 查询增强器 （查询增强与关联）
- * <p>
- * 通过配置的 RAG 切片注入模板，把查询出来的内容关联到提示词中
+ * 上下文查询融合器
+ *
+ * 核心职责：将检索器返回的知识库文档块与用户原始查询按规则融合
+ * 兼容Spring AI 1.0.0~1.0.3正式版API
  */
 public class QueryAugmenter {
 
     public static ContextualQueryAugmenter createInstance() {
-        PromptTemplate emptyContextPromptTemplate = new PromptTemplate("""
-                你应该输出下面的内容：
-                抱歉，我只能回答旅行相关的问题，别的没办法帮到您哦，
+        // 切片融合模板
+        PromptTemplate contextPromptTemplate = new PromptTemplate("""
+                【知识库内容，请务必参考】
+                {question_answer_context}
+                
+                用户问题：{query}
                 """);
+
+        // 检索切片为空时的模板
+        PromptTemplate emptyContextPromptTemplate = new PromptTemplate("""
+                用户问题：{query}
+                """);
+
         return ContextualQueryAugmenter.builder()
-                .allowEmptyContext(false)
+                // 保留你要求的配置：允许空上下文，让大模型自主回答
+                .allowEmptyContext(true)
+                // contextPromptTemplate()
+                .promptTemplate(contextPromptTemplate)
+                // 空上下文模板方法名不变
                 .emptyContextPromptTemplate(emptyContextPromptTemplate)
                 .build();
     }

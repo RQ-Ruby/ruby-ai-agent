@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.dispatcher;
+package com.ruby.agent.workflowAgent.dispatcher;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.EdgeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 
 /**
  * 条件边：参数校验后，决定继续往后走（complete）还是反问用户（missing）

@@ -19,7 +19,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * 旅游攻略文档加载器
- * <p>
+ *
  * 实现了文档结构切分、文本规范化和元数据增强功能，为后续RAG检索提供高质量的文档块
  */
 @Component
@@ -50,7 +50,7 @@ public class RAGDocumentLoader {
     public List<Document> loadMarkdowns() {
         List<Document> allDocuments = new ArrayList<>();
 
-        // 查询出 MySQL 中的 RAG 文档
+        // 1.查询出 MySQL 中的 RAG 文档
         List<RagKnowledgeDocument> docs = ragKnowledgeDocumentService.list();
 
         if (docs.isEmpty()) {
@@ -59,7 +59,7 @@ public class RAGDocumentLoader {
         }
 
 
-        // 遍历每个文档实体对象
+        // 2.遍历每个文档实体对象
         for (RagKnowledgeDocument doc : docs) {
 
             String fileName = doc.getTitle() != null ? doc.getTitle() : "document-" + doc.getId();
@@ -88,6 +88,7 @@ public class RAGDocumentLoader {
 
             // 解析Markdown文档并进行基于文档结构的分块处理
             for (Document document : reader.get()) {
+                // 针对每个切片进行更细致的过滤、拆分
                 allDocuments.addAll(splitDocument(document, fileName));
             }
 

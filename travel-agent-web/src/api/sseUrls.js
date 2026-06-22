@@ -34,7 +34,7 @@ export async function fetchChatSessions(scene) {
     return {data: list}
 }
 
-/** 行旅 AI 工作流规划 SSE：GET /ai/workflow/plan */
+/** 行旅 AI 工作流规划 SSE：GET /ai/workflowAgent/plan */
 export function buildWorkflowPlanUrl(message, chatId) {
     return http.getUri({
         url: '/ai/workflow/plan',

@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallback;

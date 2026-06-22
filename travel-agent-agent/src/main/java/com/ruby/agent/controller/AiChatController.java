@@ -102,7 +102,7 @@ public class AiChatController {
      * @param scene   业务场景标识，可选值：
      *                - travel_app: 普通旅行咨询场景
      *                - travel_agent: ReAct智能体场景
-     *                - workflow: 旅行规划工作流场景
+     *                - workflowAgent: 旅行规划工作流场景
      *                传入空值时返回所有场景的会话列表
      * @param request HTTP请求对象，用于从会话中获取当前登录用户信息
      * @return 会话列表，每个元素包含会话ID、标题、创建时间、最后更新时间等信息

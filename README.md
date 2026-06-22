@@ -94,7 +94,7 @@ mvn spring-boot:run
 ### 前端
 
 ```bash
-cd ruby-ai-agent-frontend
+cd ruby-ai-reActAgent-frontend
 npm install
 npm run dev
 ```

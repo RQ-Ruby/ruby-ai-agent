@@ -1,4 +1,4 @@
-package com.ruby.agent.workflow;
+package com.ruby.agent.workflowAgent;
 
 /**
  * 行旅 AI 工作流 OverAllState 共享键定义。

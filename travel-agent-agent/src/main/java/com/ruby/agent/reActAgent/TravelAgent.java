@@ -1,4 +1,4 @@
-package com.ruby.agent.agent;
+package com.ruby.agent.reActAgent;
 
 import com.ruby.ai.chatmemory.PersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * 行旅AI旅游规划智能体
- * <p>
+ 
  * 基于ToolCallAgent，提供旅行规划专长的系统提示词、Tools、MCP、RAG能力
  */
 @Component
@@ -313,7 +313,7 @@ public class TravelAgent extends ToolCallAgent {
 
         String normalized = assistantOutput
                 // 移除工具执行标记行
-                .replaceAll("(?m)^> 🔧.*$", "")
+                .replaceAll("(?m)^> .*$", "")
                 // 移除警告标记行
                 .replaceAll("(?m)^> ⚠️.*$", "")
                 // 将多个连续空行替换为两个空行

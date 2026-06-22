@@ -8,13 +8,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * 全局跨域 + 静态资源映射配置
+ *
+ * Spring MVC
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    /**
+     * @description 添加拦截规则，自动在处理请求之前进行拦截，根据规则过滤
+     * @return: void
+     * @author RQ
+     * @date: 2026/6/16 下午1:37
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // 覆盖所有请求
+        // 覆盖所有请求（registry 注册表）
         registry.addMapping("/**")
                 // 允许发送 Cookie
                 .allowCredentials(true)

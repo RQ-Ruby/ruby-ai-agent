@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * 节点 3：参数完整性校验。
- * <p>
+ 
  * 必填：destination、days；缺失时进入 clarify 分支反问用户。
  * 非必填：people、budget、travelMode、preferences、travelTime —— 缺失时由后续节点采用合理默认值。
  */

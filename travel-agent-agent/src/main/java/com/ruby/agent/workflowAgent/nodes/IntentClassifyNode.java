@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * 节点 1：意图识别。
  * 判定用户当前输入是「旅行规划/咨询」还是「普通闲聊」。
- * <p>
+ 
  * 输出：
  * - intent: "travel" 或 "chitchat"
  * - chitchatReply: 闲聊场景下顺手生成的简短回复（仅 chitchat 分支使用）

@@ -86,7 +86,7 @@ public class AiSessionServiceImpl implements AiSessionService {
      * 查询用户指定场景下的所有会话列表
      *
      * @param user  当前登录用户
-     * @param scene 场景标识（travel_app/workflow/travel_agent）
+     * @param scene 场景标识（travel_app/workflowAgent/travel_agent）
      * @return 会话列表VO，包含会话ID、标题、最后活跃时间等信息
      * @throws BusinessException 当scene为空时抛出参数错误异常
      */

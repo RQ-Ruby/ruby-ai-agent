@@ -1,4 +1,4 @@
-package com.ruby.ai.config;
+package com.ruby.ai.rag.documentIndex;
 
 import com.ruby.ai.service.RagVectorizationService;
 import jakarta.annotation.PostConstruct;
@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * RAG 启动后初始化
+ *
+ * 封装了以下核心流程的逻辑
+ * 1.文档收集与文档结构切割
+ * 2.向量转换与存储（PgVector 向量数据库）
  */
 @Configuration
 @Slf4j

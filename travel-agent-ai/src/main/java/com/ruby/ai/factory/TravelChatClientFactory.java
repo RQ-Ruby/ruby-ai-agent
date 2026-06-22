@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -72,7 +73,7 @@ public class TravelChatClientFactory {
      * 用于缓存多个对话服务的ChatClient，快速获取，避免重复创建，浪费堆内存，出发频繁 GC
      * （Key：会话ID ，Value：ChatClient，使用ConcurrentHashMap保证线程安全，支持高并发场景）
      */
-    private final Map<String, CachedTravelAgentClient> travelAgentClientCache = new ConcurrentHashMap<>();
+    private final Map<String, CachedTravelClient> travelAgentClientCache = new ConcurrentHashMap<>();
 
     public TravelChatClientFactory(ChatModel dashscopeChatModel,
                                    PersistentChatMemory chatMemory,
@@ -84,6 +85,7 @@ public class TravelChatClientFactory {
         this.pgVectorVectorStore = pgVectorVectorStore;
         this.queryRewriter = queryRewriter;
         this.toolCallbackProvider = toolCallbackProvider;
+        // 从工厂类中创建 ragAdvisor ，传入 pgVectorVectorStore 连接向量数据库，传入元信息
         this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, RAG_STATUS_PUBLISHED);
     }
 
@@ -114,17 +116,17 @@ public class TravelChatClientFactory {
     /**
      * 创建普通流式对话 ChatClient（带缓存）
      */
-    public CachedTravelAgentClient createStreamRagChatClient(String conversationId) {
+    public CachedTravelClient createStreamRagChatClient(String conversationId) {
         String cacheKey = normalizeCacheKey(conversationId);
-        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelAgentClient(createStreamRagChatClient(), key));
+        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelClient(createStreamRagChatClient(), key));
     }
 
     /**
      * 创建ReAct Agent ChatClient（带缓存）
      */
-    public CachedTravelAgentClient getTravelAgentClient(String conversationId) {
+    public CachedTravelClient getTravelAgentClient(String conversationId) {
         String cacheKey = normalizeCacheKey(conversationId);
-        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelAgentClient(createAgentChatClient(), key));
+        return travelAgentClientCache.computeIfAbsent(cacheKey, key -> new CachedTravelClient(createAgentChatClient(), key));
     }
 
     /**
@@ -169,6 +171,6 @@ public class TravelChatClientFactory {
         return conversationId.trim();
     }
 
-    public record CachedTravelAgentClient(ChatClient chatClient, String conversationId) {
+    public record CachedTravelClient(ChatClient chatClient, String conversationId) {
     }
 }

@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * 节点 5：RAG 旅行知识库检索。
- * <p>
+ 
  * 用「目的地 + 偏好」做查询，从 pgVectorVectorStore 拉取相关的景点 / 美食 / 住宿 / 攻略文档。
  */
 @Slf4j

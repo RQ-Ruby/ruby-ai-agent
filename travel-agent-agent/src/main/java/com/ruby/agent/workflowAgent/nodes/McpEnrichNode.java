@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallback;
@@ -12,11 +12,11 @@ import java.util.Map;
 
 /**
  * 节点：MCP 信息增强。
- * <p>
+ 
  * 在 RAG 检索之后、行程生成之前执行。利用高德地图 MCP 工具获取：
  * 1. 目的地实时天气
  * 2. 热门景点 / 美食 / 酒店真实 POI
- * <p>
+ 
  * 产出的信息会作为额外上下文传给 ItineraryGenerateNode，使行程方案更落地。
  * 若 MCP 不可用或调用失败，节点降级为空信息，不阻塞工作流。
  */

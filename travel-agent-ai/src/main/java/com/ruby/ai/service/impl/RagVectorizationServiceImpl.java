@@ -16,7 +16,7 @@ import static com.ruby.ai.rag.documentIndex.PgVectorVectorStoreConfig.MAX_EMBEDD
 
 /**
  * RAG向量数据库向量化服务实现类
- * <p>
+ 
  * 从 MySQL 加载完整文档，经由 RAGDocumentLoader 智能分块后，
  * 逐块生成向量嵌入并写入 PostgreSQL 向量数据库。
  *
@@ -54,7 +54,7 @@ public class RagVectorizationServiceImpl implements RagVectorizationService {
      */
     @Override
     public void refreshKnowledgeBaseVectors(boolean manualTrigger) {
-        // 1. 从 MySQL 加载文档并智能分块
+        // 1. 文档收集与文档结构切割
         List<Document> springDocuments = ragDocumentLoader.loadMarkdowns();
 
         if (springDocuments.isEmpty()) {
@@ -86,6 +86,7 @@ public class RagVectorizationServiceImpl implements RagVectorizationService {
                   AND a.attname = 'embedding'
                   AND NOT a.attisdropped
                 """, String.class);
+
 
         if (embeddingType == null || embeddingType.isBlank()) {
             log.warn("未找到vector_store表的embedding字段，跳过清空操作");

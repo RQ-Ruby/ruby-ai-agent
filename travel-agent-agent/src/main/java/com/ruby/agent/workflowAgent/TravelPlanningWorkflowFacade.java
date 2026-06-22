@@ -1,4 +1,4 @@
-package com.ruby.agent.workflow;
+package com.ruby.agent.workflowAgent;
 
 import com.alibaba.cloud.ai.graph.CompiledGraph;
 import com.alibaba.cloud.ai.graph.OverAllState;

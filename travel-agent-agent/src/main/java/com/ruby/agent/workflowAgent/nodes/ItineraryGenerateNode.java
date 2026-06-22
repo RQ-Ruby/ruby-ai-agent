@@ -1,8 +1,8 @@
-package com.ruby.agent.workflow.nodes;
+package com.ruby.agent.workflowAgent.nodes;
 
 import com.alibaba.cloud.ai.graph.OverAllState;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
-import com.ruby.agent.workflow.TravelGraphKeys;
+import com.ruby.agent.workflowAgent.TravelGraphKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * 节点 6：智能行程生成。
- * <p>
+ 
  * 用「出行参数 + RAG 检索到的本地知识」喂给大模型，按天产出结构化行程。
  */
 @Slf4j

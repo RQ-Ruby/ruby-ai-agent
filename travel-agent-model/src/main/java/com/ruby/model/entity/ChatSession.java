@@ -35,7 +35,7 @@ public class ChatSession implements Serializable {
     private Long userId;
 
     /**
-     * 业务场景，例如 travel_app / workflow。
+     * 业务场景，例如 travel_app / workflowAgent。
      */
     @TableField("scene")
     private String scene;

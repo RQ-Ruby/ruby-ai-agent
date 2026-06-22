@@ -10,7 +10,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
  * AI对话记忆配置类
- * <p>
+ 
  * 采用Redis缓存 + MySQL持久化存储的存储方案
  *
  * @author RQ

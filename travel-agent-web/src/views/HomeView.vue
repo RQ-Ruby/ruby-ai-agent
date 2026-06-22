@@ -12,7 +12,7 @@ const navItems = [
   {label: '首页', to: '/'},
   {label: '旅行咨询', to: '/travel'},
   {label: '规划智能体', to: '/planner'},
-  {label: '工作流规划', to: '/workflow'},
+  {label: '工作流规划', to: '/workflowAgent'},
   {label: '用户管理', to: '/admin/users'},
   {label: '知识库管理', to: '/admin/rag'},
 ]
@@ -33,9 +33,9 @@ const featureCards = [
     tags: ['自主规划', '预算核算', '攻略整合', 'PDF 行程手册'],
   },
   {
-    key: 'workflow',
+    key: 'workflowAgent',
     title: '工作流规划',
-    to: '/workflow',
+    to: '/workflowAgent',
     desc: '基于 Spring AI Alibaba Graph 的多步骤规划能力，对需求进行解析、补参、检索与节点式生成，输出完整可调整的出行方案。',
     tags: ['多节点定制', '需求解析', '深度规划', '完整方案'],
   },

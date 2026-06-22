@@ -1,9 +1,9 @@
 package com.ruby.agent.service.impl;
 
-import com.ruby.agent.agent.TravelAgent;
+import com.ruby.agent.reActAgent.TravelAgent;
 import com.ruby.agent.service.AiChatService;
 import com.ruby.agent.service.AiSessionService;
-import com.ruby.agent.workflow.TravelPlanningWorkflowFacade;
+import com.ruby.agent.workflowAgent.TravelPlanningWorkflowFacade;
 import com.ruby.ai.chatmemory.PersistentChatMemory;
 import com.ruby.ai.factory.TravelChatClientFactory;
 import com.ruby.ai.service.ChatSessionService;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AI聊天应用服务实现类
- * <p>
+ *
  * 实现多场景AI对话的会话管理、流式输出、上下文持久化与异常处理
  *
  * @author ruby
@@ -31,7 +31,7 @@ public class AiChatServiceImpl implements AiChatService {
 
     // 场景标识常量
     private static final String SCENE_TRAVEL_APP = "travel_app";
-    private static final String SCENE_WORKFLOW = "workflow";
+    private static final String SCENE_WORKFLOW = "workflowAgent";
 
     // SSE连接超时时间（5分钟）
     private static final long TRAVEL_APP_TIMEOUT = 300000L;
@@ -62,7 +62,7 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 普通旅行问答流式接口实现
      * 用于景点、美食、交通、住宿、避坑等轻量旅行问答场景，基于RAG知识库检索增强。
-     * <p>
+     *
      * 生成链路为 AiChatService → TravelChatClientFactory → Spring AI ChatClient → RAG Advisor。
      *
      * @param message 用户本轮输入内容
@@ -74,6 +74,8 @@ public class AiChatServiceImpl implements AiChatService {
     public SseEmitter chatWithTravelApp(String message, String chatId, User user) {
         // 解析生成内部唯一会话ID
         String conversationId = aiSessionService.resolveConversationId(user, chatId);
+        // 标准化前端传入的chatId
+        String normalizedChatId = aiSessionService.normalizeChatId(chatId);
         // 创建SSE发射器，设置5分钟超时
         SseEmitter emitter = new SseEmitter(TRAVEL_APP_TIMEOUT);
         // 构建完整回答，用于最终持久化
@@ -87,13 +89,14 @@ public class AiChatServiceImpl implements AiChatService {
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content()
+                // 指定三大生命周期时，流式输出的行为
                 .subscribe(
-                        // 收到文本片段时推送
+                        // 输出时：收到文本片段时推送
                         chunk -> sendTravelAppChunk(emitter, answerBuilder, chunk),
-                        // 发生错误时完成
+                        // 报错后：发生错误时完成
                         emitter::completeWithError,
-                        // 流式输出完成时持久化会话
-                        () -> completeTravelAppStream(emitter, user, chatId, conversationId, message, answerBuilder)
+                        // 完成后：流式输出完成时持久化会话
+                        () -> completeTravelAppStream(emitter, user, normalizedChatId, conversationId, message, answerBuilder)
                 );
 
         return emitter;
@@ -102,7 +105,7 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * TravelAgent旅行规划智能体流式接口实现
      * 用于需要工具调用、多步推理、复杂任务执行的旅行规划场景，支持实时展示思考过程。
-     * <p>
+     
      * 生成链路为 AiChatService → TravelAgent → ToolCallAgent → ReAct循环 → 工具与MCP能力。
      * 采用ConcurrentHashMap缓存智能体实例，同一会话复用同一个智能体对象，保证上下文连续性。
      *
@@ -138,7 +141,7 @@ public class AiChatServiceImpl implements AiChatService {
     /**
      * 旅游规划工作流流式接口实现
      * 用于完整旅游规划场景，会向客户端发送status、progress、result、error四类结构化事件。
-     * <p>
+     *
      * 生成链路为 AiChatService → TravelPlanningWorkflowFacade → 工作流节点执行器。
      * 使用虚拟线程执行工作流，避免阻塞主线程，提升系统并发能力。
      *

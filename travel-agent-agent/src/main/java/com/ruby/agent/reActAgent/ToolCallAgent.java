@@ -1,4 +1,4 @@
-package com.ruby.agent.agent;
+package com.ruby.agent.reActAgent;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * 支持工具调用的ReAct智能体实现类
- * <p>
+ 
  * 基于ReActAgent，提供ReAct完整的工具调用能力
  * （具体实现了think()和act()方法，，支持同步和流式两种调用模式，自动处理工具调用的上下文维护和结果整合）
  */

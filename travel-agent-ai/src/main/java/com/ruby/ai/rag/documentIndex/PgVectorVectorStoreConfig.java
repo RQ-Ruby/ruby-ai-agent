@@ -16,10 +16,8 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 
 /**
  * PgVectorVectorStore 配置类
- * <p>
- * 封装了以下核心流程的逻辑
- * 1.文档收集与语义切割
- * 2.向量转换与存储（PgVector 向量数据库）
+ *
+ * 封装了连接向量数据库的配置
  */
 @Configuration
 @Slf4j
@@ -57,7 +55,7 @@ public class PgVectorVectorStoreConfig {
         VectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
                 // 指定向量维度，必须与嵌入模型输出一致
                 .dimensions(EMBEDDING_DIMENSIONS)
-                // 使用余弦距离计算向量相似度，最适合语义检索场景
+                // 使用余弦距离计算向量相似度，最适合文档结构检索场景
                 .distanceType(COSINE_DISTANCE)
                 // 使用HNSW索引，性能最好的近似最近邻搜索索引
                 .indexType(HNSW)
@@ -71,6 +69,7 @@ public class PgVectorVectorStoreConfig {
                 // 设置批量处理的最大文档数
                 .maxDocumentBatchSize(MAX_EMBEDDING_BATCH_SIZE)
                 .build();
+
         return vectorStore;
     }
 

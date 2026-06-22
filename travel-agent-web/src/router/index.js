@@ -26,8 +26,8 @@ const router = createRouter({
             meta: {title: '行旅 AI · 规划智能体', requiresAuth: true}
         },
         {
-            path: '/workflow',
-            name: 'workflow',
+            path: '/workflowAgent',
+            name: 'workflowAgent',
             component: WorkflowPlanView,
             meta: {title: '行旅 AI · 工作流规划', requiresAuth: true}
         },

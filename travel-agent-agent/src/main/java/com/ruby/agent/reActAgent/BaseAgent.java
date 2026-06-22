@@ -1,4 +1,4 @@
-package com.ruby.agent.agent;
+package com.ruby.agent.reActAgent;
 
 import com.ruby.agent.model.AgentState;
 import com.ruby.common.exception.BusinessException;
@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * 抽象基础代理类，所有智能体的根父类
- * <p>
+ 
  * 提供智能体生命周期管理、状态转换、循环检测、内存管理和执行流程控制的基础能力
  * （支持同步运行和SSE流式运行两种模式）
  */
@@ -35,7 +36,7 @@ public abstract class BaseAgent {
     protected String currentAction = "";
 
     // 流式token接收器：非空时，子类在think()期间逐token推送delta给前端
-    protected java.util.function.Consumer<String> tokenSink;
+    protected Consumer<String> tokenSink;
 
     // 智能体基本信息
     private String name;
@@ -111,64 +112,6 @@ public abstract class BaseAgent {
     }
 
     /**
-     * 同步运行智能体
-     * 执行完成后返回完整结果字符串
-     *
-     * @param userPrompt 用户输入的提示词
-     * @return 智能体执行的完整结果
-     * @throws BusinessException 当智能体状态错误或参数无效时抛出
-     */
-    public String run(String userPrompt) {
-        // 状态检查：只能从IDLE状态启动
-        if (this.state != AgentState.IDLE) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Cannot run agent from state: " + this.state);
-        }
-
-        // 参数校验：用户提示词不能为空
-        if (StringUtil.isBlank(userPrompt)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot run agent with empty user prompt");
-        }
-
-        // 初始化运行状态
-        state = AgentState.RUNNING;
-        // 将用户消息加入上下文
-        messageList.add(new UserMessage(userPrompt));
-        // 保存每步执行结果
-        List<String> results = new ArrayList<>();
-
-        try {
-            // 主执行循环：直到达到最大步数或任务完成
-            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
-                int stepNumber = i + 1;
-                currentStep = stepNumber;
-                log.info("Executing step " + stepNumber + "/" + maxSteps);
-
-                // 执行单步逻辑（由子类实现）
-                String stepResult = step();
-                String result = "Step " + stepNumber + ": " + stepResult;
-                results.add(result);
-            }
-
-            // 处理达到最大步数的情况
-            if (currentStep >= maxSteps) {
-                state = AgentState.FINISHED;
-                results.add("Terminated: Reached max steps (" + maxSteps + ")");
-            }
-
-            // 合并所有步骤结果返回
-            return String.join("\n", results);
-        } catch (Exception e) {
-            // 异常处理：标记为错误状态并记录日志
-            state = AgentState.ERROR;
-            log.error("Error executing agent", e);
-            return "执行错误" + e.getMessage();
-        } finally {
-            // 无论成功失败，最终都清理资源
-            this.cleanup();
-        }
-    }
-
-    /**
      * 流式运行智能体
      * 通过SSE实时推送思考过程和执行结果给前端
      * 支持多轮会话（保留历史消息上下文）
@@ -183,7 +126,7 @@ public abstract class BaseAgent {
         // 异步处理任务，避免阻塞Web请求线程
         CompletableFuture.runAsync(() -> {
             // 保存可见输出内容，用于最终持久化
-            StringBuilder visibleOutput = new StringBuilder();
+            StringBuilder answerBuilder = new StringBuilder();
             try {
                 // 允许从FINISHED/ERROR状态重新发起一轮（保留历史消息，支持多轮对话）
                 // 只拒绝RUNNING状态，防止并发执行同一会话
@@ -213,10 +156,10 @@ public abstract class BaseAgent {
 
                 try {
                     // 设置token接收器：子类think()方法会逐token调用此方法推送流式内容
-                    this.tokenSink = delta -> {
+                    this.tokenSink = chunk -> {
                         try {
-                            visibleOutput.append(delta);
-                            emitter.send(delta);
+                            answerBuilder.append(chunk);
+                            emitter.send(chunk);
                         } catch (Exception ignore) {
                             // 客户端断开连接时忽略异常
                         }
@@ -237,14 +180,14 @@ public abstract class BaseAgent {
                         // 如果本步调用了工具，推送工具执行标记
                         if (currentAction != null && !currentAction.isBlank()) {
                             // 格式化工具执行信息，替换换行防止破坏SSE格式
-                            String actionChunk = "\n\n> 🔧 " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
-                            visibleOutput.append(actionChunk);
+                            String actionChunk = "\n\n>  " + currentAction.trim().replace("\n", "\uff1b") + "\n\n";
+                            answerBuilder.append(actionChunk);
                             emitter.send(actionChunk);
                         }
                         // 兜底：如果think未输出且无工具调用，直接发送step结果
                         else if ((currentThinking == null || currentThinking.isBlank())
                                 && stepResult != null && !stepResult.isBlank()) {
-                            visibleOutput.append(stepResult);
+                            answerBuilder.append(stepResult);
                             emitter.send(stepResult);
                         }
                     }
@@ -252,13 +195,13 @@ public abstract class BaseAgent {
                     // 处理达到最大步数的情况
                     if (currentStep >= maxSteps && state != AgentState.FINISHED) {
                         state = AgentState.FINISHED;
-                        String warningChunk = "\n\n> ⚠️ 达到最大步骤 (" + maxSteps + ")\n";
-                        visibleOutput.append(warningChunk);
+                        String warningChunk = "\n\n> 达到最大步骤 (" + maxSteps + ")\n";
+                        answerBuilder.append(warningChunk);
                         emitter.send(warningChunk);
                     }
 
                     // 流式运行完成后的回调（子类可重写实现持久化等逻辑）
-                    afterStreamingRun(userPrompt, visibleOutput.toString(), state == AgentState.FINISHED);
+                    afterStreamingRun(userPrompt, answerBuilder.toString(), state == AgentState.FINISHED);
                     // 正常完成SSE连接
                     emitter.complete();
                 } catch (Exception e) {
@@ -267,8 +210,8 @@ public abstract class BaseAgent {
                     log.error("执行智能体失败", e);
                     try {
                         String errorChunk = "执行错误: " + e.getMessage();
-                        visibleOutput.append(errorChunk);
-                        afterStreamingRun(userPrompt, visibleOutput.toString(), false);
+                        answerBuilder.append(errorChunk);
+                        afterStreamingRun(userPrompt, answerBuilder.toString(), false);
                         emitter.send(errorChunk);
                         emitter.complete();
                     } catch (Exception ex) {
