@@ -1,5 +1,6 @@
 package com.ruby.ai.factory;
 
+import com.alibaba.cloud.ai.model.RerankModel;
 import com.ruby.ai.advisor.MyLoggerAdvisor;
 import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
 import com.ruby.ai.rag.RetrievalAugment.QueryRewriter;
@@ -98,6 +99,7 @@ public class TravelChatClientFactory {
     public TravelChatClientFactory(ChatModel dashscopeChatModel,
                                    TokenWindowsPersistentChatMemory chatMemory,
                                    @Qualifier("pgVectorVectorStore") VectorStore pgVectorVectorStore,
+                                   RerankModel rerankModel,
                                    QueryRewriter queryRewriter,
                                    ToolCallbackProvider toolCallbackProvider) {
         this.chatModel = dashscopeChatModel;
@@ -105,7 +107,7 @@ public class TravelChatClientFactory {
         this.pgVectorVectorStore = pgVectorVectorStore;
         this.queryRewriter = queryRewriter;
         this.toolCallbackProvider = toolCallbackProvider;
-        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, "published");
+        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, rerankModel);
     }
 
     /**
@@ -120,14 +122,11 @@ public class TravelChatClientFactory {
                 .build();
     }
 
-    public ChatClient createRagChatClient() {
+
+    public ChatClient createStreamRagChatClient() {
         return baseBuilder()
                 .defaultAdvisors(ragAdvisor)
                 .build();
-    }
-
-    public ChatClient createStreamRagChatClient() {
-        return createRagChatClient();
     }
 
     public CachedTravelClient createStreamRagChatClient(String conversationId) {

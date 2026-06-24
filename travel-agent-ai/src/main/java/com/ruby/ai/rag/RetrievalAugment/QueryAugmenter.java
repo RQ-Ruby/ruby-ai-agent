@@ -4,10 +4,9 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
 
 /**
- * 上下文查询融合器
- *
- * 核心职责：将检索器返回的知识库文档块与用户原始查询按规则融合
- * 兼容Spring AI 1.0.0~1.0.3正式版API
+ * 上下文查询融合器，用于查询增强与关联
+ * <p>
+ * 将检索器返回的知识库文档块与用户原始查询按规则融合
  */
 public class QueryAugmenter {
 
@@ -15,8 +14,8 @@ public class QueryAugmenter {
         // 切片融合模板
         PromptTemplate contextPromptTemplate = new PromptTemplate("""
                 【知识库内容，请务必参考】
-                {question_answer_context}
-                
+                {context}
+                                
                 用户问题：{query}
                 """);
 
