@@ -1,5 +1,6 @@
 package com.ruby.ai.service.impl;
 
+import com.ruby.ai.service.ElasticKnowledgeService;
 import com.ruby.ai.rag.documentIndex.RAGDocumentLoader;
 import com.ruby.ai.service.RagVectorizationService;
 import jakarta.annotation.Resource;
@@ -11,12 +12,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.ruby.ai.rag.documentIndex.PgVectorVectorStoreConfig.MAX_EMBEDDING_BATCH_SIZE;
 
 /**
  * RAG向量数据库向量化服务实现类
- 
+ * <p>
  * 从 MySQL 加载完整文档，经由 RAGDocumentLoader 智能分块后，
  * 逐块生成向量嵌入并写入 PostgreSQL 向量数据库。
  *
@@ -28,24 +32,31 @@ import static com.ruby.ai.rag.documentIndex.PgVectorVectorStoreConfig.MAX_EMBEDD
 public class RagVectorizationServiceImpl implements RagVectorizationService {
 
     /**
+     * 虚拟线程执行器，用于并行执行向量化任务
+     */
+    private final ExecutorService virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    /**
      * RAG 文档加载器 —— 负责从 MySQL 读取文档并完成智能分块
      */
     @Resource
     private RAGDocumentLoader ragDocumentLoader;
-
     /**
      * PostgreSQL向量存储客户端
      */
     @Qualifier("pgVectorVectorStore")
     @Resource
     private VectorStore pgVectorVectorStore;
-
     /**
      * JDBC模板，用于全量清空向量库表
      */
     @Qualifier("pgvectorJdbcTemplate")
     @Resource
     private JdbcTemplate jdbcTemplate;
+    /**
+     * Elasticsearch 知识库服务
+     */
+    @Resource
+    private ElasticKnowledgeService elasticKnowledgeService;
 
     /**
      * 刷新RAG知识库向量
@@ -62,9 +73,27 @@ public class RagVectorizationServiceImpl implements RagVectorizationService {
             return;
         }
 
-        // 2. 向量转换与存储：先清空所有向量，再重新生成并存储
-        deleteAllVectors();
-        addDocumentsInBatches(pgVectorVectorStore, springDocuments, MAX_EMBEDDING_BATCH_SIZE);
+        // 2. 向量转换与存储
+        // 2.1 异步清空 ES 和 向量数据库中的索引数据
+        CompletableFuture<Void> pgTask = CompletableFuture.runAsync(() ->
+                deleteAllVectors()
+        );
+        CompletableFuture<Void> esTask = CompletableFuture.runAsync(() ->
+                elasticKnowledgeService.clearIndex()
+        );
+
+        CompletableFuture.allOf(pgTask, esTask).join();
+
+        // 2.2 异步重新构建 ES 和 向量数据库中的索引数据
+
+        CompletableFuture<Void> pgIndexTask = CompletableFuture.runAsync(() ->
+                addDocumentsInBatches(pgVectorVectorStore, springDocuments, MAX_EMBEDDING_BATCH_SIZE), virtualExecutor
+        );
+        CompletableFuture<Void> esIndexTask = CompletableFuture.runAsync(() ->
+                elasticKnowledgeService.bulkUpsert(springDocuments), virtualExecutor
+        );
+
+        CompletableFuture.allOf(pgIndexTask, esIndexTask).join();
 
         log.info("RAG知识库向量化完成，manualTrigger={}, 向量块数={}", manualTrigger, springDocuments.size());
     }

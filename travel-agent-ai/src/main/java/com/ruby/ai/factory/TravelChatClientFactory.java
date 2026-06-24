@@ -3,6 +3,8 @@ package com.ruby.ai.factory;
 import com.alibaba.cloud.ai.model.RerankModel;
 import com.ruby.ai.advisor.MyLoggerAdvisor;
 import com.ruby.ai.chatmemory.TokenWindowsPersistentChatMemory;
+import com.ruby.ai.config.ElasticsearchConfig;
+import com.ruby.ai.service.HybridSearchService;
 import com.ruby.ai.rag.RetrievalAugment.QueryRewriter;
 import com.ruby.ai.rag.RetrievalAugment.RagAdvisorFactory;
 import lombok.Getter;
@@ -99,6 +101,8 @@ public class TravelChatClientFactory {
     public TravelChatClientFactory(ChatModel dashscopeChatModel,
                                    TokenWindowsPersistentChatMemory chatMemory,
                                    @Qualifier("pgVectorVectorStore") VectorStore pgVectorVectorStore,
+                                   HybridSearchService hybridSearchService,
+                                   ElasticsearchConfig elasticsearchConfig,
                                    RerankModel rerankModel,
                                    QueryRewriter queryRewriter,
                                    ToolCallbackProvider toolCallbackProvider) {
@@ -107,7 +111,7 @@ public class TravelChatClientFactory {
         this.pgVectorVectorStore = pgVectorVectorStore;
         this.queryRewriter = queryRewriter;
         this.toolCallbackProvider = toolCallbackProvider;
-        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, rerankModel);
+        this.ragAdvisor = RagAdvisorFactory.createRagAdvisor(pgVectorVectorStore, hybridSearchService, elasticsearchConfig, rerankModel);
     }
 
     /**
